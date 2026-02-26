@@ -1,32 +1,31 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 
 export default function Home() {
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Welcome 💪</Text>
+    <ScrollView className="flex-1 bg-[#0f0f0f] p-4">
+      <Text className="text-white text-2xl mb-5 font-bold">
+        Welcome 💪
+      </Text>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Today Workout</Text>
-        <Text style={styles.text}>Chest & Triceps</Text>
+      {/* 🏋️ Workout Card */}
+      <View className="bg-[#1c1c1c] p-4 rounded-xl mb-4">
+        <Text className="text-[#ff3c00] text-lg mb-1 font-semibold">
+          Today Workout
+        </Text>
+        <Text className="text-gray-300">
+          Chest & Triceps
+        </Text>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Featured Products</Text>
-        <Text style={styles.text}>Protein • Gloves • Shaker</Text>
+      {/* 🛒 Featured Products */}
+      <View className="bg-[#1c1c1c] p-4 rounded-xl mb-4">
+        <Text className="text-[#ff3c00] text-lg mb-1 font-semibold">
+          Featured Products
+        </Text>
+        <Text className="text-gray-300">
+          Protein • Gloves • Shaker
+        </Text>
       </View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0f0f0f", padding: 16 },
-  title: { fontSize: 22, color: "#fff", marginBottom: 20 },
-  card: {
-    backgroundColor: "#1c1c1c",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 15,
-  },
-  cardTitle: { color: "#ff3c00", fontSize: 18, marginBottom: 6 },
-  text: { color: "#ccc" },
-});
