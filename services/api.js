@@ -33,6 +33,23 @@ export const getAllProducts = async () => {
   return res.json();
 };
 
+export const serviceList = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/services`);
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || "Failed to fetch services");
+    }
+
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.log("SERVICE LIST ERROR 👉", err.message);
+    throw err;
+  }
+};
+
 /* ------------------ AUTH ------------------ */
 
 // ✅ REGISTER (legacy helper returning raw JSON)
