@@ -1,39 +1,68 @@
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function TabLayout() {
-  const userName = "Dhivakar"; // 🔥 get from auth later
+  const router = useRouter();
+
+  const [user, setUser] = useState(null);
+
+  /* 🔥 LOAD USER */
+  useEffect(() => {
+    const loadUser = async () => {
+      const storedUser = await AsyncStorage.getItem("user");
+
+      if (!storedUser) {
+        router.replace("/login"); // not logged in
+      } else {
+        setUser(JSON.parse(storedUser));
+      }
+    };
+
+    loadUser();
+  }, []);
+
+  /* 🔥 LOGOUT */
+  const handleLogout = async () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel" },
+      {
+        text: "Logout",
+        onPress: async () => {
+          await AsyncStorage.removeItem("token");
+          await AsyncStorage.removeItem("user");
+          router.replace("/login");
+        },
+      },
+    ]);
+  };
+
+  const userName = user?.username || "U";
   const initial = userName.charAt(0).toUpperCase();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: true,
-
         tabBarActiveTintColor: "#ff3c00",
         tabBarStyle: {
           backgroundColor: "#0f0f0f",
           borderTopColor: "#222",
         },
-
-        headerStyle: {
-          backgroundColor: "#0f0f0f",
-        },
-
+        headerStyle: { backgroundColor: "#0f0f0f" },
         headerTitle: "",
 
         /* 🔥 LEFT LOGO */
         headerLeft: () => (
           <View className="flex-row items-center pl-4">
             <Image
-              source={require("../../assets/images/logo_dark.png")} 
+              source={require("../../assets/images/logo_dark.png")}
               className="w-9 h-9 rounded-full"
               resizeMode="contain"
             />
-            <Text className="text-white text-lg font-bold ml-2">
-              Q Gym
-            </Text>
+            <Text className="text-white text-lg font-bold ml-2">Q Gym</Text>
           </View>
         ),
 
@@ -41,17 +70,15 @@ export default function TabLayout() {
         headerRight: () => (
           <View className="flex-row items-center pr-4 gap-4">
             {/* 🔔 Notifications */}
-            <TouchableOpacity className="relative">
+            <TouchableOpacity>
               <Ionicons name="notifications-outline" size={24} color="#fff" />
-
-              {/* 🔴 Badge */}
-              <View className="absolute -top-1 -right-1 bg-red-500 w-4 h-4 rounded-full items-center justify-center">
-                <Text className="text-[10px] text-white">3</Text>
-              </View>
             </TouchableOpacity>
 
-            {/* 👤 Profile Initial */}
-            <TouchableOpacity className="w-9 h-9 rounded-full bg-orange-500 items-center justify-center">
+            {/* 👤 Profile Initial (CLICK → LOGOUT) */}
+            <TouchableOpacity
+              onPress={handleLogout}
+              className="w-9 h-9 rounded-full bg-orange-500 items-center justify-center"
+            >
               <Text className="text-white font-bold">{initial}</Text>
             </TouchableOpacity>
           </View>
