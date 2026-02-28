@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 import { Ionicons } from "@expo/vector-icons";
 import api from "../../services/api";
+import { Image } from "react-native";
 
 const RegisterScreen = () => {
   const router = useRouter();
@@ -76,109 +77,146 @@ const RegisterScreen = () => {
     }
   };
 
-  return (
-    <View className="flex-1 bg-[#05060c] justify-center px-5">
-      <Text className="text-3xl font-bold text-red-500 text-center mb-2">
-        Create Account
-      </Text>
-
-      <Text className="text-gray-400 text-center mb-6">
-        Start your fitness journey 🔥
-      </Text>
-
-      <TextInput
-        placeholder="Username"
-        placeholderTextColor="#6b7280"
-        className="border border-white/10 p-3 rounded-lg mb-3 text-white"
-        value={username}
-        onChangeText={setUsername}
-      />
-
-      <TextInput
-        placeholder="Mobile Number"
-        placeholderTextColor="#6b7280"
-        keyboardType="numeric"
-        maxLength={10}
-        className="border border-white/10 p-3 rounded-lg mb-3 text-white"
-        value={mobile}
-        onChangeText={(text) => setMobile(text.replace(/\D/g, ""))}
-      />
-
-      <TextInput
-        placeholder="Email"
-        placeholderTextColor="#6b7280"
-        className="border border-white/10 p-3 rounded-lg mb-3 text-white"
-        value={email}
-        onChangeText={setEmail}
-      />
-
-      {/* PASSWORD */}
-      <View className="relative mb-3">
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor="#6b7280"
-          secureTextEntry={!showPassword}
-          className="border border-white/10 p-3 rounded-lg text-white pr-12"
-          value={password}
-          onChangeText={setPassword}
+return (
+  <View className="flex-1 bg-black">
+    <View className="flex-1">
+      {/* 🔥 HERO IMAGE */}
+      <View className="absolute inset-0">
+        <Image
+          source={{
+            uri: "https://images.unsplash.com/photo-1558611848-73f7eb4001a1",
+          }}
+          className="w-full h-full"
+          resizeMode="cover"
         />
-
-        <TouchableOpacity
-          onPress={() => setShowPassword(!showPassword)}
-          className="absolute right-3 top-3"
-        >
-          <Ionicons
-            name={showPassword ? "eye-off" : "eye"}
-            size={20}
-            color="gray"
-          />
-        </TouchableOpacity>
+        <View className="absolute inset-0 bg-black/60" />
       </View>
 
-      {/* CONFIRM PASSWORD */}
-      <View className="relative mb-4">
-        <TextInput
-          placeholder="Confirm Password"
-          placeholderTextColor="#6b7280"
-          secureTextEntry={!showConfirmPassword}
-          className="border border-white/10 p-3 rounded-lg text-white pr-12"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
-
-        <TouchableOpacity
-          onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-          className="absolute right-3 top-3"
-        >
-          <Ionicons
-            name={showConfirmPassword ? "eye-off" : "eye"}
-            size={20}
-            color="gray"
-          />
-        </TouchableOpacity>
-      </View>
-
+      {/* Back Button */}
       <TouchableOpacity
-        onPress={handleRegister}
-        disabled={loading}
-        className="bg-red-600 py-3 rounded-lg items-center"
+        onPress={() => router.back()}
+        className="absolute top-14 left-5 bg-black/50 p-3 rounded-full"
       >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text className="text-white font-semibold">Register</Text>
-        )}
+        <Ionicons name="arrow-back" size={20} color="white" />
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push("/login")}>
-        <Text className="text-center text-gray-400 mt-4">
-          Already a member? <Text className="text-red-500">Login</Text>
+      {/* Hero Text */}
+      <View className="absolute top-28 left-6 right-10">
+        <Text className="text-white text-[56px] font-black leading-[60px] tracking-tight">
+          STAY{"\n"}STRONG.
         </Text>
-      </TouchableOpacity>
+      </View>
 
-      <Toast />
+      {/* 🔥 REGISTER CARD */}
+      <View className="absolute bottom-0 w-full bg-black rounded-t-3xl px-6 pt-8 pb-10 min-h-[65%]">
+        
+        <Text className="text-white text-2xl font-bold text-center">
+          Create Your Account
+        </Text>
+
+        {/* FULL NAME */}
+        <Text className="text-gray-400 text-sm mt-6 mb-2">FULL NAME</Text>
+        <View className="flex-row items-center bg-gray-200 rounded-full px-4 mb-4">
+          <Ionicons name="person-outline" size={18} color="#6b7280" />
+          <TextInput
+            placeholder="Full Name"
+            placeholderTextColor="#6b7280"
+            value={username}
+            onChangeText={setUsername}
+            className="flex-1 py-5 px-3 text-black"
+          />
+        </View>
+
+        {/* EMAIL */}
+        <Text className="text-gray-400 text-sm mb-2">EMAIL</Text>
+        <View className="flex-row items-center bg-gray-200 rounded-full px-4 mb-4">
+          <Ionicons name="mail-outline" size={18} color="#6b7280" />
+          <TextInput
+            placeholder="Email"
+            placeholderTextColor="#6b7280"
+            value={email}
+            onChangeText={setEmail}
+            className="flex-1 py-5 px-3 text-black"
+          />
+        </View>
+
+        {/* PASSWORD */}
+        <Text className="text-gray-400 text-sm mb-2">PASSWORD</Text>
+        <View className="flex-row items-center bg-gray-200 rounded-full px-4 mb-4">
+          <Ionicons name="lock-closed-outline" size={18} color="#6b7280" />
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor="#6b7280"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+            className="flex-1 py-5 px-3 text-black"
+          />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? "eye-off" : "eye"}
+              size={18}
+              color="#6b7280"
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* CONFIRM PASSWORD */}
+        <Text className="text-gray-400 text-sm mb-2">CONFIRM PASSWORD</Text>
+        <View className="flex-row items-center bg-gray-200 rounded-full px-4 mb-6">
+          <Ionicons name="lock-closed-outline" size={18} color="#6b7280" />
+          <TextInput
+            placeholder="Confirm Password"
+            placeholderTextColor="#6b7280"
+            secureTextEntry={!showConfirmPassword}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            className="flex-1 py-5 px-3 text-black"
+          />
+          <TouchableOpacity
+            onPress={() =>
+              setShowConfirmPassword(!showConfirmPassword)
+            }
+          >
+            <Ionicons
+              name={showConfirmPassword ? "eye-off" : "eye"}
+              size={18}
+              color="#6b7280"
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* SIGN UP BUTTON */}
+        <TouchableOpacity
+          onPress={handleRegister}
+          disabled={loading}
+          className="bg-red-600 py-5 rounded-full items-center"
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text className="text-white text-lg font-bold">
+              Sign up
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        {/* LOGIN LINK */}
+        <TouchableOpacity
+          onPress={() => router.push("/login")}
+          className="mt-6"
+        >
+          <Text className="text-center text-gray-400">
+            Already have an account,{" "}
+            <Text className="text-red-500 font-semibold">
+              Switch to Login
+            </Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
-  );
+  </View>
+);
 };
 
 export default RegisterScreen;
