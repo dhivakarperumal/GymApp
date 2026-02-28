@@ -1,13 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import { Image } from "react-native";
 import { useState } from "react";
 import {
-    ActivityIndicator,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../../context/AuthContext";
@@ -38,8 +39,7 @@ const LoginScreen = () => {
     if (!id)
       return Toast.show({ type: "error", text1: "Email or Username required" });
 
-    if (!pass)
-      return Toast.show({ type: "error", text1: "Password required" });
+    if (!pass) return Toast.show({ type: "error", text1: "Password required" });
 
     const payload = { identifier: id, password: pass };
     console.log("login payload", payload);
@@ -74,10 +74,7 @@ const LoginScreen = () => {
       console.log("login error", err);
       Toast.show({
         type: "error",
-        text1:
-          err?.response?.data?.message ||
-          err.message ||
-          "Login failed",
+        text1: err?.response?.data?.message || err.message || "Login failed",
       });
     } finally {
       setLoading(false);
@@ -85,68 +82,112 @@ const LoginScreen = () => {
   };
 
   return (
-    <View className="flex-1 bg-black justify-center px-5">
-
-      <Text className="text-3xl font-bold text-white text-center mb-2">
-        Member Login
-      </Text>
-
-      <Text className="text-gray-400 text-center mb-6">
-        Enter your credentials to continue
-      </Text>
-
-      {/* EMAIL / USERNAME */}
-      <TextInput
-        placeholder="Email or Username"
-        placeholderTextColor="#6b7280"
-        className="border border-gray-700 bg-gray-900 text-white p-3 rounded-lg mb-3"
-        value={identifier}
-        onChangeText={setIdentifier}
-        autoCapitalize="none"
-      />
-
-      {/* PASSWORD */}
-      <View className="relative mb-4">
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor="#6b7280"
-          secureTextEntry={!showPassword}
-          className="border border-gray-700 bg-gray-900 text-white p-3 rounded-lg pr-12"
-          value={password}
-          onChangeText={setPassword}
-        />
-
-        <TouchableOpacity
-          onPress={() => setShowPassword(!showPassword)}
-          className="absolute right-3 top-3"
-        >
-          <Ionicons
-            name={showPassword ? "eye-off" : "eye"}
-            size={20}
-            color="gray"
+    <View className="flex-1 bg-black">
+      {/* 🔥 HERO IMAGE */}
+      <View className="flex-1">
+        <View className="absolute inset-0">
+          <Image
+            source={{
+              uri: "https://images.unsplash.com/photo-1594737625785-a6cbdabd333c",
+            }}
+            className="w-full h-full"
+            resizeMode="cover"
           />
+          <View className="absolute inset-0 bg-black/60" />
+        </View>
+
+        {/* Back Button */}
+        <TouchableOpacity className="absolute top-14 left-5 bg-black/50 p-3 rounded-full">
+          <Ionicons name="arrow-back" size={20} color="white" />
         </TouchableOpacity>
+
+        {/* Hero Text */}
+        <View className="absolute top-32 left-6 right-10">
+          <Text className="text-white text-[56px] font-black leading-[60px] tracking-tight">
+            TRAIN{"\n"}HARD.
+          </Text>
+
+          <Text className="text-gray-300 mt-4 text-[16px] font-medium leading-6">
+            Your transformation starts{"\n"}today.
+          </Text>
+        </View>
+
+        {/* 🔥 LOGIN CARD */}
+        <View className="absolute bottom-0 w-full bg-black rounded-t-3xl px-6 pt-8 pb-10 min-h-[50%]">
+          <Text className="text-white text-2xl font-bold text-center">
+            Welcome Back, Leo
+          </Text>
+
+          <Text className="text-gray-400 text-center mt-1 mb-6">
+            Sign in to continue your streak
+          </Text>
+
+          {/* EMAIL */}
+          <Text className="text-gray-400 text-sm mb-2">EMAIL</Text>
+          <View className="flex-row items-center bg-gray-200 rounded-full px-4 mb-4">
+            <Ionicons name="mail-outline" size={18} color="#6b7280" />
+            <TextInput
+              placeholder="Email or Username"
+              placeholderTextColor="#6b7280"
+              value={identifier}
+              onChangeText={setIdentifier}
+              className="flex-1 py-5 px-3 text-black"
+              autoCapitalize="none"
+            />
+          </View>
+
+          {/* PASSWORD */}
+          <Text className="text-gray-400 text-sm mb-2">PASSWORD</Text>
+          <View className="flex-row items-center bg-gray-200 rounded-full px-4 mb-2">
+            <Ionicons name="lock-closed-outline" size={18} color="#6b7280" />
+            <TextInput
+              placeholder="Password"
+              placeholderTextColor="#6b7280"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              className="flex-1 py-5 px-3 text-black"
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={18}
+                color="#6b7280"
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Forgot Password */}
+          <TouchableOpacity className="items-end mb-6">
+            <Text className="text-red-500 text-sm">Forgot Password?</Text>
+          </TouchableOpacity>
+
+          {/* LOGIN BUTTON */}
+          <TouchableOpacity
+            onPress={handleLogin}
+            disabled={loading}
+            activeOpacity={0.85}
+            className="bg-red-600 py-4 rounded-full items-center"
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text className="text-white text-lg font-bold">Login</Text>
+            )}
+          </TouchableOpacity>
+
+          {/* SIGN UP */}
+          <TouchableOpacity
+            onPress={() => router.push("/register")}
+            className="mt-6"
+          >
+            <Text className="text-center text-gray-400">
+              Don’t have an account?{" "}
+              <Text className="text-red-500 font-semibold">Sign Up</Text>
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-
-      {/* LOGIN BUTTON */}
-      <TouchableOpacity
-        onPress={handleLogin}
-        disabled={loading}
-        className="bg-red-600 py-3 rounded-lg items-center"
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text className="text-white font-bold">Login</Text>
-        )}
-      </TouchableOpacity>
-
-      {/* REGISTER LINK */}
-      <TouchableOpacity onPress={() => router.push("/register")}>
-        <Text className="text-center text-gray-400 mt-4">
-          New member? <Text className="text-red-500">Join Now</Text>
-        </Text>
-      </TouchableOpacity>
     </View>
   );
 };
