@@ -1,57 +1,69 @@
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
+const workouts = [
+  { name: "Chest", icon: "fitness-outline" },
+  { name: "Back", icon: "body-outline" },
+  { name: "Legs", icon: "walk-outline" },
+  { name: "Shoulder", icon: "barbell-outline" },
+  { name: "Arms", icon: "hand-left-outline" },
+];
+
 export default function Workouts() {
   return (
-    <ScrollView className="flex-1 bg-[#0f0f0f] p-4">
-      <Text className="text-white text-2xl mb-5 font-bold">
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      className="flex-1 bg-[#0f0f0f] px-5 pt-12"
+    >
+      {/* Title */}
+      <Text className="text-white text-3xl font-extrabold mb-8">
         Workouts
       </Text>
 
-      {/* 🟥 Chest */}
-      <TouchableOpacity className="bg-[#1c1c1c] p-4 rounded-xl mb-3 flex-row items-center justify-between">
-        <View className="flex-row items-center gap-3">
-          <Ionicons name="fitness-outline" size={20} color="#ff3c00" />
-          <Text className="text-gray-300 text-base">Chest</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color="#888" />
-      </TouchableOpacity>
+      {workouts.map((item, index) => (
+        <TouchableOpacity
+          key={index}
+          activeOpacity={0.85}
+          className="mb-5"
+        >
+          <View className="bg-[#1c1c1c] rounded-2xl p-5 flex-row items-center justify-between border border-[#262626]">
+            
+            {/* Left Section */}
+            <View className="flex-row items-center">
+              
+              {/* Icon Circle */}
+              <View className="bg-black p-4 rounded-2xl mr-4 border border-red-500">
+                <Ionicons
+                  name={item.icon}
+                  size={22}
+                  color="#ff3c00"
+                />
+              </View>
 
-      {/* 🟦 Back */}
-      <TouchableOpacity className="bg-[#1c1c1c] p-4 rounded-xl mb-3 flex-row items-center justify-between">
-        <View className="flex-row items-center gap-3">
-          <Ionicons name="body-outline" size={20} color="#ff3c00" />
-          <Text className="text-gray-300 text-base">Back</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color="#888" />
-      </TouchableOpacity>
+              {/* Text */}
+              <View>
+                <Text className="text-white text-lg font-semibold">
+                  {item.name}
+                </Text>
+                <Text className="text-gray-400 text-xs mt-1">
+                  Strength & Conditioning
+                </Text>
+              </View>
+            </View>
 
-      {/* 🟩 Legs */}
-      <TouchableOpacity className="bg-[#1c1c1c] p-4 rounded-xl mb-3 flex-row items-center justify-between">
-        <View className="flex-row items-center gap-3">
-          <Ionicons name="walk-outline" size={20} color="#ff3c00" />
-          <Text className="text-gray-300 text-base">Legs</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color="#888" />
-      </TouchableOpacity>
+            {/* Right Arrow */}
+            <View className="bg-black p-3 rounded-full border border-[#2a2a2a]">
+              <Ionicons
+                name="chevron-forward"
+                size={18}
+                color="#888"
+              />
+            </View>
+          </View>
+        </TouchableOpacity>
+      ))}
 
-      {/* 🟨 Shoulder */}
-      <TouchableOpacity className="bg-[#1c1c1c] p-4 rounded-xl mb-3 flex-row items-center justify-between">
-        <View className="flex-row items-center gap-3">
-          <Ionicons name="barbell-outline" size={20} color="#ff3c00" />
-          <Text className="text-gray-300 text-base">Shoulder</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color="#888" />
-      </TouchableOpacity>
-
-      {/* 🟪 Arms */}
-      <TouchableOpacity className="bg-[#1c1c1c] p-4 rounded-xl mb-3 flex-row items-center justify-between">
-        <View className="flex-row items-center gap-3">
-          <Ionicons name="hand-left-outline" size={20} color="#ff3c00" />
-          <Text className="text-gray-300 text-base">Arms</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color="#888" />
-      </TouchableOpacity>
+      <View className="h-10" />
     </ScrollView>
   );
 }
