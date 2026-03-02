@@ -1,48 +1,65 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+
+const menuItems = [
+  { title: "Profile", icon: "person-outline" },
+  { title: "Pricing", icon: "card-outline" },
+  { title: "Services", icon: "briefcase-outline" },
+  { title: "Facilities", icon: "business-outline" },
+  { title: "Trainers", icon: "people-outline" },
+  { title: "Settings", icon: "settings-outline" },
+];
 
 export default function More() {
+  const router = useRouter();
+
+  const handleNavigation = (title) => {
+    if (title === "Pricing") {
+      router.push("/Pages/Pricing");
+    }
+  };
+
   return (
-    <View className="flex-1 bg-[#0f0f0f] p-4">
-      <Text className="text-white text-2xl mb-5 font-bold">
-        More
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      className="flex-1 bg-[#0f0f0f] px-5 pt-12"
+    >
+      {/* Header */}
+      <Text className="text-white text-3xl font-extrabold mb-2">More</Text>
+      <Text className="text-gray-400 mb-8">
+        Manage your account & preferences
       </Text>
 
-      {/* 👤 Profile */}
-      <TouchableOpacity className="bg-[#1c1c1c] p-4 rounded-xl mb-3 flex-row items-center justify-between">
-        <View className="flex-row items-center gap-3">
-          <Ionicons name="person-outline" size={20} color="#ff3c00" />
-          <Text className="text-gray-300 text-base">Profile</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color="#888" />
-      </TouchableOpacity>
+      {/* Menu Items */}
+      {menuItems.map((item, index) => (
+        <TouchableOpacity
+          key={index}
+          activeOpacity={0.85}
+          className="mb-5"
+          onPress={() => handleNavigation(item.title)}
+        >
+          <View className="bg-[#1c1c1c] rounded-2xl p-5 flex-row items-center justify-between border border-[#262626]">
+            {/* Left Section */}
+            <View className="flex-row items-center">
+              <View className="bg-black p-4 rounded-2xl mr-4 border border-[#ff3c00]">
+                <Ionicons name={item.icon} size={20} color="#ff3c00" />
+              </View>
 
-      {/* 📦 My Orders */}
-      <TouchableOpacity className="bg-[#1c1c1c] p-4 rounded-xl mb-3 flex-row items-center justify-between">
-        <View className="flex-row items-center gap-3">
-          <Ionicons name="bag-outline" size={20} color="#ff3c00" />
-          <Text className="text-gray-300 text-base">My Orders</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color="#888" />
-      </TouchableOpacity>
+              <Text className="text-white text-base font-medium">
+                {item.title}
+              </Text>
+            </View>
 
-      {/* 🏋️ Membership */}
-      <TouchableOpacity className="bg-[#1c1c1c] p-4 rounded-xl mb-3 flex-row items-center justify-between">
-        <View className="flex-row items-center gap-3">
-          <Ionicons name="fitness-outline" size={20} color="#ff3c00" />
-          <Text className="text-gray-300 text-base">Membership</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color="#888" />
-      </TouchableOpacity>
+            {/* Right Arrow */}
+            <View className="bg-black p-3 rounded-full border border-[#2a2a2a]">
+              <Ionicons name="chevron-forward" size={18} color="#888" />
+            </View>
+          </View>
+        </TouchableOpacity>
+      ))}
 
-      {/* ⚙️ Settings */}
-      <TouchableOpacity className="bg-[#1c1c1c] p-4 rounded-xl mb-3 flex-row items-center justify-between">
-        <View className="flex-row items-center gap-3">
-          <Ionicons name="settings-outline" size={20} color="#ff3c00" />
-          <Text className="text-gray-300 text-base">Settings</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color="#888" />
-      </TouchableOpacity>
-    </View>
+      <View className="h-10" />
+    </ScrollView>
   );
 }
