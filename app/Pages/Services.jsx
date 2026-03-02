@@ -57,10 +57,8 @@ export default function Services() {
       )}
 
       {services.map((service, index) => (
-        <TouchableOpacity
+        <View
           key={service.id || index}
-          activeOpacity={0.9}
-          onPress={() => router.push(`/services/${service.slug}`)}
           className="mb-10 rounded-3xl overflow-hidden"
           style={{
             shadowColor: "#ff3c00",
@@ -97,13 +95,17 @@ export default function Services() {
               {service?.title || "Service"}
             </Text>
 
-            <View className="mt-4 self-start bg-[#ff3c00] px-5 py-2 rounded-full">
+            <TouchableOpacity
+              onPress={() => router.push(`/services/${service.slug}`)}
+              className="mt-4 self-start bg-[#ff3c00] px-5 py-2 rounded-full"
+              activeOpacity={0.8}
+            >
               <Text className="text-black font-semibold text-xs tracking-wider">
                 EXPLORE
               </Text>
-            </View>
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
+        </View>
       ))}
 
       <View className="h-10" />
