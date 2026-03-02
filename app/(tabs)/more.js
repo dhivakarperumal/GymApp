@@ -18,6 +18,9 @@ export default function More() {
     if (title === "Pricing") {
       router.push("/Pages/Pricing");
     }
+    if (title === "Trainers") {
+      router.push("/Pages/Trainers");
+    }
   };
 
   return (
