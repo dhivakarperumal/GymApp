@@ -59,7 +59,6 @@ export default function Facilities() {
               source={{ uri: item.image }}
               className="h-72 justify-end"
             >
-              {/* 🔥 Premium Bottom Gradient Overlay */}
               <LinearGradient
                 colors={["transparent", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.85)"]}
                 locations={[0, 0.5, 1]}
