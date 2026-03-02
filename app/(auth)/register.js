@@ -11,9 +11,18 @@ import Toast from "react-native-toast-message";
 import { Ionicons } from "@expo/vector-icons";
 import api from "../../services/api";
 import { Image } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from "react-native";
+import { ScrollView } from "react-native";
 
 const RegisterScreen = () => {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -77,146 +86,166 @@ const RegisterScreen = () => {
     }
   };
 
-return (
-  <View className="flex-1 bg-black">
-    <View className="flex-1">
-      {/* 🔥 HERO IMAGE */}
-      <View className="absolute inset-0">
-        <Image
-          source={{
-            uri: "https://images.unsplash.com/photo-1558611848-73f7eb4001a1",
-          }}
-          className="w-full h-full"
-          resizeMode="cover"
-        />
-        <View className="absolute inset-0 bg-black/60" />
-      </View>
-
-      {/* Back Button */}
-      <TouchableOpacity
-        onPress={() => router.back()}
-        className="absolute top-14 left-5 bg-black/50 p-3 rounded-full"
+  return (
+    <SafeAreaView className="flex-1 bg-black" edges={["top", "bottom"]}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <Ionicons name="arrow-back" size={20} color="white" />
-      </TouchableOpacity>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View className="flex-1">
+            <View className="flex-1">
+              {/* 🔥 HERO IMAGE */}
+              <View className="absolute inset-0">
+                <Image
+                  source={{
+                    uri: "https://images.unsplash.com/photo-1558611848-73f7eb4001a1",
+                  }}
+                  className="w-full h-full"
+                  resizeMode="cover"
+                />
+                <View className="absolute inset-0 bg-black/60" />
+              </View>
 
-      {/* Hero Text */}
-      <View className="absolute top-28 left-6 right-10">
-        <Text className="text-white text-[56px] font-black leading-[60px] tracking-tight">
-          STAY{"\n"}STRONG.
-        </Text>
-      </View>
+              {/* Back Button */}
+              <TouchableOpacity
+                onPress={() => router.back()}
+                className="absolute top-14 left-5 bg-black/50 p-3 rounded-full"
+              >
+                <Ionicons name="arrow-back" size={20} color="white" />
+              </TouchableOpacity>
 
-      {/* 🔥 REGISTER CARD */}
-      <View className="absolute bottom-0 w-full bg-black rounded-t-3xl px-6 pt-8 pb-10 min-h-[65%]">
-        
-        <Text className="text-white text-2xl font-bold text-center">
-          Create Your Account
-        </Text>
+              {/* Hero Text */}
+              <View className="absolute top-28 left-6 right-10">
+                <Text className="text-white text-[56px] font-black leading-[60px] tracking-tight">
+                  STAY{"\n"}STRONG.
+                </Text>
+              </View>
 
-        {/* FULL NAME */}
-        <Text className="text-gray-400 text-sm mt-6 mb-2">FULL NAME</Text>
-        <View className="flex-row items-center bg-gray-200 rounded-full px-4 mb-4">
-          <Ionicons name="person-outline" size={18} color="#6b7280" />
-          <TextInput
-            placeholder="Full Name"
-            placeholderTextColor="#6b7280"
-            value={username}
-            onChangeText={setUsername}
-            className="flex-1 py-5 px-3 text-black"
-          />
-        </View>
+              {/* 🔥 REGISTER CARD */}
+              <View
+                style={{ paddingBottom: 0}}
+                className="absolute bottom-0 w-full bg-black rounded-t-3xl px-6 pt-8 pb-6 h-[68%] flex-col"
+              >
 
-        {/* EMAIL */}
-        <Text className="text-gray-400 text-sm mb-2">EMAIL</Text>
-        <View className="flex-row items-center bg-gray-200 rounded-full px-4 mb-4">
-          <Ionicons name="mail-outline" size={18} color="#6b7280" />
-          <TextInput
-            placeholder="Email"
-            placeholderTextColor="#6b7280"
-            value={email}
-            onChangeText={setEmail}
-            className="flex-1 py-5 px-3 text-black"
-          />
-        </View>
+                <Text className="text-white text-2xl pb-3 font-bold text-center">
+                  Create Your Account
+                </Text>
 
-        {/* PASSWORD */}
-        <Text className="text-gray-400 text-sm mb-2">PASSWORD</Text>
-        <View className="flex-row items-center bg-gray-200 rounded-full px-4 mb-4">
-          <Ionicons name="lock-closed-outline" size={18} color="#6b7280" />
-          <TextInput
-            placeholder="Password"
-            placeholderTextColor="#6b7280"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-            className="flex-1 py-5 px-3 text-black"
-          />
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            <Ionicons
-              name={showPassword ? "eye-off" : "eye"}
-              size={18}
-              color="#6b7280"
-            />
-          </TouchableOpacity>
-        </View>
+                {/* SCROLLABLE FORM AREA */}
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{ paddingBottom: 20 }}
+                >
+                  {/* FULL NAME */}
+                  <Text className="text-gray-400 text-sm mb-2">FULL NAME</Text>
+                  <View className="flex-row items-center bg-gray-200 rounded-full px-4 mb-4">
+                    <Ionicons name="person-outline" size={18} color="#6b7280" />
+                    <TextInput
+                      placeholder="Full Name"
+                      placeholderTextColor="#6b7280"
+                      value={username}
+                      onChangeText={setUsername}
+                      className="flex-1 py-5 px-3 text-black"
+                    />
+                  </View>
 
-        {/* CONFIRM PASSWORD */}
-        <Text className="text-gray-400 text-sm mb-2">CONFIRM PASSWORD</Text>
-        <View className="flex-row items-center bg-gray-200 rounded-full px-4 mb-6">
-          <Ionicons name="lock-closed-outline" size={18} color="#6b7280" />
-          <TextInput
-            placeholder="Confirm Password"
-            placeholderTextColor="#6b7280"
-            secureTextEntry={!showConfirmPassword}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            className="flex-1 py-5 px-3 text-black"
-          />
-          <TouchableOpacity
-            onPress={() =>
-              setShowConfirmPassword(!showConfirmPassword)
-            }
-          >
-            <Ionicons
-              name={showConfirmPassword ? "eye-off" : "eye"}
-              size={18}
-              color="#6b7280"
-            />
-          </TouchableOpacity>
-        </View>
+                  {/* EMAIL */}
+                  <Text className="text-gray-400 text-sm mb-2">EMAIL</Text>
+                  <View className="flex-row items-center bg-gray-200 rounded-full px-4 mb-4">
+                    <Ionicons name="mail-outline" size={18} color="#6b7280" />
+                    <TextInput
+                      placeholder="Email"
+                      placeholderTextColor="#6b7280"
+                      value={email}
+                      onChangeText={setEmail}
+                      className="flex-1 py-5 px-3 text-black"
+                    />
+                  </View>
 
-        {/* SIGN UP BUTTON */}
-        <TouchableOpacity
-          onPress={handleRegister}
-          disabled={loading}
-          className="bg-red-600 py-5 rounded-full items-center"
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text className="text-white text-lg font-bold">
-              Sign up
-            </Text>
-          )}
-        </TouchableOpacity>
+                  {/* PASSWORD */}
+                  <Text className="text-gray-400 text-sm mb-2">PASSWORD</Text>
+                  <View className="flex-row items-center bg-gray-200 rounded-full px-4 mb-4">
+                    <Ionicons name="lock-closed-outline" size={18} color="#6b7280" />
+                    <TextInput
+                      placeholder="Password"
+                      placeholderTextColor="#6b7280"
+                      secureTextEntry={!showPassword}
+                      value={password}
+                      onChangeText={setPassword}
+                      className="flex-1 py-5 px-3 text-black"
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                      <Ionicons
+                        name={showPassword ? "eye-off" : "eye"}
+                        size={18}
+                        color="#6b7280"
+                      />
+                    </TouchableOpacity>
+                  </View>
 
-        {/* LOGIN LINK */}
-        <TouchableOpacity
-          onPress={() => router.push("/login")}
-          className="mt-6"
-        >
-          <Text className="text-center text-gray-400">
-            Already have an account,{" "}
-            <Text className="text-red-500 font-semibold">
-              Switch to Login
-            </Text>
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </View>
-);
+                  {/* CONFIRM PASSWORD */}
+                  <Text className="text-gray-400 text-sm mb-2">CONFIRM PASSWORD</Text>
+                  <View className="flex-row items-center bg-gray-200 rounded-full px-4 mb-4">
+                    <Ionicons name="lock-closed-outline" size={18} color="#6b7280" />
+                    <TextInput
+                      placeholder="Confirm Password"
+                      placeholderTextColor="#6b7280"
+                      secureTextEntry={!showConfirmPassword}
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      className="flex-1 py-5 px-3 text-black"
+                    />
+                    <TouchableOpacity
+                      onPress={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                    >
+                      <Ionicons
+                        name={showConfirmPassword ? "eye-off" : "eye"}
+                        size={18}
+                        color="#6b7280"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
+
+                {/* STATIC BUTTON AREA */}
+                <View style={{ paddingBottom: 5 }}>
+                  <TouchableOpacity
+                    onPress={handleRegister}
+                    disabled={loading}
+                    className="bg-red-600 py-5 rounded-full items-center mt-2"
+                  >
+                    {loading ? (
+                      <ActivityIndicator color="#fff" />
+                    ) : (
+                      <Text className="text-white text-lg font-bold">
+                        Sign up
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => router.push("/login")}
+                    className="mt-6"
+                  >
+                    <Text className="text-center text-gray-400">
+                      Already have an account,{" "}
+                      <Text className="text-red-500 font-semibold">
+                        Switch to Login
+                      </Text>
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+
+  );
 };
 
 export default RegisterScreen;
