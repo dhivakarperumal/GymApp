@@ -21,6 +21,9 @@ export default function More() {
     if (title === "Services") {
       router.push("/Pages/Services");
     }
+    if (title === "Facilities") {
+      router.push("/Pages/Facilities");
+    }
     if (title === "Trainers") {
       router.push("/Pages/Trainers");
     }
