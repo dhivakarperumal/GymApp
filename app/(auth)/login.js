@@ -128,7 +128,7 @@ const LoginScreen = () => {
 
               {/* 🔥 LOGIN CARD */}
               <View
-                style={{ paddingBottom: insets.bottom }}
+                style={{ paddingBottom: 5 }}
                 className="absolute bottom-0 w-full bg-black rounded-t-3xl px-6 pt-8 pb-6 min-h-[50%]"
               >
                 <Text className="text-white text-2xl font-bold text-center">
