@@ -1,90 +1,161 @@
 import { Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  Alert,
+  Modal,
+  Pressable,
+} from "react-native";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function TabLayout() {
   const router = useRouter();
-
   const [user, setUser] = useState(null);
+  const [menuVisible, setMenuVisible] = useState(false);
 
-  /* 🔥 LOAD USER */
   useEffect(() => {
     const loadUser = async () => {
       const storedUser = await AsyncStorage.getItem("user");
-
       if (!storedUser) {
-        router.replace("/login"); // not logged in
+        router.replace("/login");
       } else {
         setUser(JSON.parse(storedUser));
       }
     };
-
     loadUser();
   }, []);
 
-  /* 🔥 LOGOUT */
   const handleLogout = async () => {
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      { text: "Cancel" },
-      {
-        text: "Logout",
-        onPress: async () => {
-          await AsyncStorage.removeItem("token");
-          await AsyncStorage.removeItem("user");
-          router.replace("/login");
-        },
-      },
-    ]);
+    setMenuVisible(false);
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("user");
+    router.replace("/login");
   };
 
-  const userName = user?.username || "U";
-  const initial = userName.charAt(0).toUpperCase();
+  const initial = user?.username?.charAt(0)?.toUpperCase() || "U";
 
   return (
     <Tabs
       screenOptions={{
         headerShown: true,
+        headerStyle: { backgroundColor: "#0f0f0f" },
+        headerTitle: "",
         tabBarActiveTintColor: "#ff3c00",
         tabBarStyle: {
           backgroundColor: "#0f0f0f",
           borderTopColor: "#222",
         },
-        headerStyle: { backgroundColor: "#0f0f0f" },
-        headerTitle: "",
 
-        /* 🔥 LEFT LOGO */
         headerLeft: () => (
-          <View className="flex-row items-center pl-4">
+          <View style={{ paddingLeft: 16 }}>
             <Image
               source={require("../../assets/images/logo_dark.png")}
-              className="w-12 h-12 rounded-full"
+              style={{ width: 45, height: 45 }}
               resizeMode="contain"
             />
           </View>
         ),
 
-        /* 🔥 RIGHT SIDE */
         headerRight: () => (
-          <View className="flex-row items-center pr-4 gap-4">
-            {/* 🛒 Cart */}
-            <TouchableOpacity onPress={() => router.push("/shop")}>
-              <Ionicons name="cart-outline" size={24} color="#fff" />
-            </TouchableOpacity>
-
-            {/* 🔔 Notifications */}
-            <TouchableOpacity>
-              <Ionicons name="notifications-outline" size={24} color="#fff" />
-            </TouchableOpacity>
-
-            {/* 👤 Profile Initial (CLICK → LOGOUT) */}
+          <View style={{ flexDirection: "row", paddingRight: 16 }}>
+            {/* CART */}
             <TouchableOpacity
-              onPress={handleLogout}
-              className="w-9 h-9 rounded-full bg-[#ff3c00] items-center justify-center"
+              onPress={() => router.push("/cart")}
+              style={{ marginRight: 16 }}
             >
-              <Text className="text-white font-bold">{initial}</Text>
+              <Ionicons name="cart-outline" size={22} color="#fff" />
             </TouchableOpacity>
+
+            {/* NOTIFICATION */}
+            <TouchableOpacity style={{ marginRight: 16 }}>
+              <Ionicons
+                name="notifications-outline"
+                size={22}
+                color="#fff"
+              />
+            </TouchableOpacity>
+
+            {/* AVATAR */}
+            <TouchableOpacity
+              onPress={() => setMenuVisible(true)}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                backgroundColor: "#ff3c00",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text style={{ color: "white", fontWeight: "bold" }}>
+                {initial}
+              </Text>
+            </TouchableOpacity>
+
+            {/* DROPDOWN */}
+            <Modal
+              transparent
+              visible={menuVisible}
+              animationType="fade"
+              onRequestClose={() => setMenuVisible(false)}
+            >
+              <Pressable
+                style={{ flex: 1 }}
+                onPress={() => setMenuVisible(false)}
+              >
+                <View
+                  style={{
+                    position: "absolute",
+                    top: 70,
+                    right: 20,
+                    backgroundColor: "#111",
+                    borderRadius: 16,
+                    padding: 12,
+                    width: 160,
+                    borderWidth: 1,
+                    borderColor: "#222",
+                  }}
+                >
+                  <TouchableOpacity
+                    onPress={() => {
+                      setMenuVisible(false);
+                      router.push("/profile");
+                    }}
+                    style={{ paddingVertical: 8 }}
+                  >
+                    <Text style={{ color: "white" }}>
+                      My Profile
+                    </Text>
+                  </TouchableOpacity>
+
+                  <View
+                    style={{
+                      height: 1,
+                      backgroundColor: "#222",
+                      marginVertical: 8,
+                    }}
+                  />
+
+                  <TouchableOpacity
+                    onPress={handleLogout}
+                    style={{ paddingVertical: 8 }}
+                  >
+                    <Text
+                      style={{
+                        color: "#ff3c00",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Logout
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </Pressable>
+            </Modal>
           </View>
         ),
       }}
