@@ -46,39 +46,43 @@ export default function Pricing() {
       )}
 
       {plans.map((plan, index) => (
-        <View key={plan._id || index} className="mb-8">
+        <View key={plan.id || index} className="mb-8">
           {/* Glow Layer */}
           <View className="absolute -inset-1 bg-[#ff3c00]/10 rounded-3xl blur-xl" />
 
           {/* Card */}
           <View className="bg-[#161616] rounded-3xl p-7 border border-[#2a2a2a]">
-            {/* Popular Badge */}
-            {plan?.popular && (
-              <View className="self-end bg-[#ff3c00] px-5 py-1.5 rounded-full mb-4 shadow-lg">
-                <Text className="text-black text-xs font-bold tracking-wider">
-                  MOST POPULAR
-                </Text>
-              </View>
-            )}
-
             {/* Plan Name */}
-            <Text className="text-white text-2xl font-bold mb-4">
-              {plan?.name || "Plan"}
+            <Text className="text-white text-2xl font-bold mb-2">
+              {plan?.name}
+            </Text>
+
+            {/* Description */}
+            <Text className="text-gray-400 text-sm mb-4">
+              {plan?.description}
             </Text>
 
             {/* Price Section */}
             <View className="mb-6">
               <Text className="text-[#ff3c00] text-5xl font-extrabold">
-                ₹{plan?.price ? Number(plan.price).toLocaleString() : "0"}
+                ₹{Number(plan?.price || 0).toLocaleString()}
               </Text>
+
               <Text className="text-gray-400 mt-1 text-base">
-                / {plan?.duration || "month"}
+                / {plan?.duration}
               </Text>
+
+              {/* Discount */}
+              {plan?.discount && Number(plan.discount) > 0 && (
+                <Text className="text-green-400 text-sm mt-2">
+                  {plan.discount}% OFF
+                </Text>
+              )}
             </View>
 
             {/* Trainer Status */}
             <View className="mb-6">
-              {plan?.trainer ? (
+              {plan?.trainer_included === 1 ? (
                 <View className="bg-green-600/20 px-4 py-1.5 rounded-full self-start">
                   <Text className="text-green-400 text-xs font-semibold">
                     Trainer Included
@@ -93,14 +97,14 @@ export default function Pricing() {
               )}
             </View>
 
-            {/* Features */}
+            {/* Facilities (From DB) */}
             <View className="mb-8">
-              {Array.isArray(plan?.features) &&
-                plan.features.map((feature, i) => (
+              {Array.isArray(plan?.facilities) &&
+                plan.facilities.map((facility, i) => (
                   <View key={i} className="flex-row items-center mb-3">
                     <View className="w-2.5 h-2.5 bg-[#ff3c00] rounded-full mr-3" />
                     <Text className="text-gray-300 text-sm tracking-wide">
-                      {feature}
+                      {facility}
                     </Text>
                   </View>
                 ))}
