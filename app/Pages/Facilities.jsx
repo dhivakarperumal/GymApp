@@ -7,36 +7,41 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-
-const facilities = [
-  {
-    id: 1,
-    title: "Power & Compound Training",
-    description: "Heavy compound lifting zone",
-    image: "https://images.unsplash.com/photo-1599058917765-a780eda07a3e",
-  },
-  {
-    id: 2,
-    title: "Functional Training Zone",
-    description: "Athletic performance and functional fitness",
-    image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b",
-  },
-  {
-    id: 3,
-    title: "Strength Machines",
-    description: "Selectorized machines for controlled workouts",
-    image: "https://images.unsplash.com/photo-1584466977773-e625c37cdd50",
-  },
-];
+import { getAllFacilities } from "../../services/api";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
 
 export default function Facilities() {
+  const [facilities, setFacilities] = useState([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchFacilities();
+  }, []);
+
+  const fetchFacilities = async () => {
+    try {
+      const data = await getAllFacilities();
+      console.log("FACILITIES API:", data);
+
+      if (Array.isArray(data)) {
+        setFacilities(data);
+      } else {
+        setFacilities([]);
+      }
+    } catch (err) {
+      console.log("Facilities fetch error:", err.message);
+      setFacilities([]);
+    }
+  };
+
   return (
     <View className="flex-1 bg-black pt-12">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
       >
-        {/* 🔥 HEADER */}
+        {/* Header */}
         <Text className="text-white text-3xl font-extrabold mb-2">
           Our Facilities
         </Text>
@@ -44,9 +49,15 @@ export default function Facilities() {
           Train in world-class premium workout zones
         </Text>
 
-        {facilities.map((item) => (
+        {facilities.length === 0 && (
+          <Text className="text-gray-400 text-center mt-10">
+            No facilities available
+          </Text>
+        )}
+
+        {facilities.map((item, index) => (
           <View
-            key={item.id}
+            key={item.id || index}
             className="mb-10 rounded-3xl overflow-hidden border border-[#2a2a2a]"
             style={{
               shadowColor: "#ff3c00",
@@ -56,9 +67,10 @@ export default function Facilities() {
             }}
           >
             <ImageBackground
-              source={{ uri: item.image }}
+              source={{ uri: item.hero_image }}
               className="h-72 justify-end"
             >
+              {/* Premium Gradient */}
               <LinearGradient
                 colors={["transparent", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.85)"]}
                 locations={[0, 0.5, 1]}
@@ -71,25 +83,30 @@ export default function Facilities() {
                 }}
               />
 
-              {/* Dark Premium Overlay */}
-              <View className="absolute inset-0 bg-black/70" />
-
               <View className="p-6">
                 <Text className="text-white text-2xl font-extrabold mb-3">
                   {item.title}
                 </Text>
 
                 <Text className="text-gray-300 text-base mb-6">
-                  {item.description}
+                  {item.short_description}
                 </Text>
 
-                {/* VIEW DETAILS */}
-                <TouchableOpacity className="flex-row items-center">
+                <TouchableOpacity
+                  onPress={() =>
+                    router.push(`/facilities/${item.slug}`)
+                  }
+                  className="flex-row items-center"
+                >
                   <Text className="text-[#ff3c00] font-semibold mr-2 tracking-wide">
                     VIEW DETAILS
                   </Text>
                   <View className="border border-[#ff3c00] p-2 ml-3 rounded-full">
-                    <Ionicons name="arrow-forward" size={18} color="#ff3c00" />
+                    <Ionicons
+                      name="arrow-forward"
+                      size={18}
+                      color="#ff3c00"
+                    />
                   </View>
                 </TouchableOpacity>
               </View>
