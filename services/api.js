@@ -1,4 +1,4 @@
-const BASE_URL = "http://192.168.1.8:5000/api";
+const BASE_URL = "http://192.168.1.16:5000/api";
 
 /* ------------------ HELPER ------------------ */
 // lightweight wrapper that mimics axios-style responses; screens currently
@@ -32,6 +32,12 @@ export const getAllProducts = async () => {
   const res = await fetch(`${BASE_URL}/products`);
   return res.json();
 };
+
+export const getAllPlans = async () => {
+  const res = await fetch(`${BASE_URL}/plans`);
+  return res.json();
+};
+
 
 export const serviceList = async () => {
   try {
