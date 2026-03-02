@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 const workouts = [
   { name: "Chest", icon: "fitness-outline" },
@@ -10,6 +11,9 @@ const workouts = [
 ];
 
 export default function Workouts() {
+
+  const router = useRouter(); 
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -25,6 +29,7 @@ export default function Workouts() {
           key={index}
           activeOpacity={0.85}
           className="mb-5"
+          onPress={() => router.push("/Pages/WorkoutDetails")}
         >
           <View className="bg-[#1c1c1c] rounded-2xl p-5 flex-row items-center justify-between border border-[#262626]">
             
