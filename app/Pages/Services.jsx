@@ -1,39 +1,41 @@
-import { View, Text, ScrollView, Image, Dimensions, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
+import { getAllServices } from "../../services/api";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
-const services = [
-  {
-    id: 1,
-    title: "Functional Training Zone",
-    subtitle: "Athletic performance & mobility",
-    image:
-      "https://images.unsplash.com/photo-1599058917765-a780eda07a3e?q=80&w=1000",
-  },
-  {
-    id: 2,
-    title: "Cardio Equipment",
-    subtitle: "Endurance & fat burning",
-    image:
-      "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?q=80&w=1000",
-  },
-  {
-    id: 3,
-    title: "Free Weights Area",
-    subtitle: "Strength & muscle building",
-    image:
-      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1000",
-  },
-  {
-    id: 4,
-    title: "Personal Training Zone",
-    subtitle: "1-on-1 elite coaching",
-    image:
-      "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?q=80&w=1000",
-  },
-];
-
 export default function Services() {
+  const [services, setServices] = useState([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    try {
+      const data = await getAllServices();
+      console.log("SERVICES API:", data);
+
+      if (Array.isArray(data)) {
+        setServices(data);
+      } else {
+        setServices([]);
+      }
+    } catch (err) {
+      console.log("Services fetch error:", err.message);
+      setServices([]);
+    }
+  };
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -47,10 +49,18 @@ export default function Services() {
         Train smarter. Train stronger.
       </Text>
 
-      {services.map((service) => (
+      {/* Empty State */}
+      {services.length === 0 && (
+        <Text className="text-gray-400 text-center mt-10">
+          No services available
+        </Text>
+      )}
+
+      {services.map((service, index) => (
         <TouchableOpacity
-          key={service.id}
+          key={service.id || index}
           activeOpacity={0.9}
+          onPress={() => router.push(`/services/${service.slug}`)}
           className="mb-10 rounded-3xl overflow-hidden"
           style={{
             shadowColor: "#ff3c00",
@@ -61,7 +71,7 @@ export default function Services() {
         >
           {/* Image */}
           <Image
-            source={{ uri: service.image }}
+            source={{ uri: service.hero_image }}
             style={{
               width: width - 40,
               height: 300,
@@ -69,18 +79,22 @@ export default function Services() {
             resizeMode="cover"
           />
 
-          {/* Dark overlay */}
-          <View className="absolute inset-0 bg-black/40" />
+          {/* Overlay */}
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0,0,0,0.4)",
+            }}
+          />
 
-          {/* Bottom glass info section */}
+          {/* Bottom Section */}
           <View className="absolute bottom-0 left-0 right-0 p-6 bg-black/80 border-t border-[#ff3c00]">
-            
             <Text className="text-white text-xl font-bold leading-6">
-              {service.title}
-            </Text>
-
-            <Text className="text-gray-400 text-sm mt-2">
-              {service.subtitle}
+              {service?.title || "Service"}
             </Text>
 
             <View className="mt-4 self-start bg-[#ff3c00] px-5 py-2 rounded-full">
@@ -88,7 +102,6 @@ export default function Services() {
                 EXPLORE
               </Text>
             </View>
-
           </View>
         </TouchableOpacity>
       ))}
