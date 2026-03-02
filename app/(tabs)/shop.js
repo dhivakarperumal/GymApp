@@ -1,16 +1,18 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  TextInput,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useState } from "react";
+import {
+  Image,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Shop() {
   const [search, setSearch] = useState("");
+  const router = useRouter();
 
   const mockProducts = [
     {
@@ -176,9 +178,12 @@ export default function Shop() {
           </View>
 
           {/* CART BUTTON */}
-          <TouchableOpacity className="bg-red-600 p-3 rounded-full">
+          <TouchableOpacity onPress={() => router.push("/cart")} className="bg-red-600 p-3 rounded-full">
             <Ionicons name="cart-outline" size={18} color="white" />
           </TouchableOpacity>
+
+
+          
         </View>
       ))}
     </ScrollView>
