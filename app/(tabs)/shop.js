@@ -124,14 +124,6 @@ export default function Shop() {
 
   return (
     <ScrollView className="flex-1 bg-[#0f0f0f] px-4 pt-12">
-      {/* HEADER */}
-      {/* <View className="flex-row items-center justify-between mb-6">
-        <Ionicons name="menu" size={26} color="white" />
-        <Text className="text-white text-lg font-bold tracking-wider">
-          PRODUCTS
-        </Text>
-        <Ionicons name="notifications-outline" size={22} color="white" />
-      </View> */}
 
       {/* SEARCH */}
       <View className="flex-row items-center bg-[#1c1c1c] rounded-xl px-4 py-3 mb-5">
@@ -183,7 +175,6 @@ export default function Shop() {
             </View>
           </View>
 
-          {/* ACTION BUTTONS */}
           {/* CART BUTTON */}
           <TouchableOpacity className="bg-red-600 p-3 rounded-full">
             <Ionicons name="cart-outline" size={18} color="white" />
