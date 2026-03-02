@@ -125,10 +125,10 @@ const RegisterScreen = () => {
               {/* 🔥 REGISTER CARD */}
               <View
                 style={{ paddingBottom: 0}}
-                className="absolute bottom-0 w-full bg-black rounded-t-3xl px-6 pt-8 pb-6 h-[65%] flex-col"
+                className="absolute bottom-0 w-full bg-black rounded-t-3xl px-6 pt-8 pb-6 h-[68%] flex-col"
               >
 
-                <Text className="text-white text-2xl font-bold text-center">
+                <Text className="text-white text-2xl pb-3 font-bold text-center">
                   Create Your Account
                 </Text>
 
