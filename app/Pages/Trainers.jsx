@@ -1,93 +1,99 @@
-import { View, Text, ScrollView, Image, Dimensions } from "react-native";
-
-const { width } = Dimensions.get("window");
-
-const trainers = [
-  {
-    id: 1,
-    name: "Alex Ramirez",
-    role: "Nutritionist",
-    experience: "8+ Years Experience",
-    image:
-      "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=800",
-  },
-  {
-    id: 2,
-    name: "Michael Stone",
-    role: "Strength Coach",
-    experience: "10+ Years Experience",
-    image:
-      "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=800",
-  },
-  {
-    id: 3,
-    name: "Emily Thompson",
-    role: "Personal Trainer",
-    experience: "6+ Years Experience",
-    image:
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=800",
-  },
-];
+import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator } from "react-native";
+import { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import { getAllStaffs } from "../../services/api"; // adjust path
 
 export default function Trainers() {
+  const [staffs, setStaffs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchStaffs = async () => {
+      try {
+        const data = await getAllStaffs();
+        const staffList = data.staff || data;
+
+        // Show only trainers
+        const trainersOnly = staffList.filter(
+          (item) => item.role?.toLowerCase() === "trainer"
+        );
+
+        setStaffs(trainersOnly);
+      } catch (error) {
+        console.log("Error fetching staffs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStaffs();
+  }, []);
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
       className="flex-1 bg-[#0a0a0a] px-5 pt-12"
     >
-      {/* Header */}
       <Text className="text-white text-3xl font-extrabold mb-2">
         Elite Trainers
       </Text>
-      <Text className="text-gray-500 mb-10 text-sm tracking-wide">
+      <Text className="text-gray-500 mb-8 text-sm tracking-wide">
         Train with certified professionals
       </Text>
 
-      {trainers.map((trainer) => (
-        <View
-          key={trainer.id}
-          className="mb-10 rounded-3xl overflow-hidden"
-          style={{
-            shadowColor: "#ff3c00",
-            shadowOpacity: 0.6,
-            shadowRadius: 30,
-            elevation: 20,
-          }}
-        >
-          <Image
-            source={{ uri: trainer.image }}
-            style={{
-              width: width - 40,
-              height: 460,
-            }}
-            resizeMode="cover"
-          />
+      {loading && (
+        <ActivityIndicator size="large" color="#ff3c00" />
+      )}
 
-          {/* Gradient Dark Overlay */}
-          <View className="absolute inset-0 bg-black/30" />
+      {!loading &&
+        staffs.map((trainer) => {
 
-          {/* Bottom Premium Info Card */}
-          <View className="absolute bottom-0 left-0 right-0 p-6 bg-black/80 border-t border-[#ff3c00]">
+          // ✅ DEFINE imageUri HERE
+          const imageUri = trainer.photo
+            ? trainer.photo.startsWith("data:image")
+              ? trainer.photo
+              : `data:image/png;base64,${trainer.photo}`
+            : "https://via.placeholder.com/300";
 
-            {/* Name */}
-            <Text className="text-white text-2xl font-bold tracking-wide">
-              {trainer.name}
-            </Text>
+          return (
+            <TouchableOpacity
+              key={trainer.id}
+              onPress={() =>
+                router.push({
+                  pathname: "/trainer-details",
+                  params: { id: trainer.id },
+                })
+              }
+              className="mb-6 bg-[#111] rounded-3xl overflow-hidden border border-[#1f1f1f]"
+            >
+              <Image
+                source={{ uri: imageUri }}
+                className="w-full h-60"
+                resizeMode="cover"
+              />
 
-            {/* Role */}
-            <Text className="text-[#ff3c00] text-sm tracking-[2px] mt-1">
-              {trainer.role.toUpperCase()}
-            </Text>
+              <View className="p-5">
+                <Text className="text-white text-xl font-bold">
+                  {trainer.name}
+                </Text>
 
-            {/* Experience Badge */}
-            <View className="mt-3 self-start bg-[#1a1a1a] px-4 py-1.5 rounded-full border border-[#2a2a2a]">
-              <Text className="text-gray-400 text-xs">
-                {trainer.experience}
-              </Text>
-            </View>
-          </View>
-        </View>
-      ))}
+                <Text className="text-[#ff3c00] text-sm mt-1">
+                  {trainer.department}
+                </Text>
+
+                <View className="mt-3 flex-row justify-between">
+                  <Text className="text-gray-400 text-xs">
+                    Shift: {trainer.shift}
+                  </Text>
+                  <Text className="text-gray-400 text-xs">
+                    {trainer.status}
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
 
       <View className="h-10" />
     </ScrollView>
