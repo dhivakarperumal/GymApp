@@ -1,71 +1,115 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
 
-export default function Diet() {
+const months = [
+  "January", "February", "March", "April",
+  "May", "June", "July", "August",
+  "September", "October", "November", "December"
+];
+
+const mockDietData = {
+  January: [
+    {
+      week: "Week 1",
+      meals: [
+        { name: "Breakfast", value: "Oats + Banana + Almonds" },
+        { name: "Lunch", value: "Brown Rice + Chicken + Veggies" },
+        { name: "Dinner", value: "Grilled Fish + Salad" },
+      ],
+    },
+    {
+      week: "Week 2",
+      meals: [
+        { name: "Breakfast", value: "Egg Whites + Toast" },
+        { name: "Lunch", value: "Quinoa + Paneer + Veggies" },
+        { name: "Dinner", value: "Soup + Boiled Eggs" },
+      ],
+    },
+  ],
+};
+
+export default function DietChartScreen() {
+  const [selectedMonth, setSelectedMonth] = useState("January");
+
   return (
-    <ScrollView className="flex-1 bg-[#0f0f0f] p-4">
-      <Text className="text-white text-2xl mb-5 font-bold">
-        Diet Chart 🥗
+    <ScrollView
+      className="flex-1 bg-[#0f0f0f] px-5 pt-12"
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Header */}
+      <Text className="text-white text-3xl font-extrabold mb-6">
+        Monthly Diet Plan
       </Text>
 
-      {/* 🌅 Morning */}
-      <View className="bg-[#1c1c1c] p-4 rounded-xl mb-3">
-        <Text className="text-[#ff3c00] text-base mb-1 font-semibold">
-          🌅 Morning
-        </Text>
-        <Text className="text-gray-300">
-          Oats + Banana + 5 Almonds
-        </Text>
-      </View>
+      {/* Month Selector */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        className="mb-8"
+      >
+        {months.map((month, index) => (
+          <TouchableOpacity
+            key={index}
+            onPress={() => setSelectedMonth(month)}
+            className={`mr-3 px-5 py-2 rounded-full ${
+              selectedMonth === month
+                ? "bg-red-600"
+                : "bg-[#1c1c1c] border border-[#262626]"
+            }`}
+          >
+            <Text
+              className={`text-sm font-semibold ${
+                selectedMonth === month
+                  ? "text-white"
+                  : "text-gray-400"
+              }`}
+            >
+              {month}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
 
-      {/* 🍳 Breakfast */}
-      <View className="bg-[#1c1c1c] p-4 rounded-xl mb-3">
-        <Text className="text-[#ff3c00] text-base mb-1 font-semibold">
-          🍳 Breakfast
-        </Text>
-        <Text className="text-gray-300">
-          4 Egg Whites + 2 Brown Bread
-        </Text>
-      </View>
+      {/* Weekly Diet Cards */}
+      {mockDietData[selectedMonth]?.map((weekItem, index) => (
+        <View
+          key={index}
+          className="bg-[#1c1c1c] rounded-2xl p-5 mb-6 border border-[#262626]"
+        >
+          {/* Week Header */}
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="text-white text-lg font-bold">
+              {weekItem.week}
+            </Text>
 
-      {/* 🍛 Lunch */}
-      <View className="bg-[#1c1c1c] p-4 rounded-xl mb-3">
-        <Text className="text-[#ff3c00] text-base mb-1 font-semibold">
-          🍛 Lunch
-        </Text>
-        <Text className="text-gray-300">
-          Rice + Chicken Breast + Vegetables
-        </Text>
-      </View>
+            <View className="bg-black p-2 rounded-full border border-red-500">
+              <Ionicons
+                name="restaurant-outline"
+                size={18}
+                color="#ff3c00"
+              />
+            </View>
+          </View>
 
-      {/* ☕ Evening */}
-      <View className="bg-[#1c1c1c] p-4 rounded-xl mb-3">
-        <Text className="text-[#ff3c00] text-base mb-1 font-semibold">
-          ☕ Evening
-        </Text>
-        <Text className="text-gray-300">
-          Peanut Butter + Apple
-        </Text>
-      </View>
+          {/* Meals */}
+          {weekItem.meals.map((meal, i) => (
+            <View
+              key={i}
+              className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]"
+            >
+              <Text className="text-red-500 text-xs font-semibold mb-1">
+                {meal.name}
+              </Text>
+              <Text className="text-gray-300 text-sm">
+                {meal.value}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ))}
 
-      {/* 🍗 Dinner */}
-      <View className="bg-[#1c1c1c] p-4 rounded-xl mb-3">
-        <Text className="text-[#ff3c00] text-base mb-1 font-semibold">
-          🍗 Dinner
-        </Text>
-        <Text className="text-gray-300">
-          2 Chapati + Paneer / Chicken
-        </Text>
-      </View>
-
-      {/* 🌙 Before Bed */}
-      <View className="bg-[#1c1c1c] p-4 rounded-xl mb-3">
-        <Text className="text-[#ff3c00] text-base mb-1 font-semibold">
-          🌙 Before Bed
-        </Text>
-        <Text className="text-gray-300">
-          1 Glass Milk
-        </Text>
-      </View>
+      <View className="h-10" />
     </ScrollView>
   );
 }
