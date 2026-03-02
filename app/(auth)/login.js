@@ -13,10 +13,12 @@ import {
 import Toast from "react-native-toast-message";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 const LoginScreen = () => {
   const router = useRouter();
   const { login: contextLogin } = useAuth();
+  const insets = useSafeAreaInsets();
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -82,7 +84,7 @@ const LoginScreen = () => {
   };
 
   return (
-    <View className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black" edges={["top", "bottom"]}>
       {/* 🔥 HERO IMAGE */}
       <View className="flex-1">
         <View className="absolute inset-0">
@@ -113,7 +115,10 @@ const LoginScreen = () => {
         </View>
 
         {/* 🔥 LOGIN CARD */}
-        <View className="absolute bottom-0 w-full bg-black rounded-t-3xl px-6 pt-8 pb-10 min-h-[50%]">
+        <View
+          style={{ paddingBottom: insets.bottom }}
+          className="absolute bottom-0 w-full bg-black rounded-t-3xl px-6 pt-8 pb-6 min-h-[50%]"
+        >
           <Text className="text-white text-2xl font-bold text-center">
             Welcome Back, Leo
           </Text>
@@ -188,7 +193,7 @@ const LoginScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
