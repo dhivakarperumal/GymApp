@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Cart() {
   const router = useRouter();
@@ -30,72 +31,124 @@ export default function Cart() {
     },
   ];
 
-  const total = cartItems.reduce(
+  const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.qty,
     0
   );
 
-  return (
-    <View className="flex-1 bg-[#0f0f0f] px-4 pt-12">
-      <Text className="text-white text-2xl font-bold mb-6">Your Cart</Text>
+  const delivery = 99;
+  const total = subtotal + delivery;
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+  return (
+    <SafeAreaView className="flex-1 bg-black">
+
+      {/* HEADER */}
+      <View className="px-6 pt-4 pb-6">
+        <Text className="text-white text-3xl font-bold">
+          My Cart
+        </Text>
+        <Text className="text-gray-400 mt-1">
+          {cartItems.length} Items
+        </Text>
+      </View>
+
+      {/* CART ITEMS */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
+      >
         {cartItems.map((item) => (
           <View
             key={item.id}
-            className="bg-[#1c1c1c] rounded-2xl p-4 mb-4 flex-row items-center"
+            className="bg-[#111] rounded-3xl p-4 mb-5 border border-[#1f1f1f]"
           >
-            <Image
-              source={{ uri: item.image }}
-              className="w-16 h-16 rounded-xl"
-              resizeMode="cover"
-            />
+            <View className="flex-row">
+              
+              {/* PRODUCT IMAGE */}
+              <Image
+                source={{ uri: item.image }}
+                className="w-24 h-24 rounded-2xl"
+                resizeMode="cover"
+              />
 
-            <View className="flex-1 ml-4">
-              <Text className="text-white font-semibold">
-                {item.title}
-              </Text>
+              {/* DETAILS */}
+              <View className="flex-1 ml-4 justify-between">
 
-              <Text className="text-red-500 font-bold mt-1">
-                ₹ {item.price}
-              </Text>
+                <View>
+                  <Text className="text-white text-lg font-semibold">
+                    {item.title}
+                  </Text>
 
-              <View className="flex-row items-center mt-2">
-                <TouchableOpacity className="bg-[#2a2a2a] px-3 py-1 rounded-lg">
-                  <Text className="text-white">-</Text>
-                </TouchableOpacity>
+                  <Text className="text-red-500 text-lg font-bold mt-1">
+                    ₹ {item.price}
+                  </Text>
+                </View>
 
-                <Text className="text-white mx-3">{item.qty}</Text>
+                {/* QUANTITY + DELETE */}
+                <View className="flex-row items-center justify-between mt-4">
 
-                <TouchableOpacity className="bg-[#2a2a2a] px-3 py-1 rounded-lg">
-                  <Text className="text-white">+</Text>
-                </TouchableOpacity>
+                  <View className="flex-row items-center bg-[#1a1a1a] rounded-full px-4 py-2">
+                    <TouchableOpacity>
+                      <Ionicons name="remove" size={18} color="white" />
+                    </TouchableOpacity>
+
+                    <Text className="text-white mx-4 font-semibold">
+                      {item.qty}
+                    </Text>
+
+                    <TouchableOpacity>
+                      <Ionicons name="add" size={18} color="white" />
+                    </TouchableOpacity>
+                  </View>
+
+                  <TouchableOpacity>
+                    <Ionicons
+                      name="trash-outline"
+                      size={20}
+                      color="#ff4d4d"
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-
-            <Ionicons name="trash-outline" size={20} color="#888" />
           </View>
         ))}
       </ScrollView>
 
-      {/* TOTAL SECTION */}
-      <View className="bg-[#1c1c1c] p-5 rounded-2xl mt-4">
-        <View className="flex-row justify-between mb-4">
-          <Text className="text-gray-400">Total</Text>
+      {/* BILL SECTION */}
+      <View className="bg-[#111] px-6 py-6 rounded-t-3xl border-t border-[#1f1f1f]">
+
+        <View className="flex-row justify-between mb-3">
+          <Text className="text-gray-400">Subtotal</Text>
+          <Text className="text-white">₹ {subtotal}</Text>
+        </View>
+
+        <View className="flex-row justify-between mb-3">
+          <Text className="text-gray-400">Delivery</Text>
+          <Text className="text-white">₹ {delivery}</Text>
+        </View>
+
+        <View className="h-[1px] bg-[#222] my-3" />
+
+        <View className="flex-row justify-between mb-6">
           <Text className="text-white text-lg font-bold">
+            Total
+          </Text>
+          <Text className="text-red-500 text-xl font-bold">
             ₹ {total}
           </Text>
         </View>
 
         <TouchableOpacity
           onPress={() => router.push("/checkout")}
-          className="bg-red-600 py-4 rounded-xl items-center"
+          className="bg-red-600 py-4 rounded-2xl items-center"
         >
           <Text className="text-white font-bold text-lg">
-            Proceed to Checkout
+            Checkout Now
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+
+    </SafeAreaView>
   );
 }
