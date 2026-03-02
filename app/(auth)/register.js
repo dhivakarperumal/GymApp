@@ -124,7 +124,7 @@ const RegisterScreen = () => {
 
               {/* 🔥 REGISTER CARD */}
               <View
-                style={{ paddingBottom: 0}}
+                style={{ paddingBottom: 0 }}
                 className="absolute bottom-0 w-full bg-black rounded-t-3xl px-6 pt-8 pb-6 h-[68%] flex-col"
               >
 
@@ -159,6 +159,21 @@ const RegisterScreen = () => {
                       placeholderTextColor="#6b7280"
                       value={email}
                       onChangeText={setEmail}
+                      className="flex-1 py-5 px-3 text-black"
+                    />
+                  </View>
+
+                  {/* MOBILE NUMBER */}
+                  <Text className="text-gray-400 text-sm mb-2">MOBILE NUMBER</Text>
+                  <View className="flex-row items-center bg-gray-200 rounded-full px-4 mb-4">
+                    <Ionicons name="call-outline" size={18} color="#6b7280" />
+                    <TextInput
+                      placeholder="Mobile Number"
+                      placeholderTextColor="#6b7280"
+                      value={mobile}
+                      onChangeText={setMobile}
+                      keyboardType="number-pad"
+                      maxLength={10}
                       className="flex-1 py-5 px-3 text-black"
                     />
                   </View>
