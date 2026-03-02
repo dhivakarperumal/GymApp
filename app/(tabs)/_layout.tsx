@@ -59,16 +59,20 @@ export default function TabLayout() {
           <View className="flex-row items-center pl-4">
             <Image
               source={require("../../assets/images/logo_dark.png")}
-              className="w-9 h-9 rounded-full"
+              className="w-12 h-12 rounded-full"
               resizeMode="contain"
             />
-            <Text className="text-white text-lg font-bold ml-2">Q Gym</Text>
           </View>
         ),
 
         /* 🔥 RIGHT SIDE */
         headerRight: () => (
           <View className="flex-row items-center pr-4 gap-4">
+            {/* 🛒 Cart */}
+            <TouchableOpacity onPress={() => router.push("/shop")}>
+              <Ionicons name="cart-outline" size={24} color="#fff" />
+            </TouchableOpacity>
+
             {/* 🔔 Notifications */}
             <TouchableOpacity>
               <Ionicons name="notifications-outline" size={24} color="#fff" />
@@ -77,7 +81,7 @@ export default function TabLayout() {
             {/* 👤 Profile Initial (CLICK → LOGOUT) */}
             <TouchableOpacity
               onPress={handleLogout}
-              className="w-9 h-9 rounded-full bg-orange-500 items-center justify-center"
+              className="w-9 h-9 rounded-full bg-[#ff3c00] items-center justify-center"
             >
               <Text className="text-white font-bold">{initial}</Text>
             </TouchableOpacity>

@@ -40,7 +40,7 @@ export default function Home() {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="flex-row justify-between items-center mb-4">
           <Text className="text-white text-lg font-bold">TODAY'S MISSION</Text>
-          <Text className="text-red-500 text-sm font-semibold">VIEW ALL</Text>
+          <Text className="text-[#ff3c00] text-sm font-semibold">VIEW ALL</Text>
         </View>
 
         {/* 🔥 Featured Workout Card */}
@@ -54,7 +54,7 @@ export default function Home() {
 
           {/* Dark overlay */}
           <View className="absolute inset-0 bg-black/60 p-5 justify-end">
-            <View className="bg-red-500 px-3 py-1 rounded-full self-start mb-3">
+            <View className="bg-[#ff3c00] px-3 py-1 rounded-full self-start mb-3">
               <Text className="text-white text-xs font-bold">
                 HIGH INTENSITY
               </Text>
@@ -82,7 +82,7 @@ export default function Home() {
           </View>
 
           {/* Play Button */}
-          <TouchableOpacity className="absolute bottom-6 right-6 bg-red-500 p-4 rounded-full">
+          <TouchableOpacity className="absolute bottom-6 right-6 bg-[#ff3c00] p-4 rounded-full">
             <Ionicons name="play" size={20} color="white" />
           </TouchableOpacity>
         </View>
