@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Image,
   ScrollView,
@@ -8,125 +8,45 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
+
+import { getAllProducts } from "../../services/api"; // ✅ adjust path if needed
 
 export default function Shop() {
   const [search, setSearch] = useState("");
   const router = useRouter();
 
-  const mockProducts = [
-    {
-      id: 1,
-      title: "Whey Protein",
-      price: 1999,
-      oldPrice: 2499,
-      image:
-        "https://images.unsplash.com/photo-1605296867424-35fc25c9212a",
-      category: "PERFORMANCE",
-    },
-    {
-      id: 2,
-      title: "Pro Lifting Straps",
-      price: 999,
-      oldPrice: 1099,
-      image:
-        "https://images.unsplash.com/photo-1599058917765-a780eda07a3e",
-      category: "GEAR",
-    },
-    {
-      id: 3,
-      title: "Pre Workout",
-      price: 1499,
-      oldPrice: 1999,
-      image:
-        "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61",
-      category: "PERFORMANCE",
-    },
-    {
-      id: 4,
-      title: "Mass Gainer",
-      price: 2999,
-      oldPrice: 3499,
-      image: "https://images.unsplash.com/photo-1622484212850-eb596d769edc",
-      category: "PERFORMANCE",
-    },
-    {
-      id: 5,
-      title: "Creatine Monohydrate",
-      price: 1199,
-      oldPrice: 1599,
-      image: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d",
-      category: "PERFORMANCE",
-    },
-    {
-      id: 6,
-      title: "Shaker Bottle",
-      price: 399,
-      oldPrice: 599,
-      image: "https://images.unsplash.com/photo-1622483767028-3f66f32f9c5e",
-      category: "GEAR",
-    },
-    {
-      id: 7,
-      title: "Gym Gloves",
-      price: 699,
-      oldPrice: 999,
-      image: "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6",
-      category: "GEAR",
-    },
-    {
-      id: 8,
-      title: "Resistance Bands Set",
-      price: 899,
-      oldPrice: 1299,
-      image: "https://images.unsplash.com/photo-1599058917212-d750089bc07e",
-      category: "GEAR",
-    },
-    {
-      id: 9,
-      title: "BCAA Energy",
-      price: 1799,
-      oldPrice: 2199,
-      image: "https://images.unsplash.com/photo-1611078489935-0cb964de46d6",
-      category: "PERFORMANCE",
-    },
-    {
-      id: 10,
-      title: "Fish Oil Capsules",
-      price: 799,
-      oldPrice: 1099,
-      image: "https://images.unsplash.com/photo-1580281658629-7e8c6e7e9f06",
-      category: "HEALTH",
-    },
-    {
-      id: 11,
-      title: "Gym Duffle Bag",
-      price: 1499,
-      oldPrice: 1999,
-      image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348",
-      category: "GEAR",
-    },
-    {
-      id: 12,
-      title: "Protein Bar Pack",
-      price: 599,
-      oldPrice: 899,
-      image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d",
-      category: "PERFORMANCE",
-    },
-    {
-      id: 13,
-      title: "Workout T-Shirt",
-      price: 999,
-      oldPrice: 1499,
-      image: "https://images.unsplash.com/photo-1520975922284-9e0ce82759a6",
-      category: "APPAREL",
-    },
-  ];
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await getAllProducts();
+
+        // ✅ If API returns { products: [...] }
+        const productList = data.products || data;
+
+        setProducts(productList);
+      } catch (error) {
+        console.log("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // ✅ Search Filter
+  const filteredProducts = products.filter((item) =>
+    item.name?.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <ScrollView className="flex-1 bg-[#0f0f0f] px-4 pt-12">
-
+      
       {/* SEARCH */}
       <View className="flex-row items-center bg-[#1c1c1c] rounded-xl px-4 py-3 mb-5">
         <Ionicons name="search" size={18} color="#777" />
@@ -139,53 +59,75 @@ export default function Shop() {
         />
       </View>
 
+      {/* LOADING */}
+      {loading && (
+        <ActivityIndicator size="large" color="red" style={{ marginTop: 20 }} />
+      )}
+
       {/* PRODUCT LIST */}
-      {mockProducts.map((item) => (
-        <View
-          key={item.id}
-          className="bg-[#1c1c1c] rounded-2xl p-4 mb-4 flex-row items-center"
-        >
-          {/* IMAGE */}
-          <View className="relative">
-            <Image
-              source={{ uri: item.image }}
-              className="w-20 h-20 rounded-xl"
-              resizeMode="cover"
-            />
+      {!loading &&
+        filteredProducts.map((item) => {
+          const weightKey = item.weight?.[0];
+          const stockData = weightKey ? item.stock?.[weightKey] : null;
 
-            {/* CATEGORY BADGE */}
-            <View className="absolute top-1 left-1 bg-black/80 px-2 py-1 rounded-md">
-              <Text className="text-red-500 text-[7px] font-bold">
-                {item.category}
-              </Text>
+          const price = stockData?.offerPrice || stockData?.mrp || 0;
+          const oldPrice = stockData?.mrp || 0;
+
+          // ✅ Fix image (API has images array)
+          const imageUrl =
+            item.images?.[0] ||
+            "https://via.placeholder.com/150";
+
+          return (
+            <View
+              key={item.id}
+              className="bg-[#1c1c1c] rounded-2xl p-4 mb-4 flex-row items-center"
+            >
+              {/* IMAGE */}
+              <View className="relative">
+                <Image
+                  source={{ uri: imageUrl }}
+                  className="w-20 h-20 rounded-xl"
+                  resizeMode="cover"
+                />
+
+                {/* CATEGORY BADGE */}
+                <View className="absolute top-1 left-1 bg-black/80 px-2 py-1 rounded-md">
+                  <Text className="text-red-500 text-[8px] font-bold">
+                    {item.category}
+                  </Text>
+                </View>
+              </View>
+
+              {/* DETAILS */}
+              <View className="flex-1 ml-4">
+                <Text className="text-white font-semibold text-base">
+                  {item.name}
+                </Text>
+
+                <View className="flex-row items-center mt-2">
+                  <Text className="text-red-500 text-lg font-bold">
+                    ₹ {price}
+                  </Text>
+
+                  {oldPrice > price && (
+                    <Text className="text-gray-500 line-through ml-3">
+                      ₹ {oldPrice}
+                    </Text>
+                  )}
+                </View>
+              </View>
+
+              {/* CART BUTTON */}
+              <TouchableOpacity
+                onPress={() => router.push("/cart")}
+                className="bg-red-600 p-3 rounded-full"
+              >
+                <Ionicons name="cart-outline" size={18} color="white" />
+              </TouchableOpacity>
             </View>
-          </View>
-
-          {/* DETAILS */}
-          <View className="flex-1 ml-4">
-            <Text className="text-white font-semibold text-base">
-              {item.title}
-            </Text>
-
-            <View className="flex-row items-center mt-2">
-              <Text className="text-red-500 text-lg font-bold">
-                ₹ {item.price}
-              </Text>
-              <Text className="text-gray-500 line-through ml-3">
-                ₹ {item.oldPrice}
-              </Text>
-            </View>
-          </View>
-
-          {/* CART BUTTON */}
-          <TouchableOpacity onPress={() => router.push("/cart")} className="bg-red-600 p-3 rounded-full">
-            <Ionicons name="cart-outline" size={18} color="white" />
-          </TouchableOpacity>
-
-
-          
-        </View>
-      ))}
+          );
+        })}
     </ScrollView>
   );
 }
