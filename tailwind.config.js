@@ -7,7 +7,8 @@ module.exports = {
     extend: {
       colors: {
         primary: "#e11d1d",
-        secondary: "#0EA5E9",
+        border: "#262626",
+        border1: "#1c1c1c",
         background: "#F8FAFC",
         card: "#000000",
         textPrimary: "#111827",
@@ -15,6 +16,7 @@ module.exports = {
         success: "#22C55E",
         danger: "#EF4444",
         darkcard: "#1a1a1a",
+        darkBg: "#0f0f0f",
       },
     },
   },

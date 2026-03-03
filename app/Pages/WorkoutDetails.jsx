@@ -34,7 +34,7 @@ export default function WorkoutDetails() {
 
           {/* Bottom Hero Content */}
           <View>
-            <View className="bg-[#ff3c00] px-4 py-1 rounded-full self-start mb-3">
+            <View className="bg-primary px-4 py-1 rounded-full self-start mb-3">
               <Text className="text-white text-xs font-bold">
                 CHEST · STRENGTH
               </Text>
@@ -64,7 +64,7 @@ export default function WorkoutDetails() {
             ].map((item, index) => (
               <View
                 key={index}
-                className="border border-[#ff3c00] rounded-full w-28 h-28 justify-center items-center"
+                className="border border-primary rounded-full w-28 h-28 justify-center items-center"
               >
                 <Text className="text-gray-400 text-[10px]">
                   {item.label}
@@ -81,38 +81,38 @@ export default function WorkoutDetails() {
 
           {/* TABLE HEADER */}
           <View className="flex-row justify-between px-2 mb-3">
-            <Text className="text-gray-500 text-xs">SET</Text>
-            <Text className="text-gray-500 text-xs">PREVIOUS</Text>
-            <Text className="text-gray-500 text-xs">LBS</Text>
-            <Text className="text-gray-500 text-xs">REPS</Text>
-            <Text className="text-gray-500 text-xs"></Text>
+            <Text className="text-textSecondary text-xs">SET</Text>
+            <Text className="text-textSecondary text-xs">PREVIOUS</Text>
+            <Text className="text-textSecondary text-xs">LBS</Text>
+            <Text className="text-textSecondary text-xs">REPS</Text>
+            <Text className="text-textSecondary text-xs"></Text>
           </View>
 
           {/* SET 1 */}
-          <View className="bg-[#1c1c1c] rounded-2xl p-4 mb-4 flex-row items-center justify-between">
-            <Text className="text-[#ff3c00] font-bold">1</Text>
-            <Text className="text-gray-400">135 x 12</Text>
-            <View className="bg-[#2a2a2a] px-5 py-2 rounded-full">
+          <View className="bg-border1 rounded-2xl p-4 mb-4 flex-row items-center justify-between">
+            <Text className="text-primary font-bold">1</Text>
+            <Text className="text-textSecondary">135 x 12</Text>
+            <View className="bg-border px-5 py-2 rounded-full">
               <Text className="text-white font-bold">135</Text>
             </View>
-            <View className="bg-[#2a2a2a] px-5 py-2 rounded-full">
+            <View className="bg-border px-5 py-2 rounded-full">
               <Text className="text-white font-bold">12</Text>
             </View>
-            <View className="bg-[#ff3c00] p-2 rounded-full">
+            <View className="bg-primary p-2 rounded-full">
               <Ionicons name="checkmark" size={16} color="white" />
             </View>
           </View>
 
           {/* SET 2 (ACTIVE STYLE) */}
-          <View className="bg-black border border-[#ff3c00] rounded-2xl p-4 mb-4 flex-row items-center justify-between">
+          <View className="bg-black border border-primary rounded-2xl p-4 mb-4 flex-row items-center justify-between">
             <Text className="text-white font-bold">2</Text>
             <Text className="text-gray-400">185 x 10</Text>
 
-            <View className="border border-[#ff3c00] px-5 py-2 rounded-full">
+            <View className="border border-primary px-5 py-2 rounded-full">
               <Text className="text-white font-bold">185</Text>
             </View>
 
-            <View className="border border-[#ff3c00] px-5 py-2 rounded-full">
+            <View className="border border-primary px-5 py-2 rounded-full">
               <Text className="text-white font-bold">10</Text>
             </View>
 
@@ -122,27 +122,27 @@ export default function WorkoutDetails() {
           </View>
 
           {/* SET 3 */}
-          <View className="bg-[#1c1c1c] rounded-2xl p-4 mb-6 flex-row items-center justify-between opacity-40">
-            <Text className="text-gray-500 font-bold">3</Text>
-            <Text className="text-gray-500">205 x 8</Text>
-            <View className="bg-[#2a2a2a] px-5 py-2 rounded-full">
-              <Text className="text-gray-500 font-bold">-</Text>
+          <View className="bg-border1 rounded-2xl p-4 mb-6 flex-row items-center justify-between opacity-40">
+            <Text className="text-textSecondary font-bold">3</Text>
+            <Text className="text-textSecondary">205 x 8</Text>
+            <View className="bg-border px-5 py-2 rounded-full">
+              <Text className="text-textSecondary font-bold">-</Text>
             </View>
-            <View className="bg-[#2a2a2a] px-5 py-2 rounded-full">
-              <Text className="text-gray-500 font-bold">-</Text>
+            <View className="bg-border px-5 py-2 rounded-full">
+              <Text className="text-textSecondary font-bold">-</Text>
             </View>
             <Ionicons name="checkmark" size={16} color="#444" />
           </View>
 
           {/* REST TIMER */}
-          <View className="bg-[#1c1c1c] rounded-2xl p-4 flex-row items-center justify-between mb-6">
+          <View className="bg-border1 rounded-2xl p-4 flex-row items-center justify-between mb-6">
             <View className="flex-row items-center">
-              <View className="bg-[#ff3c00] p-3 rounded-full mr-3">
+              <View className="bg-primary p-3 rounded-full mr-3">
                 <Ionicons name="timer-outline" size={18} color="white" />
               </View>
 
               <View>
-                <Text className="text-[#ff3c00] text-xs font-bold">
+                <Text className="text-primary text-xs font-bold">
                   REST TIMER
                 </Text>
                 <Text className="text-white text-xl font-bold">
@@ -152,15 +152,15 @@ export default function WorkoutDetails() {
             </View>
 
             <View className="flex-row items-center space-x-3">
-              <TouchableOpacity className="bg-[#2a2a2a] px-4 py-2 rounded-full">
+              <TouchableOpacity className="bg-border px-4 py-2 rounded-full">
                 <Text className="text-white text-lg">-</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity className="bg-[#2a2a2a] px-4 py-2 rounded-full">
+              <TouchableOpacity className="bg-border px-4 py-2 rounded-full">
                 <Text className="text-white text-lg">+</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity className="bg-[#ff3c00] px-5 py-2 rounded-full">
+              <TouchableOpacity className="bg-primary px-5 py-2 rounded-full">
                 <Text className="text-white font-bold">SKIP</Text>
               </TouchableOpacity>
             </View>

@@ -17,10 +17,10 @@ export default function Workouts() {
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      className="flex-1 bg-[#0f0f0f] px-5 pt-12"
+      className="flex-1 bg-card px-5 pt-12"
     >
       {/* Title */}
-      <Text className="text-white text-3xl font-extrabold mb-8">
+      <Text className="text-background text-3xl font-extrabold mb-8">
         Workouts
       </Text>
 
@@ -31,33 +31,33 @@ export default function Workouts() {
           className="mb-5"
           onPress={() => router.push("/Pages/WorkoutDetails")}
         >
-          <View className="bg-[#1c1c1c] rounded-2xl p-5 flex-row items-center justify-between border border-[#262626]">
+          <View className="bg-darkcard rounded-2xl p-5 flex-row items-center justify-between border border-border">
             
             {/* Left Section */}
             <View className="flex-row items-center">
               
               {/* Icon Circle */}
-              <View className="bg-black p-4 rounded-2xl mr-4 border border-red-500">
+              <View className="bg-card p-4 rounded-2xl mr-4 border border-red-500">
                 <Ionicons
                   name={item.icon}
                   size={22}
-                  color="#ff3c00"
+                  color="#e11d1d"
                 />
               </View>
 
               {/* Text */}
               <View>
-                <Text className="text-white text-lg font-semibold">
+                <Text className="text-background text-lg font-semibold">
                   {item.name}
                 </Text>
-                <Text className="text-gray-400 text-xs mt-1">
+                <Text className="text-textSecondary text-xs mt-1">
                   Strength & Conditioning
                 </Text>
               </View>
             </View>
 
             {/* Right Arrow */}
-            <View className="bg-black p-3 rounded-full border border-[#2a2a2a]">
+            <View className="bg-card p-3 rounded-full border border-border">
               <Ionicons
                 name="chevron-forward"
                 size={18}
