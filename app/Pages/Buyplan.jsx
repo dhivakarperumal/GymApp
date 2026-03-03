@@ -99,7 +99,7 @@ export default function BuyPlan() {
         {/* Premium Glow */}
         <View className="absolute -inset-1 bg-[#ff3c00]/40 rounded-[32px] blur-2xl" />
 
-        <View className="bg-[#141414] rounded-[32px] p-7 border border-[#262626]">
+        <View className="bg-[#141414] rounded-[32px] p-7 border border-border">
           <Text className="text-gray-100 text-base mb-8 tracking-wide">
             Complete your enrollment details
           </Text>
@@ -112,7 +112,7 @@ export default function BuyPlan() {
             <TextInput
               placeholder="Enter your full name"
               placeholderTextColor="#888"
-              className="bg-[#0f0f0f] text-white px-5 py-4 rounded-2xl border border-[#2a2a2a] focus:border-[#ff3c00]"
+              className="bg-[#0f0f0f] text-white px-5 py-4 rounded-2xl border border-border focus:border-primary"
               onChangeText={(text) => setForm({ ...form, name: text })}
             />
           </View>
@@ -126,7 +126,7 @@ export default function BuyPlan() {
               placeholder="Enter phone number"
               placeholderTextColor="#888"
               keyboardType="phone-pad"
-              className="bg-[#0f0f0f] text-white px-5 py-4 rounded-2xl border border-[#2a2a2a] focus:border-[#ff3c00]"
+              className="bg-[#0f0f0f] text-white px-5 py-4 rounded-2xl border border-border focus:border-primary"
               onChangeText={(text) => setForm({ ...form, phone: text })}
             />
           </View>
@@ -140,7 +140,7 @@ export default function BuyPlan() {
               placeholder="Enter email address"
               placeholderTextColor="#888"
               keyboardType="email-address"
-              className="bg-[#0f0f0f] text-white px-5 py-4 rounded-2xl border border-[#2a2a2a] focus:border-[#ff3c00]"
+              className="bg-[#0f0f0f] text-white px-5 py-4 rounded-2xl border border-border focus:border-primary"
               onChangeText={(text) => setForm({ ...form, email: text })}
             />
           </View>
@@ -156,7 +156,7 @@ export default function BuyPlan() {
               multiline
               numberOfLines={3}
               textAlignVertical="top"
-              className="bg-[#0f0f0f] text-white px-5 py-4 rounded-2xl border border-[#2a2a2a] h-28 focus:border-[#ff3c00]"
+              className="bg-[#0f0f0f] text-white px-5 py-4 rounded-2xl border border-border h-28 focus:border-primary"
               onChangeText={(text) => setForm({ ...form, address: text })}
             />
           </View>
@@ -167,9 +167,9 @@ export default function BuyPlan() {
           {/* Premium Pay Button */}
           <TouchableOpacity
             onPress={handlePayment}
-            className="bg-[#ff3c00] py-5 rounded-2xl items-center shadow-2xl active:opacity-80"
+            className="bg-primary py-5 rounded-2xl items-center shadow-2xl active:opacity-80"
           >
-            <Text className="text-black font-extrabold text-base tracking-widest">
+            <Text className="text-white font-extrabold text-xl tracking-widest">
               PAY ₹{Number(selectedPlan.price).toLocaleString()}
             </Text>
           </TouchableOpacity>
@@ -180,14 +180,14 @@ export default function BuyPlan() {
       <View className="mb-20">
         <View className="absolute -inset-1 bg-[#ff3c00]/10 rounded-3xl blur-xl" />
 
-        <View className="bg-[#161616] rounded-3xl p-7 border border-[#2a2a2a]">
-          <Text className="text-[#ff3c00] text-2xl font-bold mb-2">
+        <View className="bg-[#161616] rounded-3xl p-7 border border-primary">
+          <Text className="text-primary text-2xl font-bold mb-2">
             {selectedPlan.name}
           </Text>
 
           <Text className="text-gray-400 mb-5">{selectedPlan.description}</Text>
 
-          <Text className="text-[#ff3c00] text-4xl font-extrabold">
+          <Text className="text-primary text-4xl font-extrabold">
             ₹{Number(selectedPlan.price).toLocaleString()}
           </Text>
 
@@ -214,7 +214,7 @@ export default function BuyPlan() {
           {Array.isArray(selectedPlan.facilities) &&
             selectedPlan.facilities.map((item, i) => (
               <View key={i} className="flex-row items-center mb-3">
-                <View className="w-2.5 h-2.5 bg-[#ff3c00] rounded-full mr-3" />
+                <View className="w-2.5 h-2.5 bg-primary rounded-full mr-3" />
                 <Text className="text-gray-300 text-sm">{item}</Text>
               </View>
             ))}
