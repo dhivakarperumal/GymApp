@@ -33,12 +33,12 @@ export default function Trainers() {
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      className="flex-1 bg-[#0a0a0a] px-5 pt-12"
+      className="flex-1 bg-darkBg px-5 pt-12"
     >
       <Text className="text-white text-3xl font-extrabold mb-2">
         Elite Trainers
       </Text>
-      <Text className="text-gray-500 mb-8 text-sm tracking-wide">
+      <Text className="text-textSecondary mb-8 text-sm tracking-wide">
         Train with certified professionals
       </Text>
 
@@ -65,7 +65,7 @@ export default function Trainers() {
                   params: { id: trainer.id },
                 })
               }
-              className="mb-6 bg-[#111] rounded-3xl overflow-hidden border border-[#1f1f1f]"
+              className="mb-6 bg-darkBg rounded-3xl overflow-hidden border border-[#1f1f1f]"
             >
               <Image
                 source={{ uri: imageUri }}
@@ -78,7 +78,7 @@ export default function Trainers() {
                   {trainer.name}
                 </Text>
 
-                <Text className="text-[#ff3c00] text-sm mt-1">
+                <Text className="text-primary text-sm mt-1">
                   {trainer.department}
                 </Text>
 
