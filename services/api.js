@@ -53,6 +53,11 @@ export const getAllStaffs = async () => {
   return res.json();
 };
 
+export const getAllReviews = async () => {
+  const res = await fetch(`${BASE_URL}/reviews`);
+  return res.json();
+};
+
 export const serviceList = async () => {
   try {
     const res = await fetch(`${BASE_URL}/services`);

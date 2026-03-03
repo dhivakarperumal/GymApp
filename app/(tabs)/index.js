@@ -7,31 +7,29 @@ import {
   StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { getAllReviews } from "../../services/api";
+import React, { useEffect, useState } from "react";
 
 export default function Home() {
-  const workouts = [
-    {
-      id: 1,
-      title: "Leg Day Destruction",
-      duration: "60 min",
-      kcal: "500 kcal",
-      image: "https://images.unsplash.com/photo-1599058917212-d750089bc07e",
-    },
-    {
-      id: 2,
-      title: "Core Blaster",
-      duration: "15 min",
-      kcal: "120 kcal",
-      image: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61",
-    },
-    {
-      id: 3,
-      title: "Arms Day",
-      duration: "45 min",
-      kcal: "350 kcal",
-      image: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e",
-    },
-  ];
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  const fetchReviews = async () => {
+    try {
+      const data = await getAllReviews();
+
+      if (Array.isArray(data)) {
+        // show only active reviews
+        const approved = data.filter((item) => item.status === 1);
+        setReviews(approved);
+      }
+    } catch (err) {
+      console.log("Reviews fetch error:", err.message);
+    }
+  };
 
   return (
     <View className="flex-1 bg-card pt-12 px-5">
@@ -87,44 +85,60 @@ export default function Home() {
           </TouchableOpacity>
         </View>
 
-        {/* 🏋️ Other Workouts */}
-        {workouts.map((item) => (
-          <View
-            key={item.id}
-            className="flex-row items-center bg-darkcard p-4 rounded-2xl mb-4"
-          >
-            <Image
-              source={{ uri: item.image }}
-              className="w-16 h-16 rounded-xl mr-4"
-            />
+        {/* 🔥 Reviews Section */}
+        <View className="mt-6 mb-10">
+          <Text className="text-white text-lg font-bold mb-4">
+            MEMBER REVIEWS
+          </Text>
 
-            <View className="flex-1">
-              <Text className="text-white font-semibold" numberOfLines={1}>
-                {item.title}
-              </Text>
+          {reviews.length === 0 && (
+            <Text className="text-gray-400">No reviews available</Text>
+          )}
 
-              <View className="flex-row mt-1">
-                <View className="flex-row items-center mr-4">
-                  <Ionicons name="time-outline" size={14} color="#e11d1d" />
-                  <Text className="text-textSecondary text-md ml-1">
-                    {item.duration}
-                  </Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {reviews.map((review, index) => (
+              <View
+                key={review.id || index}
+                className="w-72 bg-[#141414] rounded-3xl p-5 mr-4 border border-[#262626]"
+                style={{
+                  shadowColor: "#ff3c00",
+                  shadowOpacity: 0.25,
+                  shadowRadius: 15,
+                  elevation: 8,
+                }}
+              >
+                {/* User Info */}
+                <View className="flex-row items-center mb-4">
+                  <Image
+                    source={{ uri: review.image }}
+                    className="w-12 h-12 rounded-full mr-3"
+                  />
+                  <View>
+                    <Text className="text-white font-bold">{review.name}</Text>
+
+                    {/* Rating Stars */}
+                    <View className="flex-row mt-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Ionicons
+                          key={star}
+                          name={star <= review.rating ? "star" : "star-outline"}
+                          size={14}
+                          color="#ff3c00"
+                          style={{ marginRight: 2 }}
+                        />
+                      ))}
+                    </View>
+                  </View>
                 </View>
 
-                <View className="flex-row items-center ml-4">
-                  <Ionicons name="flame-outline" size={14} color="#e11d1d" />
-                  <Text className="text-textSecondary text-md ml-1">
-                    {item.kcal}
-                  </Text>
-                </View>
+                {/* Message */}
+                <Text className="text-gray-300 text-sm leading-5">
+                  "{review.message}"
+                </Text>
               </View>
-            </View>
-
-            <TouchableOpacity className="bg-card p-2 rounded-full border border-gray-700">
-              <Ionicons name="add" size={18} color="white" />
-            </TouchableOpacity>
-          </View>
-        ))}
+            ))}
+          </ScrollView>
+        </View>
       </ScrollView>
     </View>
   );
