@@ -38,7 +38,7 @@ const redirectByRole = (role) => {
   } else if (role === "trainer") {
     router.replace("/(trainers)/dashboard");
   } else {
-    router.replace("/(tabs)/home");
+    router.replace("/(tabs)");
   }
 };
 
