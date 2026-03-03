@@ -1,50 +1,49 @@
-import { Stack, useRouter, useSegments } from "expo-router";
-import { useEffect } from "react";
+import { Stack } from "expo-router";
 import { useAuth } from "../context/AuthContext";
 import { View, ActivityIndicator } from "react-native";
 
 export default function RootNavigator() {
   const { user, loading } = useAuth();
-  const router = useRouter();
-  const segments = useSegments();
-
-  useEffect(() => {
-    if (loading) return;
-
-    const segment = segments[0];
-
-    // 🔐 Not logged in
-    if (!user) {
-      if (segment !== "(auth)") {
-        router.replace("/(auth)/login");
-      }
-      return;
-    }
-
-    // 🔒 Logged in
-    const roleRoutes: Record<string, string> = {
-      admin: "/(admin)",
-      trainer: "/(trainers)/dashboard",
-      user: "/(tabs)",
-    };
-
-    const correctPath = roleRoutes[user.role] || "/(tabs)";
-
-    const protectedGroups = ["(admin)", "(trainers)", "(tabs)"];
-
-    if (protectedGroups.includes(segment) && `/${segment}` !== correctPath) {
-      router.replace(correctPath);
-    }
-
-  }, [loading, user]);
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-black">
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "black" }}>
         <ActivityIndicator size="large" color="red" />
       </View>
     );
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  // 🔐 Not logged in
+  if (!user) {
+    return (
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" />
+      </Stack>
+    );
+  }
+
+  // 🔒 Logged in - Admin
+  if (user.role === "admin") {
+    return (
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(admin)" />
+      </Stack>
+    );
+  }
+
+  // 🔒 Logged in - Trainer
+  if (user.role === "trainer") {
+    return (
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(trainers)" />
+      </Stack>
+    );
+  }
+
+  // 🔒 Logged in - Normal user
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" />
+    </Stack>
+  );
 }
