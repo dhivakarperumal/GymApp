@@ -71,8 +71,23 @@ export default function Shop() {
       <View className="flex-row flex-wrap justify-between">
         {!loading &&
           filteredProducts.map((item) => {
-            const price = Number(item.offer_price || item.mrp || 0);
-            const oldPrice = Number(item.mrp || 0);
+            let price = 0;
+            let oldPrice = 0;
+
+            // 🥤 FOOD → price inside stock (use first weight)
+            if (item.category === "Food" && item.weight?.length) {
+              const firstWeight = item.weight[0];
+              const variant = item.stock?.[firstWeight];
+
+              price = Number(variant?.offerPrice || variant?.mrp || 0);
+              oldPrice = Number(variant?.mrp || 0);
+            }
+
+            // 👕 DRESS / ACCESSORIES → price at product level
+            else {
+              price = Number(item.offer_price || item.mrp || 0);
+              oldPrice = Number(item.mrp || 0);
+            }
 
             const imageUrl =
               item.images?.[0] || "https://via.placeholder.com/150";
