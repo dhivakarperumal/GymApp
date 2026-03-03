@@ -52,7 +52,7 @@ export default function TabLayout() {
 
         headerRight: () => (
           <View style={{ flexDirection: "row", alignItems: "center", paddingRight: 16 }}>
-            
+
             {/* CART */}
             <TouchableOpacity
               onPress={() => router.push("/cart")}
@@ -66,27 +66,37 @@ export default function TabLayout() {
               <Ionicons name="notifications-outline" size={22} color="white" />
             </TouchableOpacity>
 
-            {/* AVATAR */}
+            {/* AVATAR / LOGIN ICON */}
             <TouchableOpacity
-              onPress={() => setMenuVisible(true)}
+              onPress={() => {
+                if (!user) {
+                  router.push("/(auth)/login");
+                } else {
+                  setMenuVisible(true);
+                }
+              }}
               style={{
                 width: 36,
                 height: 36,
                 borderRadius: 18,
-                backgroundColor: "#e11d1d",
+                backgroundColor: user ? "#e11d1d" : "#333",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Text style={{ color: "white", fontWeight: "bold" }}>
-                {initial}
-              </Text>
+              {user ? (
+                <Text style={{ color: "white", fontWeight: "bold" }}>
+                  {user.username?.charAt(0)?.toUpperCase()}
+                </Text>
+              ) : (
+                <Ionicons name="person-outline" size={20} color="white" />
+              )}
             </TouchableOpacity>
 
             {/* DROPDOWN MENU */}
             <Modal
               transparent
-              visible={menuVisible}
+              visible={user && menuVisible}
               animationType="fade"
               onRequestClose={() => setMenuVisible(false)}
             >
@@ -109,12 +119,16 @@ export default function TabLayout() {
                 >
                   {/* USER INFO */}
                   <View style={{ marginBottom: 12 }}>
-                    <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>
-                      {user?.username || "User"}
-                    </Text>
-                    <Text style={{ color: "#aaa", fontSize: 13 }}>
-                      {user?.role || "member"}
-                    </Text>
+                    {user && (
+                      <>
+                        <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>
+                          {user.username}
+                        </Text>
+                        <Text style={{ color: "#aaa", fontSize: 13 }}>
+                          {user.role}
+                        </Text>
+                      </>
+                    )}
                   </View>
 
                   <View style={{ height: 1, backgroundColor: "#333", marginVertical: 8 }} />
