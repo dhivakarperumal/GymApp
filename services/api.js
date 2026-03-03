@@ -1,4 +1,4 @@
-const BASE_URL = "http://192.168.1.4:5000/api";
+const BASE_URL = "http://192.168.1.16:5000/api";
 
 /* ------------------ HELPER ------------------ */
 // lightweight wrapper that mimics axios-style responses; screens currently
@@ -24,7 +24,33 @@ const api = {
 
     return { data };
   },
-  // other methods (get, put, etc.) can be added later if needed
+
+  get: async (path, token = null) => {
+    const headers = {
+      "Content-Type": "application/json",
+    };
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${BASE_URL}${path}`, {
+      method: "GET",
+      headers,
+    });
+
+    const data = await res.json();
+
+    // treat non-2xx responses as errors so callers can handle them
+    if (!res.ok) {
+      const err = new Error(data?.message || "Request failed");
+      err.response = { data, status: res.status };
+      throw err;
+    }
+
+    return { data };
+  },
+  // other methods (put, delete, etc.) can be added later if needed
 };
 
 /* ------------------ PRODUCTS ------------------ */
@@ -100,13 +126,24 @@ export const loginUser = async (userData) => {
 
 // ✅ GET PROFILE (Protected Route)
 export const getProfile = async (token) => {
-  const res = await fetch(`${BASE_URL}/auth/profile`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  try {
+    const response = await api.get("/auth/profile", token);
+    return response.data;
+  } catch (err) {
+    console.log("Get profile error:", err.message);
+    throw err;
+  }
+};
 
-  return res.json();
+// ✅ GET USER DATA (from /users endpoint)
+export const getUser = async (token) => {
+  try {
+    const response = await api.get("/users", token);
+    return response.data;
+  } catch (err) {
+    console.log("Get user error:", err.message);
+    throw err;
+  }
 };
 
 export default api;
