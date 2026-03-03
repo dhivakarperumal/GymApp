@@ -17,6 +17,7 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const [user, setUser] = useState(null);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [logoutVisible, setLogoutVisible] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -157,7 +158,10 @@ export default function TabLayout() {
 
                   {/* LOGOUT */}
                   <TouchableOpacity
-                    onPress={handleLogout}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      setLogoutVisible(true);
+                    }}
                     className="py-2"
                   >
                     <Text className="text-red-600 font-bold">
@@ -168,6 +172,61 @@ export default function TabLayout() {
                 </View>
               </Pressable>
             </Modal>
+
+            {/* Login Confirmation Modal */}
+            <Modal
+              transparent
+              visible={logoutVisible}
+              animationType="fade"
+              onRequestClose={() => setLogoutVisible(false)}
+            >
+              <View className="flex-1 bg-black/70 justify-center items-center px-6">
+
+                {/* POPUP CARD */}
+                <View className="w-full bg-darkcard rounded-3xl p-6 border border-border">
+
+                  {/* TITLE */}
+                  <Text className="text-white text-xl font-bold text-center">
+                    Confirm Logout
+                  </Text>
+
+                  {/* MESSAGE */}
+                  <Text className="text-gray-400 text-center mt-3 leading-5">
+                    Are you sure you want to logout from your account?
+                  </Text>
+
+                  {/* BUTTONS */}
+                  <View className="flex-row mt-6">
+
+                    {/* CANCEL */}
+                    <TouchableOpacity
+                      onPress={() => setLogoutVisible(false)}
+                      className="flex-1 bg-border1 py-3 rounded-full mr-3 items-center border border-textSecondary"
+                    >
+                      <Text className="text-white font-semibold">
+                        Cancel
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* LOGOUT */}
+                    <TouchableOpacity
+                      onPress={async () => {
+                        setLogoutVisible(false);
+                        await handleLogout();
+                      }}
+                      className="flex-1 bg-primary py-3 rounded-full items-center"
+                    >
+                      <Text className="text-white font-bold">
+                        Logout
+                      </Text>
+                    </TouchableOpacity>
+
+                  </View>
+                </View>
+
+              </View>
+            </Modal>
+
           </View>
         ),
       }}

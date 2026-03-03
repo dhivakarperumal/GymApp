@@ -73,7 +73,7 @@ function AdminHeader() {
           <TouchableOpacity
             onPress={() => {
               setShowMenu(false);
-              router.replace("/");
+              router.replace("/(tabs)");
             }}
           >
             <Text className="py-2 text-sm">Back Home</Text>

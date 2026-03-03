@@ -34,11 +34,11 @@ const LoginScreen = () => {
   // 🔹 Role redirect
 const redirectByRole = (role) => {
   if (role === "admin") {
-    router.replace("/(admin)/dashboard");
+    router.replace("/(admin)");
   } else if (role === "trainer") {
     router.replace("/(trainers)/dashboard");
   } else {
-    router.replace("/(tabs)/home");
+    router.replace("/(tabs)");
   }
 };
 
