@@ -1,7 +1,7 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -10,7 +10,7 @@ export function AuthProvider({ children }) {
 
   // 🔐 Restore session on app start
   useEffect(() => {
-    const loadUser = async () => {
+    const restoreSession = async () => {
       try {
         const storedToken = await AsyncStorage.getItem("token");
         const storedUser = await AsyncStorage.getItem("user");
@@ -19,32 +19,40 @@ export function AuthProvider({ children }) {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
         }
-      } catch (err) {
-        console.log("Auth restore error:", err);
+      } catch (error) {
+        console.log("Session restore error:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadUser();
+    restoreSession();
   }, []);
 
   // 🔑 Login
   const login = async (userData, userToken) => {
-    setUser(userData);
-    setToken(userToken);
+    try {
+      setUser(userData);
+      setToken(userToken);
 
-    await AsyncStorage.setItem("token", userToken);
-    await AsyncStorage.setItem("user", JSON.stringify(userData));
+      await AsyncStorage.setItem("token", userToken);
+      await AsyncStorage.setItem("user", JSON.stringify(userData));
+    } catch (error) {
+      console.log("Login storage error:", error);
+    }
   };
 
   // 🚪 Logout
   const logout = async () => {
-    setUser(null);
-    setToken(null);
+    try {
+      setUser(null);
+      setToken(null);
 
-    await AsyncStorage.removeItem("token");
-    await AsyncStorage.removeItem("user");
+      await AsyncStorage.removeItem("token");
+      await AsyncStorage.removeItem("user");
+    } catch (error) {
+      console.log("Logout error:", error);
+    }
   };
 
   return (
@@ -62,11 +70,11 @@ export function AuthProvider({ children }) {
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
-
-// Provide a default export for consumers that import the module as a default
-// and expect properties like `useAuth` (defensive compatibility patch).
-export default {
-  AuthProvider,
-  useAuth,
-};
+// ✅ Safe Hook
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used inside AuthProvider");
+  }
+  return context;
+}
