@@ -35,7 +35,7 @@ const LoginScreen = () => {
 const redirectByRole = (role) => {
   if (role === "admin") router.replace("/(admin)");
   else if (role === "trainer") router.replace("/trainer");
-  else router.replace("/");
+  else router.replace("/(tabs)");
 };
 
   const handleLogin = async () => {

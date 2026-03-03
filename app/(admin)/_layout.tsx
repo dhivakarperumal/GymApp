@@ -97,6 +97,15 @@ function AdminHeader() {
 }
 
 export default function AdminLayout() {
+  const { user, loading } = useAuth();
+
+  if (loading) return null;
+
+  // 🔒 Block non-admin users
+  if (!user || user.role !== "admin") {
+    return <Redirect href="/(tabs)" />;
+  }
+
   return (
     <Tabs
       screenOptions={{
