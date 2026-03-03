@@ -17,6 +17,7 @@ module.exports = {
         success: "#22C55E",
         danger: "#EF4444",
         darkcard: "#1a1a1a",
+        darkBg: "#0f0f0f",
       },
     },
   },

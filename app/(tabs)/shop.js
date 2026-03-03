@@ -45,10 +45,10 @@ export default function Shop() {
   );
 
   return (
-    <ScrollView className="flex-1 bg-[#0f0f0f] px-4 pt-12">
+    <ScrollView className="flex-1 bg-darkBg px-4 pt-12">
       
       {/* SEARCH */}
-      <View className="flex-row items-center bg-[#1c1c1c] rounded-xl px-4 py-3 mb-5">
+      <View className="flex-row items-center bg-darkcard rounded-xl px-4 py-3 mb-5">
         <Ionicons name="search" size={18} color="#777" />
         <TextInput
           placeholder="Search supplements & gear..."
@@ -61,7 +61,7 @@ export default function Shop() {
 
       {/* LOADING */}
       {loading && (
-        <ActivityIndicator size="large" color="red" style={{ marginTop: 20 }} />
+        <ActivityIndicator size="large" color="#e11d1d" style={{ marginTop: 20 }} />
       )}
 
       {/* PRODUCT LIST */}
@@ -81,7 +81,7 @@ export default function Shop() {
           return (
             <View
               key={item.id}
-              className="bg-[#1c1c1c] rounded-2xl p-4 mb-4 flex-row items-center"
+              className="bg-darkCard  rounded-2xl p-4 mb-4 flex-row items-center"
             >
               {/* IMAGE */}
               <View className="relative">
@@ -93,7 +93,7 @@ export default function Shop() {
 
                 {/* CATEGORY BADGE */}
                 <View className="absolute top-1 left-1 bg-black/80 px-2 py-1 rounded-md">
-                  <Text className="text-red-500 text-[8px] font-bold">
+                  <Text className="text-primary text-[8px] font-bold">
                     {item.category}
                   </Text>
                 </View>
@@ -106,12 +106,12 @@ export default function Shop() {
                 </Text>
 
                 <View className="flex-row items-center mt-2">
-                  <Text className="text-red-500 text-lg font-bold">
+                  <Text className="text-primary text-lg font-bold">
                     ₹ {price}
                   </Text>
 
                   {oldPrice > price && (
-                    <Text className="text-gray-500 line-through ml-3">
+                    <Text className="text-textSecondary line-through ml-3">
                       ₹ {oldPrice}
                     </Text>
                   )}
@@ -121,7 +121,7 @@ export default function Shop() {
               {/* CART BUTTON */}
               <TouchableOpacity
                 onPress={() => router.push("/cart")}
-                className="bg-red-600 p-3 rounded-full"
+                className="bg-primary p-3 rounded-full"
               >
                 <Ionicons name="cart-outline" size={18} color="white" />
               </TouchableOpacity>
