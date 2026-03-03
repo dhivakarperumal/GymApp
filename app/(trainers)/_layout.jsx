@@ -81,7 +81,7 @@ export default function TrainersLayout() {
         }}
       />
 
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="earnings"
         options={{
           title: "Earnings",
@@ -89,7 +89,7 @@ export default function TrainersLayout() {
             <Feather name="dollar-sign" size={size} color={color} />
           ),
         }}
-      />
+      /> */}
 
       <Tabs.Screen
         name="profile"
