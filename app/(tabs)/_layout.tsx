@@ -99,8 +99,21 @@ export default function TabLayout() {
                 className="flex-1"
                 onPress={() => setMenuVisible(false)}
               >
-                <View className="absolute top-20 right-5 bg-card rounded-2xl p-4 w-40 border border-background/70">
-                  
+                <View className="absolute top-20 right-5 bg-[#1a1a1a] rounded-2xl p-4 w-52 border border-gray-800">
+
+                  {/* USER INFO */}
+                  <View className="mb-3">
+                    <Text className="text-white font-bold text-base">
+                      {user?.username || "User"}
+                    </Text>
+                    <Text className="text-gray-400 text-sm capitalize">
+                      {user?.role || "member"}
+                    </Text>
+                  </View>
+
+                  <View className="h-px bg-gray-700 my-2" />
+
+                  {/* PROFILE */}
                   <TouchableOpacity
                     onPress={() => {
                       setMenuVisible(false);
@@ -108,18 +121,44 @@ export default function TabLayout() {
                     }}
                     className="py-2"
                   >
-                    <Text className="text-white">
-                      My Profile
-                    </Text>
+                    <Text className="text-white">My Profile</Text>
                   </TouchableOpacity>
 
-                  <View className="h-px bg-border my-2" />
+                  {/* ROLE BASED PANEL */}
+                  {user?.role === "admin" && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setMenuVisible(false);
+                        router.push("/(admin)");
+                      }}
+                      className="py-2"
+                    >
+                      <Text className="text-red-500 font-semibold">Admin Panel</Text>
+                    </TouchableOpacity>
+                  )}
 
+                  {user?.role === "trainer" && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setMenuVisible(false);
+                        router.push("/trainer");
+                      }}
+                      className="py-2"
+                    >
+                      <Text className="text-yellow-400 font-semibold">
+                        Trainer Panel
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+
+                  <View className="h-px bg-gray-700 my-2" />
+
+                  {/* LOGOUT */}
                   <TouchableOpacity
                     onPress={handleLogout}
                     className="py-2"
                   >
-                    <Text className="text-primary font-bold">
+                    <Text className="text-red-600 font-bold">
                       Logout
                     </Text>
                   </TouchableOpacity>
