@@ -34,13 +34,13 @@ export default function Home() {
   ];
 
   return (
-    <View className="flex-1 bg-black pt-12 px-5">
+    <View className="flex-1 bg-card pt-12 px-5">
       <StatusBar barStyle="light-content" />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="flex-row justify-between items-center mb-4">
           <Text className="text-white text-lg font-bold">TODAY'S MISSION</Text>
-          <Text className="text-[#ff3c00] text-sm font-semibold">VIEW ALL</Text>
+          <Text className="text-primary text-sm font-semibold">VIEW ALL</Text>
         </View>
 
         {/* 🔥 Featured Workout Card */}
@@ -53,8 +53,8 @@ export default function Home() {
           />
 
           {/* Dark overlay */}
-          <View className="absolute inset-0 bg-black/60 p-5 justify-end">
-            <View className="bg-[#ff3c00] px-3 py-1 rounded-full self-start mb-3">
+          <View className="absolute inset-0 bg-card/60 p-5 justify-end">
+            <View className="bg-primary px-3 py-1 rounded-full self-start mb-3">
               <Text className="text-white text-xs font-bold">
                 HIGH INTENSITY
               </Text>
@@ -62,12 +62,12 @@ export default function Home() {
 
             <View className="flex-row items-center mb-2">
               <View className="flex-row items-center mr-4">
-                <Ionicons name="time-outline" size={14} color="#ff3c00" />
+                <Ionicons name="time-outline" size={14} color="#e11d1d" />
                 <Text className="text-gray-300 text-md ml-1">45 MIN</Text>
               </View>
 
               <View className="flex-row items-center ml-2">
-                <Ionicons name="flash-outline" size={14} color="#ff3c00" />
+                <Ionicons name="flash-outline" size={14} color="#e11d1d" />
                 <Text className="text-gray-300 text-md ml-1">ADVANCED</Text>
               </View>
             </View>
@@ -76,13 +76,13 @@ export default function Home() {
               UPPER BODY POWER
             </Text>
 
-            <Text className="text-gray-400 text-sm mt-1">
+            <Text className="text-textSecondary text-sm mt-1">
               Chest, shoulders, triceps...
             </Text>
           </View>
 
           {/* Play Button */}
-          <TouchableOpacity className="absolute bottom-6 right-6 bg-[#ff3c00] p-4 rounded-full">
+          <TouchableOpacity className="absolute bottom-6 right-6 bg-primary p-4 rounded-full">
             <Ionicons name="play" size={20} color="white" />
           </TouchableOpacity>
         </View>
@@ -91,7 +91,7 @@ export default function Home() {
         {workouts.map((item) => (
           <View
             key={item.id}
-            className="flex-row items-center bg-[#1a1a1a] p-4 rounded-2xl mb-4"
+            className="flex-row items-center bg-darkcard p-4 rounded-2xl mb-4"
           >
             <Image
               source={{ uri: item.image }}
@@ -105,22 +105,22 @@ export default function Home() {
 
               <View className="flex-row mt-1">
                 <View className="flex-row items-center mr-4">
-                  <Ionicons name="time-outline" size={14} color="#ff3c00" />
-                  <Text className="text-gray-400 text-md ml-1">
+                  <Ionicons name="time-outline" size={14} color="#e11d1d" />
+                  <Text className="text-textSecondary text-md ml-1">
                     {item.duration}
                   </Text>
                 </View>
 
                 <View className="flex-row items-center ml-4">
-                  <Ionicons name="flame-outline" size={14} color="#ff3c00" />
-                  <Text className="text-gray-400 text-md ml-1">
+                  <Ionicons name="flame-outline" size={14} color="#e11d1d" />
+                  <Text className="text-textSecondary text-md ml-1">
                     {item.kcal}
                   </Text>
                 </View>
               </View>
             </View>
 
-            <TouchableOpacity className="bg-black p-2 rounded-full border border-gray-700">
+            <TouchableOpacity className="bg-card p-2 rounded-full border border-gray-700">
               <Ionicons name="add" size={18} color="white" />
             </TouchableOpacity>
           </View>

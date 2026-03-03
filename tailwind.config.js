@@ -14,6 +14,7 @@ module.exports = {
         textSecondary: "#6B7280",
         success: "#22C55E",
         danger: "#EF4444",
+        darkcard: "#1a1a1a",
       },
     },
   },
