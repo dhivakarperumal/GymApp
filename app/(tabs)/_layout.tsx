@@ -8,34 +8,22 @@ import {
   Modal,
   Pressable,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "../../context/AuthContext";
 
 export default function TabLayout() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [user, setUser] = useState(null);
+  const { user, logout } = useAuth();
+
   const [menuVisible, setMenuVisible] = useState(false);
   const [logoutVisible, setLogoutVisible] = useState(false);
 
-  useEffect(() => {
-    const loadUser = async () => {
-      const storedUser = await AsyncStorage.getItem("user");
-      if (!storedUser) {
-        router.replace("/login");
-      } else {
-        setUser(JSON.parse(storedUser));
-      }
-    };
-    loadUser();
-  }, []);
-
   const handleLogout = async () => {
     setMenuVisible(false);
-    await AsyncStorage.removeItem("token");
-    await AsyncStorage.removeItem("user");
-    router.replace("/login");
+    setLogoutVisible(false);
+    await logout(); // RootNavigator will handle redirect
   };
 
   const initial = user?.username?.charAt(0)?.toUpperCase() || "U";
@@ -53,45 +41,49 @@ export default function TabLayout() {
         },
 
         headerLeft: () => (
-          <View className="pl-4">
+          <View style={{ paddingLeft: 16 }}>
             <Image
               source={require("../../assets/images/logo_dark.png")}
-              className="w-20 h-11"
+              style={{ width: 80, height: 44 }}
               resizeMode="contain"
             />
           </View>
         ),
 
         headerRight: () => (
-          <View className="flex-row items-center pr-4">
+          <View style={{ flexDirection: "row", alignItems: "center", paddingRight: 16 }}>
+            
             {/* CART */}
             <TouchableOpacity
               onPress={() => router.push("/cart")}
-              className="mr-4"
+              style={{ marginRight: 16 }}
             >
               <Ionicons name="cart-outline" size={22} color="white" />
             </TouchableOpacity>
 
             {/* NOTIFICATION */}
-            <TouchableOpacity className="mr-4">
-              <Ionicons
-                name="notifications-outline"
-                size={22}
-                color="white"
-              />
+            <TouchableOpacity style={{ marginRight: 16 }}>
+              <Ionicons name="notifications-outline" size={22} color="white" />
             </TouchableOpacity>
 
             {/* AVATAR */}
             <TouchableOpacity
               onPress={() => setMenuVisible(true)}
-              className="w-9 h-9 rounded-full bg-primary items-center justify-center"
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                backgroundColor: "#e11d1d",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              <Text className="text-white font-bold">
+              <Text style={{ color: "white", fontWeight: "bold" }}>
                 {initial}
               </Text>
             </TouchableOpacity>
 
-            {/* DROPDOWN */}
+            {/* DROPDOWN MENU */}
             <Modal
               transparent
               visible={menuVisible}
@@ -99,22 +91,33 @@ export default function TabLayout() {
               onRequestClose={() => setMenuVisible(false)}
             >
               <Pressable
-                className="flex-1"
+                style={{ flex: 1 }}
                 onPress={() => setMenuVisible(false)}
               >
-                <View className="absolute top-20 right-5 bg-[#1a1a1a] rounded-2xl p-4 w-52 border border-gray-800">
-
+                <View
+                  style={{
+                    position: "absolute",
+                    top: 80,
+                    right: 20,
+                    backgroundColor: "#1a1a1a",
+                    borderRadius: 20,
+                    padding: 16,
+                    width: 210,
+                    borderWidth: 1,
+                    borderColor: "#333",
+                  }}
+                >
                   {/* USER INFO */}
-                  <View className="mb-3">
-                    <Text className="text-white font-bold text-base">
+                  <View style={{ marginBottom: 12 }}>
+                    <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>
                       {user?.username || "User"}
                     </Text>
-                    <Text className="text-gray-400 text-sm capitalize">
+                    <Text style={{ color: "#aaa", fontSize: 13 }}>
                       {user?.role || "member"}
                     </Text>
                   </View>
 
-                  <View className="h-px bg-gray-700 my-2" />
+                  <View style={{ height: 1, backgroundColor: "#333", marginVertical: 8 }} />
 
                   {/* PROFILE */}
                   <TouchableOpacity
@@ -122,21 +125,23 @@ export default function TabLayout() {
                       setMenuVisible(false);
                       router.push("/profile");
                     }}
-                    className="py-2"
+                    style={{ paddingVertical: 8 }}
                   >
-                    <Text className="text-white">My Profile</Text>
+                    <Text style={{ color: "white" }}>My Profile</Text>
                   </TouchableOpacity>
 
-                  {/* ROLE BASED PANEL */}
+                  {/* ROLE BASED */}
                   {user?.role === "admin" && (
                     <TouchableOpacity
                       onPress={() => {
                         setMenuVisible(false);
                         router.push("/(admin)");
                       }}
-                      className="py-2"
+                      style={{ paddingVertical: 8 }}
                     >
-                      <Text className="text-red-500 font-semibold">Admin Panel</Text>
+                      <Text style={{ color: "#ef4444", fontWeight: "600" }}>
+                        Admin Panel
+                      </Text>
                     </TouchableOpacity>
                   )}
 
@@ -144,17 +149,17 @@ export default function TabLayout() {
                     <TouchableOpacity
                       onPress={() => {
                         setMenuVisible(false);
-                        router.push("/trainer");
+                        router.push("/(trainers)/dashboard");
                       }}
-                      className="py-2"
+                      style={{ paddingVertical: 8 }}
                     >
-                      <Text className="text-yellow-400 font-semibold">
+                      <Text style={{ color: "#facc15", fontWeight: "600" }}>
                         Trainer Panel
                       </Text>
                     </TouchableOpacity>
                   )}
 
-                  <View className="h-px bg-gray-700 my-2" />
+                  <View style={{ height: 1, backgroundColor: "#333", marginVertical: 8 }} />
 
                   {/* LOGOUT */}
                   <TouchableOpacity
@@ -162,71 +167,96 @@ export default function TabLayout() {
                       setMenuVisible(false);
                       setLogoutVisible(true);
                     }}
-                    className="py-2"
+                    style={{ paddingVertical: 8 }}
                   >
-                    <Text className="text-red-600 font-bold">
+                    <Text style={{ color: "#dc2626", fontWeight: "bold" }}>
                       Logout
                     </Text>
                   </TouchableOpacity>
-
                 </View>
               </Pressable>
             </Modal>
 
-            {/* Login Confirmation Modal */}
+            {/* CONFIRM LOGOUT MODAL */}
             <Modal
               transparent
               visible={logoutVisible}
               animationType="fade"
               onRequestClose={() => setLogoutVisible(false)}
             >
-              <View className="flex-1 bg-black/70 justify-center items-center px-6">
-
-                {/* POPUP CARD */}
-                <View className="w-full bg-darkcard rounded-3xl p-6 border border-border">
-
-                  {/* TITLE */}
-                  <Text className="text-white text-xl font-bold text-center">
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: "rgba(0,0,0,0.7)",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  paddingHorizontal: 20,
+                }}
+              >
+                <View
+                  style={{
+                    width: "100%",
+                    backgroundColor: "#1a1a1a",
+                    borderRadius: 24,
+                    padding: 24,
+                    borderWidth: 1,
+                    borderColor: "#333",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 18,
+                      fontWeight: "bold",
+                      textAlign: "center",
+                    }}
+                  >
                     Confirm Logout
                   </Text>
 
-                  {/* MESSAGE */}
-                  <Text className="text-gray-400 text-center mt-3 leading-5">
-                    Are you sure you want to logout from your account?
+                  <Text
+                    style={{
+                      color: "#aaa",
+                      textAlign: "center",
+                      marginTop: 10,
+                    }}
+                  >
+                    Are you sure you want to logout?
                   </Text>
 
-                  {/* BUTTONS */}
-                  <View className="flex-row mt-6">
-
-                    {/* CANCEL */}
+                  <View style={{ flexDirection: "row", marginTop: 20 }}>
                     <TouchableOpacity
                       onPress={() => setLogoutVisible(false)}
-                      className="flex-1 bg-border1 py-3 rounded-full mr-3 items-center border border-textSecondary"
+                      style={{
+                        flex: 1,
+                        backgroundColor: "#333",
+                        padding: 12,
+                        borderRadius: 20,
+                        marginRight: 10,
+                        alignItems: "center",
+                      }}
                     >
-                      <Text className="text-white font-semibold">
-                        Cancel
-                      </Text>
+                      <Text style={{ color: "white" }}>Cancel</Text>
                     </TouchableOpacity>
 
-                    {/* LOGOUT */}
                     <TouchableOpacity
-                      onPress={async () => {
-                        setLogoutVisible(false);
-                        await handleLogout();
+                      onPress={handleLogout}
+                      style={{
+                        flex: 1,
+                        backgroundColor: "#e11d1d",
+                        padding: 12,
+                        borderRadius: 20,
+                        alignItems: "center",
                       }}
-                      className="flex-1 bg-primary py-3 rounded-full items-center"
                     >
-                      <Text className="text-white font-bold">
+                      <Text style={{ color: "white", fontWeight: "bold" }}>
                         Logout
                       </Text>
                     </TouchableOpacity>
-
                   </View>
                 </View>
-
               </View>
             </Modal>
-
           </View>
         ),
       }}
