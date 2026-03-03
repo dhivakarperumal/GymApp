@@ -43,6 +43,11 @@ export const getAllServices = async () => {
   return res.json();
 };
 
+export const getAllFacilities = async () => {
+  const res = await fetch(`${BASE_URL}/facilities`);
+  return res.json();
+};
+
 export const getAllStaffs = async () => {
   const res = await fetch(`${BASE_URL}/staff`);
   return res.json();
