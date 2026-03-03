@@ -10,6 +10,7 @@ import {
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { getAllServices } from "../../services/api";
+import { Ionicons } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
 
@@ -88,9 +89,8 @@ export default function ServiceDetails() {
         </Text>
 
         {/* Points Section */}
-        {/* Points Section */}
         <View className="mb-10">
-          <Text className="text-[#ff3c00] text-lg font-bold mb-6">
+          <Text className="text-primary text-lg font-bold mb-6">
             What's Included
           </Text>
 
@@ -100,15 +100,15 @@ export default function ServiceDetails() {
                 key={index}
                 className="mb-4 rounded-2xl border border-[#262626] bg-[#141414] p-4 flex-row items-center"
                 style={{
-                  shadowColor: "#ff3c00",
+                  shadowColor: "#e11d1d",
                   shadowOpacity: 0.15,
                   shadowRadius: 10,
                   elevation: 5,
                 }}
               >
                 {/* Tick Icon */}
-                <View className="w-7 h-7 rounded-full bg-[#ff3c00] items-center justify-center mr-4">
-                  <Text className="text-black font-bold text-sm">✓</Text>
+                <View className="w-8 h-8 rounded-full bg-primary items-center justify-center mr-4">
+                  <Ionicons name="checkmark" size={18} color="white" />
                 </View>
 
                 {/* Text */}
