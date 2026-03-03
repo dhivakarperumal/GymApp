@@ -46,7 +46,7 @@ export default function Shop() {
 
   return (
     <ScrollView className="flex-1 bg-darkBg px-4 pt-12">
-      
+
       {/* SEARCH */}
       <View className="flex-row items-center bg-darkcard rounded-xl px-4 py-3 mb-5">
         <Ionicons name="search" size={18} color="#777" />
@@ -118,12 +118,16 @@ export default function Shop() {
                 </View>
               </View>
 
-              {/* CART BUTTON */}
               <TouchableOpacity
-                onPress={() => router.push("/cart")}
+                onPress={() =>
+                  router.push({
+                    pathname: "/product-details",
+                    params: { product: JSON.stringify(item) },
+                  })
+                }
                 className="bg-primary p-3 rounded-full"
               >
-                <Ionicons name="cart-outline" size={18} color="white" />
+                <Ionicons name="eye-outline" size={18} color="white" />
               </TouchableOpacity>
             </View>
           );

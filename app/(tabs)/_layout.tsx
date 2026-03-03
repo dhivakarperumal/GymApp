@@ -53,7 +53,7 @@ export default function TabLayout() {
           <View className="pl-4">
             <Image
               source={require("../../assets/images/logo_dark.png")}
-              className="w-11 h-11"
+              className="w-20 h-11"
               resizeMode="contain"
             />
           </View>
