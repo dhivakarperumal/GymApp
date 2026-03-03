@@ -46,7 +46,6 @@ export default function Shop() {
 
   return (
     <ScrollView className="flex-1 bg-darkBg px-4 pt-12">
-
       {/* SEARCH */}
       <View className="flex-row items-center bg-darkcard rounded-xl px-4 py-3 mb-5">
         <Ionicons name="search" size={18} color="#777" />
@@ -145,7 +144,7 @@ export default function Shop() {
 
                       {/* CART BUTTON */}
                       <TouchableOpacity
-                        onPress={() => router.push("/cart")}
+                        onPress={() => router.push(`/Shop/${item.id}`)}
                         className="bg-primary p-3 rounded-2xl"
                         style={{
                           shadowColor: "#ff3c00",
