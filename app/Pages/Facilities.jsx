@@ -58,7 +58,7 @@ export default function Facilities() {
         {facilities.map((item, index) => (
           <View
             key={item.id || index}
-            className="mb-10 rounded-3xl overflow-hidden border border-[#2a2a2a]"
+            className="mb-10 rounded-3xl overflow-hidden border border-border"
             style={{
               shadowColor: "#ff3c00",
               shadowOpacity: 0.15,
@@ -98,14 +98,14 @@ export default function Facilities() {
                   }
                   className="flex-row items-center"
                 >
-                  <Text className="text-[#ff3c00] font-semibold mr-2 tracking-wide">
+                  <Text className="text-primary font-semibold mr-2 tracking-wide">
                     VIEW DETAILS
                   </Text>
-                  <View className="border border-[#ff3c00] p-2 ml-3 rounded-full">
+                  <View className="border border-primary p-2 ml-3 rounded-full">
                     <Ionicons
                       name="arrow-forward"
                       size={18}
-                      color="#ff3c00"
+                      color="#e11d1d"
                     />
                   </View>
                 </TouchableOpacity>
