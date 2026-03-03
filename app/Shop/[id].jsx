@@ -61,7 +61,7 @@ export default function ProductDetails() {
 
   return (
     <ScrollView className="flex-1 bg-darkBg">
-      <View className="px-5 mt-7">
+      <View className="px-5 mt-20">
         <View
           className="rounded-3xl overflow-hidden border border-[#1f1f1f]"
           style={{
