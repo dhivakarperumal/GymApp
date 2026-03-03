@@ -32,11 +32,11 @@ const LoginScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   // 🔹 Role redirect
-  const redirectByRole = (role) => {
-    if (role === "admin") router.replace("/admin");
-    else if (role === "trainer") router.replace("/trainer");
-    else router.replace("/");
-  };
+const redirectByRole = (role) => {
+  if (role === "admin") router.replace("/(admin)");
+  else if (role === "trainer") router.replace("/trainer");
+  else router.replace("/");
+};
 
   const handleLogin = async () => {
     if (loading) return;
