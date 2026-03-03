@@ -230,7 +230,7 @@ const RegisterScreen = () => {
                   <TouchableOpacity
                     onPress={handleRegister}
                     disabled={loading}
-                    className="bg-red-600 py-5 rounded-full items-center mt-2"
+                    className="bg-primary py-5 rounded-full items-center mt-2"
                   >
                     {loading ? (
                       <ActivityIndicator color="#fff" />
@@ -247,7 +247,7 @@ const RegisterScreen = () => {
                   >
                     <Text className="text-center text-gray-400">
                       Already have an account,{" "}
-                      <Text className="text-red-500 font-semibold">
+                      <Text className="text-primary font-semibold">
                         Switch to Login
                       </Text>
                     </Text>
