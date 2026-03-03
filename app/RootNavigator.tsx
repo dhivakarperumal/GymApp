@@ -11,8 +11,9 @@ export default function RootNavigator() {
   useEffect(() => {
     if (loading) return;
 
-    const segment = segments.length > 0 ? segments[0] : null;
+    const segment = segments[0];
 
+    // 🔐 Not logged in
     if (!user) {
       if (segment !== "(auth)") {
         router.replace("/(auth)/login");
@@ -20,22 +21,22 @@ export default function RootNavigator() {
       return;
     }
 
+    // 🔒 Logged in
     const roleRoutes: Record<string, string> = {
-      admin: "(admin)",
-      trainer: "(trainers)",
-      user: "(tabs)",
+      admin: "/(admin)",
+      trainer: "/(trainers)/dashboard",
+      user: "/(tabs)",
     };
 
-    const allowedGroup = roleRoutes[user.role] || "(tabs)";
+    const correctPath = roleRoutes[user.role] || "/(tabs)";
 
-    if (segment !== allowedGroup) {
-      if (allowedGroup === "(trainers)") {
-        router.replace("/(trainers)/dashboard");
-      } else {
-        router.replace(`/${allowedGroup}`);
-      }
+    const protectedGroups = ["(admin)", "(trainers)", "(tabs)"];
+
+    if (protectedGroups.includes(segment) && `/${segment}` !== correctPath) {
+      router.replace(correctPath);
     }
-  }, [user, loading, segments]);
+
+  }, [loading, user]);
 
   if (loading) {
     return (
