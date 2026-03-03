@@ -57,9 +57,11 @@ export default function Services() {
       )}
 
       {services.map((service, index) => (
-        <View
+        <TouchableOpacity
           key={service.id || index}
-          className="mb-10 rounded-3xl overflow-hidden"
+          activeOpacity={0.9}
+          onPress={() => router.push(`/services/${service.slug}`)}
+          className="mb-10 rounded-3xl overflow-hidden border border-primary"
           style={{
             shadowColor: "#ff3c00",
             shadowOpacity: 0.6,
@@ -77,7 +79,6 @@ export default function Services() {
             resizeMode="cover"
           />
 
-          {/* Overlay */}
           <View
             style={{
               position: "absolute",
@@ -85,27 +86,30 @@ export default function Services() {
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: "rgba(0,0,0,0.4)",
             }}
           />
 
           {/* Bottom Section */}
-          <View className="absolute bottom-0 left-0 right-0 p-6 bg-black/80 border-t border-[#ff3c00]">
+          <View className="absolute bottom-0 left-0 right-0 p-6 bg-black/80 border-t border-primary">
             <Text className="text-white text-xl font-bold leading-6">
               {service?.title || "Service"}
             </Text>
 
+            <Text className="text-gray-300 text-xs mt-2 font-bold leading-6">
+              {service?.slug || "Service"}
+            </Text>
+
             <TouchableOpacity
               onPress={() => router.push(`/services/${service.slug}`)}
-              className="mt-4 self-start bg-[#ff3c00] px-5 py-2 rounded-full"
+              className="mt-4 self-start bg-primary px-5 py-2 rounded-full"
               activeOpacity={0.8}
             >
-              <Text className="text-black font-semibold text-xs tracking-wider">
+              <Text className="text-white font-semibold text-xs tracking-wider">
                 EXPLORE
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </TouchableOpacity>
       ))}
 
       <View className="h-10" />

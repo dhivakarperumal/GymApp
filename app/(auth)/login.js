@@ -180,7 +180,7 @@ const redirectByRole = (role) => {
 
                 {/* Forgot Password */}
                 <TouchableOpacity className="items-end mb-6">
-                  <Text className="text-red-500 text-sm">Forgot Password?</Text>
+                  <Text className="text-primary text-sm">Forgot Password?</Text>
                 </TouchableOpacity>
 
                 {/* LOGIN BUTTON */}
@@ -188,7 +188,7 @@ const redirectByRole = (role) => {
                   onPress={handleLogin}
                   disabled={loading}
                   activeOpacity={0.85}
-                  className="bg-red-600 py-4 rounded-full items-center"
+                  className="bg-primary py-4 rounded-full items-center"
                 >
                   {loading ? (
                     <ActivityIndicator color="#fff" />
@@ -204,7 +204,7 @@ const redirectByRole = (role) => {
                 >
                   <Text className="text-center text-gray-400">
                     Don’t have an account?{" "}
-                    <Text className="text-red-500 font-semibold">Sign Up</Text>
+                    <Text className="text-primary font-semibold">Sign Up</Text>
                   </Text>
                 </TouchableOpacity>
               </View>

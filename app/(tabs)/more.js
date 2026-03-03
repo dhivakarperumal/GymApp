@@ -51,7 +51,7 @@ export default function More() {
           <View className="bg-[#1c1c1c] rounded-2xl p-5 flex-row items-center justify-between border border-[#262626]">
             {/* Left Section */}
             <View className="flex-row items-center">
-              <View className="bg-black p-4 rounded-2xl mr-4 border border-[#ff3c00]">
+              <View className="bg-black p-4 rounded-2xl mr-4 border border-primary">
                 <Ionicons name={item.icon} size={20} color="#ff3c00" />
               </View>
 
