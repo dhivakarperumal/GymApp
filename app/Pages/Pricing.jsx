@@ -53,7 +53,7 @@ export default function Pricing() {
           <View className="absolute -inset-1 bg-[#ff3c00]/10 rounded-3xl blur-xl" />
 
           {/* Card */}
-          <View className="bg-[#161616] rounded-3xl p-7 border border-[#9d3333]">
+          <View className="bg-[#161616] rounded-3xl p-7 border border-primary">
             {/* Plan Name */}
             <Text className="text-white text-2xl font-bold mb-2">
               {plan?.name}
@@ -66,7 +66,7 @@ export default function Pricing() {
 
             {/* Price Section */}
             <View className="mb-6">
-              <Text className="text-[#ff3c00] text-5xl font-extrabold">
+              <Text className="text-primary text-5xl font-extrabold">
                 ₹{Number(plan?.price || 0).toLocaleString()}
               </Text>
 
@@ -104,7 +104,7 @@ export default function Pricing() {
               {Array.isArray(plan?.facilities) &&
                 plan.facilities.map((facility, i) => (
                   <View key={i} className="flex-row items-center mb-3">
-                    <View className="w-2.5 h-2.5 bg-[#ff3c00] rounded-full mr-3" />
+                    <View className="w-2.5 h-2.5 bg-primary rounded-full mr-3" />
                     <Text className="text-gray-300 text-sm tracking-wide">
                       {facility}
                     </Text>
@@ -120,7 +120,7 @@ export default function Pricing() {
                   params: { plan: JSON.stringify(plan) },
                 })
               }
-              className="bg-[#ff3c00] py-4 rounded-2xl items-center shadow-xl"
+              className="bg-primary py-4 rounded-2xl items-center shadow-xl"
             >
               <Text className="text-white font-bold text-xl tracking-wide">
                 Buy Plan
