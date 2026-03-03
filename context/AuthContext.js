@@ -63,3 +63,10 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+
+// Provide a default export for consumers that import the module as a default
+// and expect properties like `useAuth` (defensive compatibility patch).
+export default {
+  AuthProvider,
+  useAuth,
+};

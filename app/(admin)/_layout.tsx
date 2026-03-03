@@ -1,8 +1,9 @@
-import { Tabs, useRouter } from "expo-router";
+import { Tabs, useRouter, Redirect } from "expo-router";
 import { View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
+import { useAuth } from "../../context/AuthContext";
 
 function AdminHeader() {
   const router = useRouter();
