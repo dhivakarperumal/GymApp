@@ -9,10 +9,12 @@ import {
   Pressable,
 } from "react-native";
 import { useEffect, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function TabLayout() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [user, setUser] = useState(null);
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -42,7 +44,7 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: true,
         headerTitle: "",
-        headerStyle: { backgroundColor: "#0f0f0f" },
+        headerStyle: { backgroundColor: "#0f0f0f", paddingTop: insets.top },
         tabBarActiveTintColor: "#e11d1d",
         tabBarStyle: {
           backgroundColor: "#0f0f0f",

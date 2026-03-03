@@ -33,9 +33,13 @@ const LoginScreen = () => {
 
   // 🔹 Role redirect
 const redirectByRole = (role) => {
-  if (role === "admin") router.replace("/(admin)");
-  else if (role === "trainer") router.replace("/trainer");
-  else router.replace("/(tabs)");
+  if (role === "admin") {
+    router.replace("/(admin)/dashboard");
+  } else if (role === "trainer") {
+    router.replace("/(trainers)/dashboard");
+  } else {
+    router.replace("/(tabs)/home");
+  }
 };
 
   const handleLogin = async () => {

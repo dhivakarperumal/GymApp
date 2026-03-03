@@ -1,29 +1,39 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 
-export default function AdminDashboard() {
-  const router = useRouter();
-
-  const goHome = () => {
-    router.replace("/(tabs)"); // ✅ change this if needed
-  };
-
+export default function Home() {
   return (
-    <SafeAreaView className="flex-1 bg-black items-center justify-center px-6">
-      <Text className="text-white text-3xl font-bold mb-8">
-        Admin Dashboard 👑
+    <SafeAreaView className="flex-1 bg-gray-100">
+      <ScrollView className="flex-1 p-4">
+
+      <Text className="text-2xl font-bold mb-4">
+        Admin Dashboard
       </Text>
 
-      <TouchableOpacity
-        onPress={goHome}
-        className="bg-red-600 px-8 py-4 rounded-full"
-        activeOpacity={0.8}
-      >
-        <Text className="text-white text-lg font-bold">
-          Go To Home
-        </Text>
-      </TouchableOpacity>
+      {/* Stats Cards */}
+      <View className="flex-row justify-between mb-4">
+        <View className="bg-white p-4 rounded-xl w-[48%] shadow">
+          <Text className="text-gray-500">Total Users</Text>
+          <Text className="text-xl font-bold mt-1">1,240</Text>
+        </View>
+
+        <View className="bg-white p-4 rounded-xl w-[48%] shadow">
+          <Text className="text-gray-500">Orders</Text>
+          <Text className="text-xl font-bold mt-1">320</Text>
+        </View>
+      </View>
+
+      <View className="bg-white p-4 rounded-xl shadow mb-4">
+        <Text className="text-gray-500">Revenue</Text>
+        <Text className="text-xl font-bold mt-1">₹ 85,000</Text>
+      </View>
+
+      <View className="bg-white p-4 rounded-xl shadow">
+        <Text className="text-gray-500">Active Plans</Text>
+        <Text className="text-xl font-bold mt-1">180</Text>
+      </View>
+
+      </ScrollView>
     </SafeAreaView>
   );
 }
