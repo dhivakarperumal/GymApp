@@ -98,7 +98,7 @@ export default function Services() {
             </Text>
 
             <TouchableOpacity
-              onPress={() => router.push(`/services/${service.slug}`)}
+              onPress={() => router.push(`/Pages/${service.slug}`)}
               className="mt-4 self-start bg-primary px-5 py-2 rounded-full"
               activeOpacity={0.8}
             >
