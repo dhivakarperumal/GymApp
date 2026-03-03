@@ -71,11 +71,8 @@ export default function Shop() {
       <View className="flex-row flex-wrap justify-between">
         {!loading &&
           filteredProducts.map((item) => {
-            const weightKey = item.weight?.[0];
-            const stockData = weightKey ? item.stock?.[weightKey] : null;
-
-            const price = stockData?.offerPrice || stockData?.mrp || 0;
-            const oldPrice = stockData?.mrp || 0;
+            const price = Number(item.offer_price || item.mrp || 0);
+            const oldPrice = Number(item.mrp || 0);
 
             const imageUrl =
               item.images?.[0] || "https://via.placeholder.com/150";
@@ -84,7 +81,7 @@ export default function Shop() {
               <TouchableOpacity
                 key={item.id}
                 activeOpacity={0.92}
-                onPress={() => router.push(`/shop/${item.id}`)}
+                onPress={() => router.push(`/Shop/${item.id}`)}
                 className="w-[48%] mb-6"
               >
                 <View
