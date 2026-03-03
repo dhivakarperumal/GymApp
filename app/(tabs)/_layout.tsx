@@ -5,7 +5,6 @@ import {
   Text,
   Image,
   TouchableOpacity,
-  Alert,
   Modal,
   Pressable,
 } from "react-native";
@@ -42,56 +41,49 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: true,
-        headerStyle: { backgroundColor: "#0f0f0f" },
         headerTitle: "",
-        tabBarActiveTintColor: "#ff3c00",
+        headerStyle: { backgroundColor: "#0f0f0f" },
+        tabBarActiveTintColor: "#e11d1d",
         tabBarStyle: {
           backgroundColor: "#0f0f0f",
           borderTopColor: "#222",
         },
 
         headerLeft: () => (
-          <View style={{ paddingLeft: 16 }}>
+          <View className="pl-4">
             <Image
               source={require("../../assets/images/logo_dark.png")}
-              style={{ width: 45, height: 45 }}
+              className="w-11 h-11"
               resizeMode="contain"
             />
           </View>
         ),
 
         headerRight: () => (
-          <View style={{ flexDirection: "row", paddingRight: 16 }}>
+          <View className="flex-row items-center pr-4">
             {/* CART */}
             <TouchableOpacity
               onPress={() => router.push("/cart")}
-              style={{ marginRight: 16 }}
+              className="mr-4"
             >
-              <Ionicons name="cart-outline" size={22} color="#fff" />
+              <Ionicons name="cart-outline" size={22} color="white" />
             </TouchableOpacity>
 
             {/* NOTIFICATION */}
-            <TouchableOpacity style={{ marginRight: 16 }}>
+            <TouchableOpacity className="mr-4">
               <Ionicons
                 name="notifications-outline"
                 size={22}
-                color="#fff"
+                color="white"
               />
             </TouchableOpacity>
 
             {/* AVATAR */}
             <TouchableOpacity
               onPress={() => setMenuVisible(true)}
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 18,
-                backgroundColor: "#ff3c00",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              className="w-9 h-9 rounded-full bg-primary items-center justify-center"
             >
-              <Text style={{ color: "white", fontWeight: "bold" }}>
+              <Text className="text-white font-bold">
                 {initial}
               </Text>
             </TouchableOpacity>
@@ -104,55 +96,34 @@ export default function TabLayout() {
               onRequestClose={() => setMenuVisible(false)}
             >
               <Pressable
-                style={{ flex: 1 }}
+                className="flex-1"
                 onPress={() => setMenuVisible(false)}
               >
-                <View
-                  style={{
-                    position: "absolute",
-                    top: 70,
-                    right: 20,
-                    backgroundColor: "#111",
-                    borderRadius: 16,
-                    padding: 12,
-                    width: 160,
-                    borderWidth: 1,
-                    borderColor: "#222",
-                  }}
-                >
+                <View className="absolute top-20 right-5 bg-card rounded-2xl p-4 w-40 border border-background/70">
+                  
                   <TouchableOpacity
                     onPress={() => {
                       setMenuVisible(false);
                       router.push("/profile");
                     }}
-                    style={{ paddingVertical: 8 }}
+                    className="py-2"
                   >
-                    <Text style={{ color: "white" }}>
+                    <Text className="text-white">
                       My Profile
                     </Text>
                   </TouchableOpacity>
 
-                  <View
-                    style={{
-                      height: 1,
-                      backgroundColor: "#222",
-                      marginVertical: 8,
-                    }}
-                  />
+                  <View className="h-px bg-border my-2" />
 
                   <TouchableOpacity
                     onPress={handleLogout}
-                    style={{ paddingVertical: 8 }}
+                    className="py-2"
                   >
-                    <Text
-                      style={{
-                        color: "#ff3c00",
-                        fontWeight: "bold",
-                      }}
-                    >
+                    <Text className="text-primary font-bold">
                       Logout
                     </Text>
                   </TouchableOpacity>
+
                 </View>
               </Pressable>
             </Modal>
