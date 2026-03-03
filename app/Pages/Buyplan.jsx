@@ -7,6 +7,8 @@ import {
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
+import RazorpayCheckout from "react-native-razorpay";
+import { Alert } from "react-native";
 
 export default function BuyPlan() {
   const { plan } = useLocalSearchParams();
@@ -18,6 +20,61 @@ export default function BuyPlan() {
     email: "",
     address: "",
   });
+
+  const validateForm = () => {
+    if (!form.name.trim()) {
+      Alert.alert("Validation Error", "Full name is required");
+      return false;
+    }
+
+    if (!/^[6-9]\d{9}$/.test(form.phone)) {
+      Alert.alert("Validation Error", "Enter valid 10-digit phone number");
+      return false;
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(form.email)) {
+      Alert.alert("Validation Error", "Enter valid email address");
+      return false;
+    }
+
+    if (!form.address.trim()) {
+      Alert.alert("Validation Error", "Address is required");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handlePayment = () => {
+    if (!validateForm()) return;
+
+    const options = {
+      description: selectedPlan.name,
+      image: "https://yourgymlogo.com/logo.png",
+      currency: "INR",
+      key: "rzp_test_SGj8n5SyKSE10b", 
+      amount: Number(selectedPlan.price) * 100, 
+      name: "Your Gym Name",
+      prefill: {
+        email: form.email,
+        contact: form.phone,
+        name: form.name,
+      },
+      theme: { color: "#ff3c00" },
+    };
+
+    RazorpayCheckout.open(options)
+      .then((data) => {
+        // SUCCESS
+        Alert.alert(
+          "Payment Successful 🎉",
+          `Payment ID: ${data.razorpay_payment_id}`,
+        );
+      })
+      .catch((error) => {
+        Alert.alert("Payment Failed", error.description);
+      });
+  };
 
   if (!selectedPlan) {
     return (
@@ -108,7 +165,10 @@ export default function BuyPlan() {
           <View className="h-[1px] bg-[#262626] mb-6" />
 
           {/* Premium Pay Button */}
-          <TouchableOpacity className="bg-[#ff3c00] py-5 rounded-2xl items-center shadow-2xl active:opacity-80">
+          <TouchableOpacity
+            onPress={handlePayment}
+            className="bg-[#ff3c00] py-5 rounded-2xl items-center shadow-2xl active:opacity-80"
+          >
             <Text className="text-black font-extrabold text-base tracking-widest">
               PAY ₹{Number(selectedPlan.price).toLocaleString()}
             </Text>
