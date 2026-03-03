@@ -1,9 +1,11 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { getAllPlans } from "../../services/api";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
 
 export default function Pricing() {
   const [plans, setPlans] = useState([]);
+  const router = useRouter();
 
   useEffect(() => {
     fetchPlans();
@@ -29,7 +31,7 @@ export default function Pricing() {
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      className="flex-1 bg-[#0f0f0f] px-5 pt-12"
+      className="flex-1 bg-[#090909] px-5 pt-12"
     >
       {/* Header */}
       <Text className="text-white text-3xl font-extrabold mb-2">
@@ -51,7 +53,7 @@ export default function Pricing() {
           <View className="absolute -inset-1 bg-[#ff3c00]/10 rounded-3xl blur-xl" />
 
           {/* Card */}
-          <View className="bg-[#161616] rounded-3xl p-7 border border-[#2a2a2a]">
+          <View className="bg-[#161616] rounded-3xl p-7 border border-[#9d3333]">
             {/* Plan Name */}
             <Text className="text-white text-2xl font-bold mb-2">
               {plan?.name}
@@ -111,9 +113,17 @@ export default function Pricing() {
             </View>
 
             {/* Button */}
-            <TouchableOpacity className="bg-[#ff3c00] py-4 rounded-2xl items-center shadow-xl">
-              <Text className="text-black font-bold text-base tracking-wide">
-                Choose Plan
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/Pages/Buyplan",
+                  params: { plan: JSON.stringify(plan) },
+                })
+              }
+              className="bg-[#ff3c00] py-4 rounded-2xl items-center shadow-xl"
+            >
+              <Text className="text-white font-bold text-xl tracking-wide">
+                Buy Plan
               </Text>
             </TouchableOpacity>
           </View>
