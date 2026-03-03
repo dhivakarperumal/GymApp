@@ -57,8 +57,10 @@ export default function Services() {
       )}
 
       {services.map((service, index) => (
-        <View
+        <TouchableOpacity
           key={service.id || index}
+          activeOpacity={0.9}
+          onPress={() => router.push(`/services/${service.slug}`)}
           className="mb-10 rounded-3xl overflow-hidden border border-primary"
           style={{
             shadowColor: "#ff3c00",
@@ -107,7 +109,7 @@ export default function Services() {
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </TouchableOpacity>
       ))}
 
       <View className="h-10" />
