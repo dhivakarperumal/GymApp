@@ -84,6 +84,48 @@ export const getAllReviews = async () => {
   return res.json();
 };
 
+// Cart Page Logic
+// GET CART
+export const getCart = async (userId) => {
+  const res = await fetch(`${BASE_URL}/cart?userId=${userId}`);
+  return res.json();
+};
+
+// ADD CART
+export const addToCartApi = async (data) => {
+  const res = await fetch(`${BASE_URL}/cart`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  return res.json();
+};
+
+// UPDATE CART
+export const updateCartApi = async (id, quantity) => {
+  const res = await fetch(`${BASE_URL}/cart/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ quantity }),
+  });
+
+  return res.json();
+};
+
+// DELETE CART ITEM
+export const deleteCartApi = async (id) => {
+  const res = await fetch(`${BASE_URL}/cart/${id}`, {
+    method: "DELETE",
+  });
+
+  return res.json();
+};
+
 export const serviceList = async () => {
   try {
     const res = await fetch(`${BASE_URL}/services`);
