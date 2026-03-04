@@ -228,9 +228,9 @@ export const getUserAssignment = async () => {
   return res.json();
 };
 
-// diet plan for the particular user
-export const getDietPlans = async (trainerId) => {
-  const res = await fetch(`${BASE_URL}/diet-plans?trainerId=${trainerId}`);
+// get all diet plans
+export const getDietPlans = async () => {
+  const res = await fetch(`${BASE_URL}/diet-plans`);
   return res.json();
 };
 
