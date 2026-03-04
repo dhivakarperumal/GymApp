@@ -2,6 +2,7 @@ import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator } fr
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { getAllStaffs } from "../../services/api"; // adjust path
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Trainers() {
   const [staffs, setStaffs] = useState([]);
@@ -31,6 +32,7 @@ export default function Trainers() {
   }, []);
 
   return (
+    <SafeAreaView className="flex-1 bg-darkBg">
     <ScrollView
       showsVerticalScrollIndicator={false}
       className="flex-1 bg-darkBg px-5 pt-12"
@@ -97,5 +99,6 @@ export default function Trainers() {
 
       <View className="h-10" />
     </ScrollView>
+    </SafeAreaView>
   );
 }
