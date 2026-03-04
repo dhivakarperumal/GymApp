@@ -5,6 +5,8 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
+  Modal,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -13,33 +15,54 @@ import { Ionicons } from "@expo/vector-icons";
 
 export default function Profile() {
   const router = useRouter();
+
   const [user, setUser] = useState(null);
+  const [editVisible, setEditVisible] = useState(false);
+
+  const [name, setName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [logoutVisible, setLogoutVisible] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
       const storedUser = await AsyncStorage.getItem("user");
+
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const parsed = JSON.parse(storedUser);
+        setUser(parsed);
+        setName(parsed.username || "");
+        setMobile(parsed.mobile || "");
       }
     };
+
     loadUser();
   }, []);
 
-  const handleLogout = async () => {
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      { text: "Cancel" },
-      {
-        text: "Logout",
-        onPress: async () => {
-          await AsyncStorage.removeItem("token");
-          await AsyncStorage.removeItem("user");
-          router.replace("/login");
-        },
-      },
-    ]);
+  const saveProfile = async () => {
+    const updatedUser = {
+      ...user,
+      username: name,
+      mobile: mobile,
+    };
+
+    await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+    setEditVisible(false);
+
+    Alert.alert("Success", "Profile updated successfully 🎉");
   };
 
+const handleLogout = async () => {
+  setLogoutVisible(false);
+
+  await AsyncStorage.removeItem("token");
+  await AsyncStorage.removeItem("user");
+
+  router.replace("/login");
+};
+
   const userName = user?.username || "User";
+  const phone = user?.mobile || "No phone number";
   const initial = userName.charAt(0).toUpperCase();
 
   return (
@@ -49,31 +72,27 @@ export default function Profile() {
         contentContainerStyle={{ padding: 20 }}
       >
         {/* HEADER */}
-        <Text className="text-white text-3xl font-bold mb-8">
-          My Profile
-        </Text>
+        <Text className="text-white text-3xl font-bold mb-8">My Profile</Text>
 
         {/* PROFILE CARD */}
         <View className="bg-[#111] rounded-3xl p-6 items-center mb-8">
-          {/* AVATAR */}
-          <View className="w-28 h-28 rounded-full bg-[#ff3c00] items-center justify-center mb-4">
-            <Text className="text-white text-4xl font-bold">
-              {initial}
-            </Text>
+          <View className="w-28 h-28 rounded-full bg-primary items-center justify-center mb-4">
+            <Text className="text-white text-4xl font-bold">{initial}</Text>
           </View>
 
-          <Text className="text-white text-xl font-semibold">
-            {userName}
-          </Text>
+          <Text className="text-white text-xl font-semibold">{userName}</Text>
 
-          <Text className="text-gray-400 mt-1">
-            Fitness Enthusiast 💪
-          </Text>
+          <Text className="text-gray-400 mt-1">{phone}</Text>
+
+          <Text className="text-gray-500 mt-1 text-xs">Fitness Enthusiast</Text>
         </View>
 
-        {/* OPTIONS SECTION */}
+        {/* OPTIONS */}
         <View className="bg-[#111] rounded-3xl p-5 mb-6">
-          <TouchableOpacity className="flex-row justify-between items-center py-4 border-b border-[#222]">
+          <TouchableOpacity
+            onPress={() => setEditVisible(true)}
+            className="flex-row justify-between items-center py-4 border-b border-[#222]"
+          >
             <Text className="text-white">Edit Profile</Text>
             <Ionicons name="chevron-forward" size={18} color="#888" />
           </TouchableOpacity>
@@ -89,16 +108,137 @@ export default function Profile() {
           </TouchableOpacity>
         </View>
 
-        {/* LOGOUT BUTTON */}
+        {/* LOGOUT */}
+        <TouchableOpacity
+          onPress={() => setLogoutVisible(true)}
+          className="bg-primary py-5 rounded-2xl items-center"
+        >
+          <Text className="text-white font-bold text-lg">Logout</Text>
+        </TouchableOpacity>
+      </ScrollView>
+
+      {/* EDIT PROFILE MODAL */}
+      <Modal visible={editVisible} animationType="slide" transparent>
+        <View className="flex-1 bg-black/80 justify-center px-6">
+          <View className="bg-[#111] rounded-3xl p-6">
+            <Text className="text-white text-xl font-bold mb-6">
+              Edit Profile
+            </Text>
+
+            <Text className="text-gray-400 mb-1">Name</Text>
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              className="bg-[#1a1a1a] text-white p-4 rounded-xl mb-4"
+            />
+
+            <Text className="text-gray-400 mb-1">Mobile Number</Text>
+            <TextInput
+              value={mobile}
+              onChangeText={setMobile}
+              keyboardType="phone-pad"
+              className="bg-[#1a1a1a] text-white p-4 rounded-xl mb-6"
+            />
+
+            <View className="flex-row justify-between">
+              <TouchableOpacity
+                onPress={() => setEditVisible(false)}
+                className="bg-gray-700 px-6 py-3 rounded-xl"
+              >
+                <Text className="text-white">Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={saveProfile}
+                className="bg-primary px-6 py-3 rounded-xl"
+              >
+                <Text className="text-white font-semibold">Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+  transparent
+  visible={logoutVisible}
+  animationType="fade"
+  onRequestClose={() => setLogoutVisible(false)}
+>
+  <View
+    style={{
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.7)",
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 20,
+    }}
+  >
+    <View
+      style={{
+        width: "100%",
+        backgroundColor: "#1a1a1a",
+        borderRadius: 24,
+        padding: 24,
+        borderWidth: 1,
+        borderColor: "#333",
+      }}
+    >
+      <Text
+        style={{
+          color: "white",
+          fontSize: 18,
+          fontWeight: "bold",
+          textAlign: "center",
+        }}
+      >
+        Confirm Logout
+      </Text>
+
+      <Text
+        style={{
+          color: "#aaa",
+          textAlign: "center",
+          marginTop: 10,
+        }}
+      >
+        Are you sure you want to logout?
+      </Text>
+
+      <View style={{ flexDirection: "row", marginTop: 20 }}>
+        <TouchableOpacity
+          onPress={() => setLogoutVisible(false)}
+          style={{
+            flex: 1,
+            backgroundColor: "#333",
+            padding: 12,
+            borderRadius: 20,
+            marginRight: 10,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ color: "white" }}>Cancel</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           onPress={handleLogout}
-          className="bg-red-600 py-5 rounded-2xl items-center"
+          style={{
+            flex: 1,
+            backgroundColor: "#e11d1d",
+            padding: 12,
+            borderRadius: 20,
+            alignItems: "center",
+          }}
         >
-          <Text className="text-white font-bold text-lg">
+          <Text style={{ color: "white", fontWeight: "bold" }}>
             Logout
           </Text>
         </TouchableOpacity>
-      </ScrollView>
+      </View>
+    </View>
+  </View>
+</Modal>
+
     </SafeAreaView>
   );
 }

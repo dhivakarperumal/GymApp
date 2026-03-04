@@ -15,6 +15,9 @@ export default function More() {
   const router = useRouter();
 
   const handleNavigation = (title) => {
+    if (title === "Profile") {
+      router.push("/profile");
+    }
     if (title === "Pricing") {
       router.push("/Pages/Pricing");
     }
