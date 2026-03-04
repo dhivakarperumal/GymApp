@@ -1,11 +1,13 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import { getDietPlans } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
+import { useRouter } from "expo-router";
 
 export default function DietChartScreen() {
   const { user } = useAuth();
+  const router = useRouter();
 
   const [diet, setDiet] = useState(null);
   const [title, setTitle] = useState("");
@@ -16,9 +18,7 @@ export default function DietChartScreen() {
 
       if (!Array.isArray(data)) return;
 
-      const myDiet = data.find(
-        (item) => item.member_email === user.email
-      );
+      const myDiet = data.find((item) => item.member_email === user.email);
 
       if (myDiet) {
         setTitle(myDiet.title);
@@ -44,11 +44,7 @@ export default function DietChartScreen() {
         My Diet Plan
       </Text>
 
-      {title && (
-        <Text className="text-gray-400 mb-6">
-          {title}
-        </Text>
-      )}
+      {title && <Text className="text-gray-400 mb-6">{title}</Text>}
 
       {diet &&
         Object.entries(diet).map(([day, meals]) => (
@@ -57,15 +53,9 @@ export default function DietChartScreen() {
             className="bg-[#1c1c1c] rounded-2xl p-5 border border-[#262626] mb-6"
           >
             <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-white text-lg font-bold">
-                {day} Meals
-              </Text>
+              <Text className="text-white text-lg font-bold">{day} Meals</Text>
 
-              <Ionicons
-                name="restaurant-outline"
-                size={18}
-                color="#ff3c00"
-              />
+              <Ionicons name="restaurant-outline" size={18} color="#ff3c00" />
             </View>
 
             {Object.entries(meals).map(([meal, value]) => (
@@ -90,9 +80,27 @@ export default function DietChartScreen() {
         ))}
 
       {!diet && (
-        <Text className="text-gray-400 mt-5">
-          No diet plan assigned
-        </Text>
+        <View className="items-center mt-16">
+          {/* BIG ICON */}
+          <View className="bg-[#1c1c1c] p-6 rounded-full mb-6 border border-[#262626]">
+            <Ionicons name="nutrition-outline" size={70} color="#e11d1d" />
+          </View>
+
+          <Text className="text-white text-lg font-semibold mb-2">
+            No Diet Plan Assigned
+          </Text>
+
+          <Text className="text-gray-400 text-center mb-6 px-10">
+            Purchase a premium plan to unlock your personalized diet chart
+          </Text>
+
+          <TouchableOpacity
+            onPress={() => router.push("/Pages/Pricing")}
+            className="bg-primary px-8 py-3 rounded-xl"
+          >
+            <Text className="text-white font-semibold">View Pricing Plans</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       <View className="h-20" />
