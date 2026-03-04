@@ -8,17 +8,33 @@ import {
   Modal,
   Pressable,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
+import { getCart } from "../../services/api";
 
 export default function TabLayout() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
-
+  const [cartCount, setCartCount] = useState(0);
   const [menuVisible, setMenuVisible] = useState(false);
   const [logoutVisible, setLogoutVisible] = useState(false);
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        if (!user?.id) return;
+
+        const data = await getCart(user.id);
+        setCartCount(data?.length || 0);
+      } catch (err) {
+        console.log("Cart fetch error", err);
+      }
+    };
+
+    fetchCart();
+  }, [user]);
 
   const handleLogout = async () => {
     setMenuVisible(false);
@@ -51,14 +67,48 @@ export default function TabLayout() {
         ),
 
         headerRight: () => (
-          <View style={{ flexDirection: "row", alignItems: "center", paddingRight: 16 }}>
-
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              paddingRight: 16,
+            }}
+          >
             {/* CART */}
             <TouchableOpacity
               onPress={() => router.push("/cart")}
               style={{ marginRight: 16 }}
             >
-              <Ionicons name="cart-outline" size={22} color="white" />
+              <View>
+                <Ionicons name="cart-outline" size={22} color="white" />
+
+                {cartCount > 0 && (
+                  <View
+                    style={{
+                      position: "absolute",
+                      top: -6,
+                      right: -8,
+                      backgroundColor: "#e11d1d",
+                      borderRadius: 10,
+                      minWidth: 16,
+                      height: 16,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      paddingHorizontal: 4,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "white",
+                        fontSize: 10,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {cartCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </TouchableOpacity>
 
             {/* NOTIFICATION */}
@@ -121,7 +171,13 @@ export default function TabLayout() {
                   <View style={{ marginBottom: 12 }}>
                     {user && (
                       <>
-                        <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>
+                        <Text
+                          style={{
+                            color: "white",
+                            fontWeight: "bold",
+                            fontSize: 16,
+                          }}
+                        >
                           {user.username}
                         </Text>
                         <Text style={{ color: "#aaa", fontSize: 13 }}>
@@ -131,7 +187,13 @@ export default function TabLayout() {
                     )}
                   </View>
 
-                  <View style={{ height: 1, backgroundColor: "#333", marginVertical: 8 }} />
+                  <View
+                    style={{
+                      height: 1,
+                      backgroundColor: "#333",
+                      marginVertical: 8,
+                    }}
+                  />
 
                   {/* PROFILE */}
                   <TouchableOpacity
@@ -173,7 +235,13 @@ export default function TabLayout() {
                     </TouchableOpacity>
                   )}
 
-                  <View style={{ height: 1, backgroundColor: "#333", marginVertical: 8 }} />
+                  <View
+                    style={{
+                      height: 1,
+                      backgroundColor: "#333",
+                      marginVertical: 8,
+                    }}
+                  />
 
                   {/* LOGOUT */}
                   <TouchableOpacity
