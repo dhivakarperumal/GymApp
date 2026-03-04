@@ -52,14 +52,14 @@ export default function Profile() {
     Alert.alert("Success", "Profile updated successfully 🎉");
   };
 
-const handleLogout = async () => {
-  setLogoutVisible(false);
+  const handleLogout = async () => {
+    setLogoutVisible(false);
 
-  await AsyncStorage.removeItem("token");
-  await AsyncStorage.removeItem("user");
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("user");
 
-  router.replace("/login");
-};
+    router.replace("/login");
+  };
 
   const userName = user?.username || "User";
   const phone = user?.mobile || "No phone number";
@@ -160,85 +160,84 @@ const handleLogout = async () => {
       </Modal>
 
       <Modal
-  transparent
-  visible={logoutVisible}
-  animationType="fade"
-  onRequestClose={() => setLogoutVisible(false)}
->
-  <View
-    style={{
-      flex: 1,
-      backgroundColor: "rgba(0,0,0,0.7)",
-      justifyContent: "center",
-      alignItems: "center",
-      paddingHorizontal: 20,
-    }}
-  >
-    <View
-      style={{
-        width: "100%",
-        backgroundColor: "#1a1a1a",
-        borderRadius: 24,
-        padding: 24,
-        borderWidth: 1,
-        borderColor: "#333",
-      }}
-    >
-      <Text
-        style={{
-          color: "white",
-          fontSize: 18,
-          fontWeight: "bold",
-          textAlign: "center",
-        }}
+        transparent
+        visible={logoutVisible}
+        animationType="fade"
+        onRequestClose={() => setLogoutVisible(false)}
       >
-        Confirm Logout
-      </Text>
-
-      <Text
-        style={{
-          color: "#aaa",
-          textAlign: "center",
-          marginTop: 10,
-        }}
-      >
-        Are you sure you want to logout?
-      </Text>
-
-      <View style={{ flexDirection: "row", marginTop: 20 }}>
-        <TouchableOpacity
-          onPress={() => setLogoutVisible(false)}
+        <View
           style={{
             flex: 1,
-            backgroundColor: "#333",
-            padding: 12,
-            borderRadius: 20,
-            marginRight: 10,
+            backgroundColor: "rgba(0,0,0,0.7)",
+            justifyContent: "center",
             alignItems: "center",
+            paddingHorizontal: 20,
           }}
         >
-          <Text style={{ color: "white" }}>Cancel</Text>
-        </TouchableOpacity>
+          <View
+            style={{
+              width: "100%",
+              backgroundColor: "#1a1a1a",
+              borderRadius: 24,
+              padding: 24,
+              borderWidth: 1,
+              borderColor: "#333",
+            }}
+          >
+            <Text
+              style={{
+                color: "white",
+                fontSize: 18,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+            >
+              Confirm Logout
+            </Text>
 
-        <TouchableOpacity
-          onPress={handleLogout}
-          style={{
-            flex: 1,
-            backgroundColor: "#e11d1d",
-            padding: 12,
-            borderRadius: 20,
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ color: "white", fontWeight: "bold" }}>
-            Logout
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </View>
-</Modal>
+            <Text
+              style={{
+                color: "#aaa",
+                textAlign: "center",
+                marginTop: 10,
+              }}
+            >
+              Are you sure you want to logout?
+            </Text>
 
+            <View style={{ flexDirection: "row", marginTop: 20 }}>
+              <TouchableOpacity
+                onPress={() => setLogoutVisible(false)}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#333",
+                  padding: 12,
+                  borderRadius: 20,
+                  marginRight: 10,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "white" }}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleLogout}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#e11d1d",
+                  padding: 12,
+                  borderRadius: 20,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "white", fontWeight: "bold" }}>
+                  Logout
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
