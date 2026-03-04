@@ -76,7 +76,7 @@ export default function WorkoutDetails() {
         </ImageBackground>
 
         {/* CONTENT */}
-        <View className="bg-[#0f0f0f] rounded-t-3xl -mt-6 p-5">
+        <View className="bg-[#0f0f0f] h-full rounded-t-3xl -mt-6 p-5">
 
           {/* PREMIUM STATS */}
           <View className="flex-row justify-between mb-6">
