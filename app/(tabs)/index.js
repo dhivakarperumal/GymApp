@@ -11,6 +11,7 @@ import { getAllReviews, getUserAssignment } from "../../services/api";
 import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Dimensions } from "react-native";
+import { useRouter } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
@@ -20,6 +21,7 @@ export default function Home() {
   const [assignment, setAssignment] = useState(null);
   const scrollRef = useRef(null);
   const scrollX = useRef(0);
+  const router = useRouter();
 
   useEffect(() => {
     fetchReviews();
@@ -133,6 +135,72 @@ export default function Home() {
           </TouchableOpacity>
         </View>
 
+        {/* 👨‍🏫 Trainer Section */}
+        {assignment && (
+          <View className="bg-[#141414] rounded-3xl p-6 mb-6 border border-[#262626] shadow-lg">
+
+            {/* Trainer Header */}
+            <View className="flex-row items-center mb-4">
+
+              <View className="bg-primary/20 p-3 rounded-2xl mr-3">
+                <Ionicons name="fitness" size={22} color="#ff3c00" />
+              </View>
+
+              <View>
+                <Text className="text-gray-400 text-xs">YOUR TRAINER</Text>
+
+                <Text className="text-white text-xl font-bold">
+                  {assignment.trainerName}
+                </Text>
+              </View>
+
+            </View>
+
+            {/* Plan Details */}
+            <View className="flex-row mb-4">
+
+              <View className="bg-[#1f1f1f] px-3 py-2 rounded-xl mr-2">
+                <Text className="text-gray-300 text-xs">
+                  Plan : {assignment.planName}
+                </Text>
+              </View>
+
+              <View className="bg-[#1f1f1f] px-3 py-2 rounded-xl">
+                <Text className="text-gray-300 text-xs">
+                  {assignment.planDuration} Months
+                </Text>
+              </View>
+
+            </View>
+
+            {/* Buttons */}
+            <View className="flex-row">
+
+              <TouchableOpacity
+                onPress={() => router.push("/workouts")}
+                className="flex-1 bg-primary py-3 rounded-xl mr-2 items-center flex-row justify-center"
+              >
+                <Ionicons name="barbell" size={16} color="white" />
+                <Text className="text-white text-xs font-bold ml-2">
+                  VIEW WORKOUT
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => router.push("/diet")}
+                className="flex-1 bg-[#262626] py-3 rounded-xl items-center flex-row justify-center"
+              >
+                <Ionicons name="restaurant" size={16} color="white" />
+                <Text className="text-white text-xs font-bold ml-2">
+                  VIEW DIET
+                </Text>
+              </TouchableOpacity>
+
+            </View>
+
+          </View>
+        )}
+
         {/* 🔥 Reviews Section */}
         <View className="mt-6 mb-10">
           <Text className="text-white text-lg font-bold mb-4">
@@ -197,36 +265,7 @@ export default function Home() {
           </ScrollView>
         </View>
 
-        {/* 👨‍🏫 Trainer Section */}
-        {assignment && (
-          <View className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]">
-            <Text className="text-gray-400 text-xs mb-1">YOUR TRAINER</Text>
 
-            <Text className="text-white text-xl font-bold">
-              {assignment.trainerName}
-            </Text>
-
-            <Text className="text-gray-400 mt-1">
-              Plan : {assignment.planName}
-            </Text>
-
-            <Text className="text-gray-400">
-              Duration : {assignment.planDuration} months
-            </Text>
-
-            <View className="flex-row mt-4">
-              <TouchableOpacity className="bg-primary px-4 py-2 rounded-xl mr-3">
-                <Text className="text-white text-xs font-bold">
-                  VIEW WORKOUT
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity className="bg-[#262626] px-4 py-2 rounded-xl">
-                <Text className="text-white text-xs font-bold">VIEW DIET</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
       </ScrollView>
     </View>
   );
