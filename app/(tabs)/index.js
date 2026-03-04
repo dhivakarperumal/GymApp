@@ -7,15 +7,22 @@ import {
   StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { getAllReviews } from "../../services/api";
+import { getAllReviews, getUserAssignment } from "../../services/api";
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Home() {
   const [reviews, setReviews] = useState([]);
+  const { user } = useAuth();
+  const [assignment, setAssignment] = useState(null);
 
   useEffect(() => {
     fetchReviews();
-  }, []);
+
+    if (user?.id) {
+      fetchAssignment();
+    }
+  }, [user]);
 
   const fetchReviews = async () => {
     try {
@@ -31,6 +38,29 @@ export default function Home() {
     }
   };
 
+  const fetchAssignment = async () => {
+    try {
+      const data = await getUserAssignment();
+
+      console.log("Assignments 👉", data);
+      console.log("Current user 👉", user);
+
+      if (Array.isArray(data) && user) {
+
+        const userAssignment = data.find(
+          (item) => item.userEmail === user.email
+        );
+
+        if (userAssignment) {
+          setAssignment(userAssignment);
+        }
+
+      }
+
+    } catch (err) {
+      console.log("Assignment fetch error:", err);
+    }
+  };
   return (
     <View className="flex-1 bg-card pt-12 px-5">
       <StatusBar barStyle="light-content" />
@@ -139,7 +169,53 @@ export default function Home() {
             ))}
           </ScrollView>
         </View>
+
+
+        {/* 👨‍🏫 Trainer Section */}
+        {assignment && (
+          <View className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]">
+
+            <Text className="text-gray-400 text-xs mb-1">
+              YOUR TRAINER
+            </Text>
+
+            <Text className="text-white text-xl font-bold">
+              {assignment.trainerName}
+            </Text>
+
+            <Text className="text-gray-400 mt-1">
+              Plan : {assignment.planName}
+            </Text>
+
+            <Text className="text-gray-400">
+              Duration : {assignment.planDuration} months
+            </Text>
+
+            <View className="flex-row mt-4">
+
+              <TouchableOpacity
+                className="bg-primary px-4 py-2 rounded-xl mr-3"
+              >
+                <Text className="text-white text-xs font-bold">
+                  VIEW WORKOUT
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="bg-[#262626] px-4 py-2 rounded-xl"
+              >
+                <Text className="text-white text-xs font-bold">
+                  VIEW DIET
+                </Text>
+              </TouchableOpacity>
+
+            </View>
+
+          </View>
+        )}
       </ScrollView>
+
+
     </View>
   );
 }

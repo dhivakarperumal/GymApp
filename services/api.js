@@ -206,5 +206,13 @@ export const updateUserApi = async (id, data) => {
   return res.json();
 };
 
+/* ------------------ ASSIGNMENTS ------------------ */
+
+// Trainer assigned to user
+export const getUserAssignment = async () => {
+  const res = await fetch(`${BASE_URL}/assignments`);
+  return res.json();
+};
+
 export default api;
 
