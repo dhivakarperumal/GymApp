@@ -8,36 +8,82 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getCart, updateCartApi, deleteCartApi, getAllProducts } from "../services/api";
+import { useEffect, useState } from "react";
 
 export default function Cart() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
-  const cartItems = [
-    {
-      id: 1,
-      title: "Whey Protein",
-      price: 1999,
-      image:
-        "https://images.unsplash.com/photo-1605296867424-35fc25c9212a",
-      qty: 1,
-    },
-    {
-      id: 2,
-      title: "Gym Gloves",
-      price: 699,
-      image:
-        "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6",
-      qty: 2,
-    },
-  ];
+  const [cartItems, setCartItems] = useState([]);
+  const [products, setProducts] = useState([]);
+  const userId = 5; // later from auth
+
+  const fetchProducts = async () => {
+    const data = await getAllProducts();
+    const list = data.products || data;
+    setProducts(list);
+  };
+
+  const fetchCart = async () => {
+    try {
+      const data = await getCart(userId);
+      setCartItems(data);
+    } catch (err) {
+      console.log("Cart fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCart();
+    fetchProducts();
+  }, []);
+
+  const increaseQty = async (item) => {
+    try {
+      await updateCartApi(item.id, item.quantity + 1);
+      fetchCart();
+    } catch (err) {
+      console.log("Increase qty error:", err);
+    }
+  };
+
+  const decreaseQty = async (item) => {
+    try {
+      if (item.quantity === 1) return;
+
+      await updateCartApi(item.id, item.quantity - 1);
+      fetchCart();
+    } catch (err) {
+      console.log("Decrease qty error:", err);
+    }
+  };
+
+  const deleteItem = async (id) => {
+    try {
+      await deleteCartApi(id);
+      fetchCart();
+    } catch (err) {
+      console.log("Delete error:", err);
+    }
+  };
 
   const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.qty,
+    (sum, item) => sum + Number(item.price) * item.quantity,
     0
   );
-
-  const delivery = 99;
+  const delivery = cartItems.length > 0 ? 99 : 0;
   const total = subtotal + delivery;
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-black justify-center items-center">
+        <Text className="text-white">Loading Cart...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-black">
@@ -57,30 +103,65 @@ export default function Cart() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
       >
-        {cartItems.map((item) => (
+        {cartItems.length === 0 && (
+          <View className="items-center mt-20">
+            <Text className="text-gray-400 text-lg">
+              Your cart is empty
+            </Text>
+          </View>
+        )}
+        {cartItems.map((item) => {
+
+  const product = products.find(p => p.id === item.productId);
+
+  let stock = 0;
+
+  if (product) {
+    if (product.category === "Food") {
+      stock = product.stock?.[item.weight]?.qty || 0;
+    } else {
+      const key = `${item.size}-${item.gender}`;
+      stock = product.stock?.[key]?.qty || 0;
+    }
+  }
+
+  return (
           <View
             key={item.id}
             className="bg-[#111] rounded-3xl p-4 mb-5 border border-[#1f1f1f]"
           >
             <View className="flex-row">
-              
+
               {/* PRODUCT IMAGE */}
               <Image
-                source={{ uri: item.image }}
+                source={{ uri: item.images?.[0] }}
                 className="w-24 h-24 rounded-2xl"
                 resizeMode="cover"
               />
-
               {/* DETAILS */}
               <View className="flex-1 ml-4 justify-between">
 
                 <View>
                   <Text className="text-white text-lg font-semibold">
-                    {item.title}
+                    {item.name}
                   </Text>
+                  {item.size && (
+                    <Text className="text-gray-400 text-sm">Size: {item.size}</Text>
+                  )}
+
+                  {item.gender && (
+                    <Text className="text-gray-400 text-sm">Gender: {item.gender}</Text>
+                  )}
+
+                  {item.weight && (
+                    <Text className="text-gray-400 text-sm">Weight: {item.weight}</Text>
+                  )}
 
                   <Text className="text-red-500 text-lg font-bold mt-1">
                     ₹ {item.price}
+                  </Text>
+                  <Text className="text-gray-400 text-sm">
+                    Stock Available: {stock}
                   </Text>
                 </View>
 
@@ -88,20 +169,26 @@ export default function Cart() {
                 <View className="flex-row items-center justify-between mt-4">
 
                   <View className="flex-row items-center bg-[#1a1a1a] rounded-full px-4 py-2">
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => decreaseQty(item)}>
                       <Ionicons name="remove" size={18} color="white" />
                     </TouchableOpacity>
 
                     <Text className="text-white mx-4 font-semibold">
-                      {item.qty}
+                      {item.quantity}
                     </Text>
 
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (item.quantity < stock) {
+                          increaseQty(item);
+                        }
+                      }}
+                    >
                       <Ionicons name="add" size={18} color="white" />
                     </TouchableOpacity>
                   </View>
 
-                  <TouchableOpacity>
+                  <TouchableOpacity onPress={() => deleteItem(item.id)}>
                     <Ionicons
                       name="trash-outline"
                       size={20}
@@ -112,7 +199,8 @@ export default function Cart() {
               </View>
             </View>
           </View>
-        ))}
+  );
+        })} 
       </ScrollView>
 
       {/* BILL SECTION */}

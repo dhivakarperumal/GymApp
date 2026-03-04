@@ -7,16 +7,18 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { getAllProducts } from "../../services/api";
 import { useRef } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getCart, addToCartApi, updateCartApi } from "../../services/api";
 
 const { width } = Dimensions.get("window");
 
 export default function ProductDetails() {
+  const router = useRouter();
   const { id } = useLocalSearchParams();
   const [product, setProduct] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -95,6 +97,11 @@ export default function ProductDetails() {
     return null;
   })();
 
+  const variant =
+    product?.category === "Food"
+      ? selectedWeight
+      : `${selectedSize}-${selectedGender}`;
+
   if (loading) {
     return (
       <View className="flex-1 bg-darkBg justify-center items-center">
@@ -117,10 +124,50 @@ export default function ProductDetails() {
   const price = pricing ? Number(pricing.offerPrice) : 0;
   const oldPrice = pricing ? Number(pricing.mrp) : 0;
 
-return (
-  <SafeAreaView style={{ flex: 1, backgroundColor: "#0f0f0f" }}>
+
+  // handle add to cart functions
+  const handleAddToCart = async () => {
+    try {
+      const userId = 5; // get from auth later
+
+      const cartItems = await getCart(userId);
+
+      const existing = cartItems.find(
+        (item) =>
+          item.productId === product.id &&
+          item.variant === variant
+      );
+
+      if (existing) {
+        // UPDATE quantity
+        await updateCartApi(existing.id, existing.quantity + quantity);
+      } else {
+        // ADD NEW ITEM
+        await addToCartApi({
+          userId: userId,
+          productId: product.id,
+          name: product.name,
+          price: price,
+          quantity: quantity,
+          size: selectedSize || null,
+          gender: selectedGender || null,
+          weight: selectedWeight || null,
+          variant: variant,
+          images: product.images,
+        });
+      }
+
+      router.push("/cart");
+
+    } catch (err) {
+      console.log("Add to cart error:", err);
+    }
+  };
+
+  return (
+  <SafeAreaView className="flex-1 bg-darkBg">
     <ScrollView className="flex-1 bg-darkBg">
-      <View className="px-5 mt-20">
+  <View className="px-5 mt-20">
         <View
           className="rounded-3xl overflow-hidden border border-[#1f1f1f]"
           style={{
@@ -160,6 +207,7 @@ return (
                 )}
               </View>
             ))}
+            
           </ScrollView>
         </View>
 
@@ -179,9 +227,8 @@ return (
                   animated: true,
                 });
               }}
-              className={`mr-3 rounded-xl overflow-hidden border-2 ${
-                activeIndex === index ? "border-primary" : "border-transparent"
-              }`}
+              className={`mr-3 rounded-xl overflow-hidden border-2 ${activeIndex === index ? "border-primary" : "border-transparent"
+                }`}
             >
               <Image
                 source={{ uri: img }}
@@ -293,16 +340,14 @@ return (
                 <TouchableOpacity
                   key={size}
                   onPress={() => setSelectedSize(size)}
-                  className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${
-                    selectedSize === size
+                  className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${selectedSize === size
                       ? "bg-primary border-primary"
                       : "border-gray-700"
-                  }`}
+                    }`}
                 >
                   <Text
-                    className={`${
-                      selectedSize === size ? "text-white" : "text-gray-300"
-                    }`}
+                    className={`${selectedSize === size ? "text-white" : "text-gray-300"
+                      }`}
                   >
                     {size}
                   </Text>
@@ -321,11 +366,10 @@ return (
                 <TouchableOpacity
                   key={gender}
                   onPress={() => setSelectedGender(gender)}
-                  className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${
-                    selectedGender === gender
+                  className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${selectedGender === gender
                       ? "bg-primary border-primary"
                       : "border-gray-700"
-                  }`}
+                    }`}
                 >
                   <Text
                     className={
@@ -373,29 +417,30 @@ return (
           {/* ADD TO CART */}
           <TouchableOpacity
             disabled={remainingStock === 0 || quantity > remainingStock}
-            className={`w-[48%] py-4 rounded-2xl items-center ${
-              remainingStock === 0
+            onPress={handleAddToCart}
+            className={`w-[48%] py-4 rounded-2xl items-center ${remainingStock === 0
                 ? "bg-gray-600"
                 : "bg-[#1f1f1f] border border-primary"
-            }`}
+              }`}
           >
-            <Text className="text-primary font-bold text-lg">ADD TO CART</Text>
+            <Text className="text-primary font-bold text-lg">
+              ADD TO CART
+            </Text>
           </TouchableOpacity>
 
           {/* BUY NOW */}
           <TouchableOpacity
             disabled={remainingStock === 0 || quantity > remainingStock}
-            className={`w-[48%] py-4 rounded-2xl items-center ${
-              remainingStock === 0
+            className={`w-[48%] py-4 rounded-2xl items-center ${remainingStock === 0
                 ? "bg-gray-600"
                 : "bg-[#1f1f1f] border border-primary"
-            }`}
+              }`}
           >
             <Text className="text-white font-bold text-lg">BUY NOW</Text>
           </TouchableOpacity>
         </View>
       </View>
-    </ScrollView>
+      </ScrollView>
     </SafeAreaView>
   );
 }
