@@ -65,7 +65,7 @@ export default function Profile() {
       Alert.alert("Error", "Profile update failed");
     }
   };
-  
+
   const handleLogout = async () => {
     setLogoutVisible(false);
 
@@ -111,7 +111,10 @@ export default function Profile() {
             <Ionicons name="chevron-forward" size={18} color="#888" />
           </TouchableOpacity>
 
-          <TouchableOpacity className="flex-row justify-between items-center py-4 border-b border-[#222]">
+          <TouchableOpacity
+            onPress={() => router.push("/Orders")}
+            className="flex-row justify-between items-center py-4 border-b border-[#222]"
+          >
             <Text className="text-white">My Orders</Text>
             <Ionicons name="chevron-forward" size={18} color="#888" />
           </TouchableOpacity>
