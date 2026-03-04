@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Alert,
-  ScrollView,
-  Modal,
-  TextInput,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  Modal,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { updateUserApi } from "../services/api";
 
 export default function Profile() {
   const router = useRouter();
@@ -29,9 +30,11 @@ export default function Profile() {
 
       if (storedUser) {
         const parsed = JSON.parse(storedUser);
-        setUser(parsed);
-        setName(parsed.username || "");
-        setMobile(parsed.mobile || "");
+        const userData = Array.isArray(parsed) ? parsed[0] : parsed;
+
+        setUser(userData);
+        setName(userData.username || "");
+        setMobile(userData.mobile || "");
       }
     };
 
@@ -39,19 +42,30 @@ export default function Profile() {
   }, []);
 
   const saveProfile = async () => {
-    const updatedUser = {
-      ...user,
-      username: name,
-      mobile: mobile,
-    };
+    try {
+      await updateUserApi(user.id, {
+        username: name,
+        mobile: mobile,
+      });
 
-    await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
-    setUser(updatedUser);
-    setEditVisible(false);
+      const updatedUser = {
+        ...user,
+        username: name,
+        mobile: mobile,
+      };
 
-    Alert.alert("Success", "Profile updated successfully 🎉");
+      await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+
+      setUser(updatedUser);
+      setEditVisible(false);
+
+      Alert.alert("Success", "Profile updated successfully 🎉");
+    } catch (err) {
+      console.log("UPDATE ERROR:", err);
+      Alert.alert("Error", "Profile update failed");
+    }
   };
-
+  
   const handleLogout = async () => {
     setLogoutVisible(false);
 

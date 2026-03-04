@@ -193,5 +193,18 @@ export const getUser = async (token) => {
   }
 };
 
+// UPDATE USER
+export const updateUserApi = async (id, data) => {
+  const res = await fetch(`${BASE_URL}/users/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  return res.json();
+};
+
 export default api;
 
