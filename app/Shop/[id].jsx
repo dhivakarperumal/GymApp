@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { getAllProducts } from "../../services/api";
 import { useRef } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
 
@@ -116,7 +117,8 @@ export default function ProductDetails() {
   const price = pricing ? Number(pricing.offerPrice) : 0;
   const oldPrice = pricing ? Number(pricing.mrp) : 0;
 
-  return (
+return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#0f0f0f" }}>
     <ScrollView className="flex-1 bg-darkBg">
       <View className="px-5 mt-20">
         <View
@@ -394,5 +396,6 @@ export default function ProductDetails() {
         </View>
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }
