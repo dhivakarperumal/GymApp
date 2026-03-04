@@ -11,6 +11,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { getAllServices } from "../../services/api";
 import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
 
@@ -55,6 +56,7 @@ export default function ServiceDetails() {
   }
 
   return (
+    <SafeAreaView className="flex-1 bg-[#0a0a0a]">
     <ScrollView
       showsVerticalScrollIndicator={false}
       className="flex-1 bg-[#0a0a0a]"
@@ -122,5 +124,6 @@ export default function ServiceDetails() {
 
       <View className="h-10" />
     </ScrollView>
+    </SafeAreaView>
   );
 }

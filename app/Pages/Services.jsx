@@ -9,6 +9,7 @@ import {
 import { getAllServices } from "../../services/api";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
 
@@ -37,6 +38,7 @@ export default function Services() {
   };
 
   return (
+    <SafeAreaView className="flex-1 bg-[#0a0a0a]">
     <ScrollView
       showsVerticalScrollIndicator={false}
       className="flex-1 bg-[#0a0a0a] px-5 pt-12"
@@ -114,5 +116,6 @@ export default function Services() {
 
       <View className="h-10" />
     </ScrollView>
+    </SafeAreaView>
   );
 }
