@@ -84,20 +84,6 @@ export const getAllReviews = async () => {
   return res.json();
 };
 
-// Workout Trainers 
-
-// GET WORKOUTS BY TRAINER
-export const getTrainerWorkouts = async (trainerId) => {
-  const res = await fetch(`${BASE_URL}/workouts?trainerId=${trainerId}`);
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "Failed to fetch workouts");
-  }
-
-  return res.json();
-};
-
 // Cart Page Logic
 // GET CART
 export const getCart = async (userId) => {
@@ -231,6 +217,12 @@ export const getUserAssignment = async () => {
 // get all diet plans
 export const getDietPlans = async () => {
   const res = await fetch(`${BASE_URL}/diet-plans`);
+  return res.json();
+};
+
+// get all workouts
+export const getTrainerWorkouts = async () => {
+  const res = await fetch(`${BASE_URL}/workouts`);
   return res.json();
 };
 
