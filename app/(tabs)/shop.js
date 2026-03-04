@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Image,
   ScrollView,
@@ -10,7 +10,6 @@ import {
   View,
   ActivityIndicator,
 } from "react-native";
-
 import { getAllProducts } from "../../services/api";
 
 export default function Shop() {
@@ -40,9 +39,16 @@ export default function Shop() {
   }, []);
 
   // ✅ Search Filter
-  const filteredProducts = products.filter((item) =>
-    item.name?.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filteredProducts = useMemo(() => {
+    return products.filter((item) => {
+      if (!item?.name) return false;
+
+      return item.name
+        .toLowerCase()
+        .trim()
+        .includes(search.toLowerCase().trim());
+    });
+  }, [search, products]);
 
   return (
     <ScrollView className="flex-1 bg-darkBg px-4 pt-12">
@@ -81,10 +87,7 @@ export default function Shop() {
 
               price = Number(variant?.offerPrice || variant?.mrp || 0);
               oldPrice = Number(variant?.mrp || 0);
-            }
-
-            // 👕 DRESS / ACCESSORIES → price at product level
-            else {
+            } else {
               price = Number(item.offer_price || item.mrp || 0);
               oldPrice = Number(item.mrp || 0);
             }
