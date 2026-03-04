@@ -42,9 +42,6 @@ export default function Home() {
     try {
       const data = await getUserAssignment();
 
-      console.log("Assignments 👉", data);
-      console.log("Current user 👉", user);
-
       if (Array.isArray(data) && user) {
 
         const userAssignment = data.find(
