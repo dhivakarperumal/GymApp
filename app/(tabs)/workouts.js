@@ -21,11 +21,8 @@ export default function Workouts() {
   const fetchWorkouts = async () => {
     try {
 
-      console.log("USER 👉", user);
 
       const data = await getTrainerWorkouts();
-
-      console.log("WORKOUT API 👉", data);
 
       if (!Array.isArray(data)) return;
 
@@ -33,7 +30,6 @@ export default function Workouts() {
         (item) => item.member_email === user.email
       );
 
-      console.log("MY WORKOUTS 👉", myWorkouts);
 
       setWorkouts(myWorkouts);
 
