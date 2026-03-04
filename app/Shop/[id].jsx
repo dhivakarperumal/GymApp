@@ -253,6 +253,34 @@ export default function ProductDetails() {
           {product.description}
         </Text>
 
+        {product.category === "Food" && product.weight?.length > 0 && (
+          <View className="mb-8">
+            <Text className="text-white font-semibold mb-3">Select Weight</Text>
+
+            <View className="flex-row flex-wrap">
+              {product.weight.map((w) => (
+                <TouchableOpacity
+                  key={w}
+                  onPress={() => setSelectedWeight(w)}
+                  className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${
+                    selectedWeight === w
+                      ? "bg-primary border-primary"
+                      : "border-gray-700"
+                  }`}
+                >
+                  <Text
+                    className={`${
+                      selectedWeight === w ? "text-white" : "text-gray-300"
+                    }`}
+                  >
+                    {w}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
         {/* SIZE SELECTION */}
         {product.size?.length > 0 && (
           <View className="mb-8">
