@@ -11,12 +11,14 @@ import { getAllReviews, getUserAssignment } from "../../services/api";
 import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Dimensions } from "react-native";
+import { useRouter } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
 export default function Home() {
   const [reviews, setReviews] = useState([]);
   const { user } = useAuth();
+  const router = useRouter();
   const [assignment, setAssignment] = useState(null);
   const scrollRef = useRef(null);
   const scrollX = useRef(0);
@@ -197,32 +199,76 @@ export default function Home() {
           </ScrollView>
         </View>
 
+
         {/* 👨‍🏫 Trainer Section */}
         {assignment && (
-          <View className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]">
-            <Text className="text-gray-400 text-xs mb-1">YOUR TRAINER</Text>
+          <View
+            className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
+            style={{
+              shadowColor: "#ff3c00",
+              shadowOpacity: 0.25,
+              shadowRadius: 20,
+              elevation: 10,
+            }}
+          >
+            <View className="flex-row items-center mb-4">
+              {/* Trainer Image */}
+              {/* <Image
+                source={{
+                  uri:
+                    assignment.trainerImage ||
+                    "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b",
+                }}
+                className="w-16 h-16 rounded-full mr-4 border-2 border-primary"
+              /> */}
 
-            <Text className="text-white text-xl font-bold">
-              {assignment.trainerName}
-            </Text>
+              {/* Trainer Info */}
+              <View>
+                <Text className="text-gray-400 text-xs">YOUR TRAINER</Text>
 
-            <Text className="text-gray-400 mt-1">
-              Plan : {assignment.planName}
-            </Text>
+                <Text className="text-white text-lg font-bold">
+                  {assignment.trainerName}
+                </Text>
 
-            <Text className="text-gray-400">
-              Duration : {assignment.planDuration} months
-            </Text>
+                <Text className="text-gray-400 text-sm mt-1">
+                  {assignment.planName}
+                </Text>
+              </View>
+            </View>
 
-            <View className="flex-row mt-4">
-              <TouchableOpacity className="bg-primary px-4 py-2 rounded-xl mr-3">
-                <Text className="text-white text-xs font-bold">
+            {/* Plan Info */}
+            <View className="flex-row justify-between mb-4">
+              <View>
+                <Text className="text-gray-500 text-xs">PLAN</Text>
+                <Text className="text-white font-semibold">
+                  {assignment.planName}
+                </Text>
+              </View>
+
+              <View>
+                <Text className="text-gray-500 text-xs">DURATION</Text>
+                <Text className="text-white font-semibold">
+                  {assignment.planDuration} Months
+                </Text>
+              </View>
+            </View>
+
+            {/* Buttons */}
+            <View className="flex-row">
+              <TouchableOpacity
+                onPress={() => router.push("/workouts")}
+                className="flex-1 bg-primary py-3 rounded-xl mr-3 items-center"
+              >
+                <Text className="text-white font-bold text-sm">
                   VIEW WORKOUT
                 </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity className="bg-[#262626] px-4 py-2 rounded-xl">
-                <Text className="text-white text-xs font-bold">VIEW DIET</Text>
+              <TouchableOpacity
+                onPress={() => router.push("/diet")}
+                className="flex-1 bg-[#262626] py-3 rounded-xl items-center"
+              >
+                <Text className="text-white font-bold text-sm">VIEW DIET</Text>
               </TouchableOpacity>
             </View>
           </View>
