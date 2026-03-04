@@ -9,6 +9,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import RazorpayCheckout from "react-native-razorpay";
 import { Alert } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function BuyPlan() {
   const { plan } = useLocalSearchParams();
@@ -78,13 +79,14 @@ export default function BuyPlan() {
 
   if (!selectedPlan) {
     return (
-      <View className="flex-1 bg-[#0f0f0f] justify-center items-center">
+      <SafeAreaView className="flex-1 bg-[#0f0f0f] justify-center items-center">
         <Text className="text-white">No Plan Selected</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
+    <SafeAreaView className="flex-1 bg-[#0f0f0f]">
     <ScrollView
       showsVerticalScrollIndicator={false}
       className="flex-1 bg-[#0f0f0f] px-5 pt-12"
@@ -221,5 +223,6 @@ export default function BuyPlan() {
         </View>
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }

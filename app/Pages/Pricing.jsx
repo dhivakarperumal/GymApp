@@ -2,6 +2,7 @@ import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { getAllPlans } from "../../services/api";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Pricing() {
   const [plans, setPlans] = useState([]);
@@ -13,7 +14,7 @@ export default function Pricing() {
 
   const fetchPlans = async () => {
     try {
-      const data = await getAllPlans(); // no token if public
+      const data = await getAllPlans(); 
       console.log("PLANS API:", data);
 
       // ensure array
@@ -29,6 +30,7 @@ export default function Pricing() {
   };
 
   return (
+    <SafeAreaView className="flex-1 bg-[#0f0f0f]">
     <ScrollView
       showsVerticalScrollIndicator={false}
       className="flex-1 bg-[#090909] px-5 pt-12"
@@ -132,5 +134,6 @@ export default function Pricing() {
 
       <View className="h-10" />
     </ScrollView>
+    </SafeAreaView>
   );
 }
