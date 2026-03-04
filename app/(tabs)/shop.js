@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Image,
   ScrollView,
@@ -9,8 +9,8 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
+  Modal,
 } from "react-native";
-
 import { getAllProducts } from "../../services/api";
 
 export default function Shop() {
@@ -19,6 +19,18 @@ export default function Shop() {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [minRating, setMinRating] = useState("");
+
+  const isFilterActive =
+    selectedCategory !== "" ||
+    minPrice !== "" ||
+    maxPrice !== "" ||
+    minRating !== "";
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -40,15 +52,65 @@ export default function Shop() {
   }, []);
 
   // ✅ Search Filter
-  const filteredProducts = products.filter((item) =>
-    item.name?.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filteredProducts = useMemo(() => {
+    return products.filter((item) => {
+      if (!item?.name) return false;
+
+      const nameMatch = item.name
+        .toLowerCase()
+        .includes(search.toLowerCase().trim());
+
+      const categoryMatch = selectedCategory
+        ? item.category === selectedCategory
+        : true;
+
+      let price = Number(item.offer_price || item.mrp || 0);
+
+      const priceMatch =
+        (!minPrice || price >= Number(minPrice)) &&
+        (!maxPrice || price <= Number(maxPrice));
+
+      const ratingValue = Number(item.rating ?? item.ratings ?? 0);
+
+      const ratingMatch = minRating ? ratingValue >= Number(minRating) : true;
+
+      return nameMatch && categoryMatch && priceMatch && ratingMatch;
+    });
+  }, [search, products, selectedCategory, minPrice, maxPrice, minRating]);
 
   return (
     <ScrollView className="flex-1 bg-darkBg px-4 pt-12">
       {/* SEARCH */}
       <View className="flex-row items-center bg-darkcard rounded-xl px-4 py-3 mb-5">
+        {/* FILTER BUTTON */}
+        <TouchableOpacity
+          onPress={() => setFilterVisible(true)}
+          className="mr-3"
+          style={{ position: "relative" }}
+        >
+          <Ionicons
+            name={isFilterActive ? "options" : "options-outline"}
+            size={20}
+            color={isFilterActive ? "#ff3c00" : "#e11d1d"}
+          />
+
+          {isFilterActive && (
+            <View
+              style={{
+                position: "absolute",
+                top: -2,
+                right: -2,
+                width: 8,
+                height: 8,
+                backgroundColor: "#fff",
+                borderRadius: 10,
+              }}
+            />
+          )}
+        </TouchableOpacity>
+
         <Ionicons name="search" size={18} color="#777" />
+
         <TextInput
           placeholder="Search supplements & gear..."
           placeholderTextColor="#777"
@@ -81,10 +143,7 @@ export default function Shop() {
 
               price = Number(variant?.offerPrice || variant?.mrp || 0);
               oldPrice = Number(variant?.mrp || 0);
-            }
-
-            // 👕 DRESS / ACCESSORIES → price at product level
-            else {
+            } else {
               price = Number(item.offer_price || item.mrp || 0);
               oldPrice = Number(item.mrp || 0);
             }
@@ -140,6 +199,29 @@ export default function Shop() {
                       {item.name}
                     </Text>
 
+                    {/* ⭐ RATING */}
+                    <View className="flex-row items-center mb-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Ionicons
+                          key={star}
+                          name={
+                            star <= (item.rating || item.ratings || 0)
+                              ? "star"
+                              : "star-outline"
+                          }
+                          size={14}
+                          color="#e11d1d"
+                          style={{ marginRight: 2 }}
+                        />
+                      ))}
+
+                      <Text className="text-gray-400 text-xs ml-2">
+                        {(item.rating || item.ratings || 0).toFixed
+                          ? (item.rating || item.ratings || 0).toFixed(1)
+                          : item.rating || item.ratings || 0}
+                      </Text>
+                    </View>
+
                     {/* PRICE SECTION */}
                     <View className="flex-row items-end justify-between">
                       <View>
@@ -174,6 +256,110 @@ export default function Shop() {
             );
           })}
       </View>
+
+      <Modal
+        visible={filterVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setFilterVisible(false)}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setFilterVisible(false)}
+          className="flex-1 bg-black/80 justify-end"
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {}}
+            className="bg-[#141414] rounded-t-3xl p-6"
+          >
+            <Text className="text-white text-xl font-bold mb-5">Filters</Text>
+
+            {/* CATEGORY */}
+            <Text className="text-gray-400 mb-2">Category</Text>
+
+            <View className="flex-row flex-wrap mb-4">
+              {["All", "Food", "Accessories", "Dress"].map((cat) => (
+                <TouchableOpacity
+                  key={cat}
+                  onPress={() => {
+                    if (cat === "All") {
+                      setSelectedCategory("");
+                    } else {
+                      setSelectedCategory(selectedCategory === cat ? "" : cat);
+                    }
+                  }}
+                  className={`px-4 py-2 rounded-full mr-2 mb-2 ${
+                    (cat === "All" && selectedCategory === "") ||
+                    selectedCategory === cat
+                      ? "bg-primary"
+                      : "bg-[#1f1f1f]"
+                  }`}
+                >
+                  <Text className="text-white text-sm">{cat}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* PRICE */}
+            <Text className="text-gray-400 mb-2">Price Range</Text>
+
+            <View className="flex-row mb-4">
+              <TextInput
+                placeholder="Min"
+                placeholderTextColor="#777"
+                keyboardType="numeric"
+                value={minPrice}
+                onChangeText={setMinPrice}
+                className="flex-1 bg-[#1f1f1f] text-white p-3 rounded-xl mr-2"
+              />
+
+              <TextInput
+                placeholder="Max"
+                placeholderTextColor="#777"
+                keyboardType="numeric"
+                value={maxPrice}
+                onChangeText={setMaxPrice}
+                className="flex-1 bg-[#1f1f1f] text-white p-3 rounded-xl"
+              />
+            </View>
+
+            {/* RATING */}
+            <Text className="text-gray-400 mb-2">Minimum Rating</Text>
+
+            <TextInput
+              placeholder="Example: 4"
+              placeholderTextColor="#777"
+              keyboardType="numeric"
+              value={minRating}
+              onChangeText={setMinRating}
+              className="bg-[#1f1f1f] text-white p-3 rounded-xl mb-5"
+            />
+
+            {/* BUTTONS */}
+            <View className="flex-row">
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedCategory("");
+                  setMinPrice("");
+                  setMaxPrice("");
+                  setMinRating("");
+                }}
+                className="flex-1 bg-gray-700 p-4 rounded-xl mr-2"
+              >
+                <Text className="text-white text-center">Clear</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setFilterVisible(false)}
+                className="flex-1 bg-primary p-4 rounded-xl"
+              >
+                <Text className="text-white text-center font-bold">Apply</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </ScrollView>
   );
 }
