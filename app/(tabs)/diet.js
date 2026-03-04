@@ -1,7 +1,7 @@
 import { View, Text, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
-import { getDietPlans, getUserAssignment } from "../../services/api";
+import { getDietPlans } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 
 export default function DietChartScreen() {
@@ -10,57 +10,44 @@ export default function DietChartScreen() {
 
   const [diet, setDiet] = useState(null);
   const [title, setTitle] = useState("");
-  const [loading, setLoading] = useState(true);
 
   const fetchDietPlan = async () => {
     try {
 
-      // 1️⃣ Get assignments
-      const assignments = await getUserAssignment();
+      console.log("🔹 USER 👉", user);
 
-      console.log("ASSIGNMENTS 👉", assignments);
-      console.log("USER 👉", user);
+      const data = await getDietPlans(); // fetch all diets
 
-      // 2️⃣ Find logged user's assignment
-      const myAssignment = assignments.find(
-        (item) => item.userEmail === user.email
+      console.log("🔹 DIETS 👉", data);
+
+      if (!Array.isArray(data)) return;
+
+      const myDiet = data.find(
+        (item) => item.member_email === user.email
       );
 
-      if (!myAssignment) {
-        setLoading(false);
-        return;
-      }
-
-      // 3️⃣ Get trainerId from assignment
-      const trainerId = myAssignment.trainerId;
-
-      // 4️⃣ Fetch diet plans for that trainer
-      const dietPlans = await getDietPlans(trainerId);
-
-      console.log("DIET API 👉", dietPlans);
-
-      // 5️⃣ Find diet for the assigned member
-      const myDiet = dietPlans.find(
-        (item) => item.member_id === myAssignment.userId
-      );
+      console.log("🔹 MATCHED DIET 👉", myDiet);
 
       if (myDiet) {
+
         setTitle(myDiet.title);
         setDiet(myDiet.days.Day1);
+
       }
 
-      setLoading(false);
-
     } catch (err) {
-      console.log("Diet fetch error:", err);
-      setLoading(false);
+
+      console.log("❌ Diet fetch error:", err);
+
     }
   };
 
   useEffect(() => {
+
     if (user) {
       fetchDietPlan();
     }
+
   }, [user]);
 
   return (
@@ -69,43 +56,29 @@ export default function DietChartScreen() {
       showsVerticalScrollIndicator={false}
     >
 
-      {/* Header */}
       <Text className="text-white text-3xl font-extrabold mb-2">
         My Diet Plan
       </Text>
 
-      {/* Loading */}
-      {loading && (
-        <Text className="text-gray-400 mt-4">
-          Loading diet plan...
-        </Text>
-      )}
-
-      {/* Title */}
       {title && (
         <Text className="text-gray-400 mb-6">
           {title}
         </Text>
       )}
 
-      {/* Diet */}
       {diet && (
         <View className="bg-[#1c1c1c] rounded-2xl p-5 border border-[#262626]">
 
           <View className="flex-row items-center justify-between mb-4">
-
             <Text className="text-white text-lg font-bold">
               Day 1 Meals
             </Text>
 
-            <View className="bg-black p-2 rounded-full border border-red-500">
-              <Ionicons
-                name="restaurant-outline"
-                size={18}
-                color="#ff3c00"
-              />
-            </View>
-
+            <Ionicons
+              name="restaurant-outline"
+              size={18}
+              color="#ff3c00"
+            />
           </View>
 
           {Object.entries(diet).map(([meal, value]) => (
@@ -134,9 +107,8 @@ export default function DietChartScreen() {
         </View>
       )}
 
-      {/* No Diet */}
-      {!diet && !loading && (
-        <Text className="text-gray-400 mt-4">
+      {!diet && (
+        <Text className="text-gray-400 mt-5">
           No diet plan assigned
         </Text>
       )}
