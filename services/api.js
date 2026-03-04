@@ -226,5 +226,56 @@ export const getTrainerWorkouts = async () => {
   return res.json();
 };
 
+/* ------------------ ORDERS ------------------ */
+
+// GET SINGLE PRODUCT (needed for stock check)
+export const getProduct = async (id) => {
+  const res = await fetch(`${BASE_URL}/products/${id}`);
+  return res.json();
+};
+
+// UPDATE PRODUCT STOCK
+export const updateProductStock = async (id, stock) => {
+  const res = await fetch(`${BASE_URL}/products/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ stock }),
+  });
+
+  return res.json();
+};
+
+// GENERATE ORDER ID
+export const generateOrderId = async () => {
+  const res = await fetch(`${BASE_URL}/orders/generate-order-id`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return res.json();
+};
+
+// CREATE ORDER
+export const createOrderApi = async (orderData) => {
+  const res = await fetch(`${BASE_URL}/orders`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(orderData),
+  });
+
+  return res.json();
+};
+
+export const getUserOrders = async (userId) => {
+  const res = await fetch(`${BASE_URL}/orders?userId=${userId}`);
+  return res.json();
+};
+
 export default api;
 
