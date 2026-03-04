@@ -10,6 +10,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { getAllFacilities } from "../../services/api";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
 
@@ -38,21 +39,22 @@ export default function FacilityDetails() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-black justify-center items-center">
+      <SafeAreaView className="flex-1 bg-black justify-center items-center">
         <ActivityIndicator size="large" color="#ff3c00" />
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (!facility) {
     return (
-      <View className="flex-1 bg-black justify-center items-center">
+      <SafeAreaView className="flex-1 bg-black justify-center items-center">
         <Text className="text-white">Facility not found</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
+    <SafeAreaView className="flex-1 bg-black">
     <ScrollView
       showsVerticalScrollIndicator={false}
       className="flex-1 bg-black"
@@ -169,5 +171,6 @@ export default function FacilityDetails() {
 
       <View className="h-10" />
     </ScrollView>
+    </SafeAreaView>
   );
 }

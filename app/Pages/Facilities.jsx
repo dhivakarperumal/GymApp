@@ -10,6 +10,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { getAllFacilities } from "../../services/api";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Facilities() {
   const [facilities, setFacilities] = useState([]);
@@ -22,7 +23,6 @@ export default function Facilities() {
   const fetchFacilities = async () => {
     try {
       const data = await getAllFacilities();
-      console.log("FACILITIES API:", data);
 
       if (Array.isArray(data)) {
         setFacilities(data);
@@ -36,7 +36,7 @@ export default function Facilities() {
   };
 
   return (
-    <View className="flex-1 bg-black pt-12">
+    <SafeAreaView className="flex-1 bg-black">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
@@ -114,6 +114,6 @@ export default function Facilities() {
           </View>
         ))}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
