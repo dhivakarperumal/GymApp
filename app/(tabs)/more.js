@@ -8,6 +8,7 @@ const menuItems = [
   { title: "Services", icon: "briefcase-outline" },
   { title: "Facilities", icon: "business-outline" },
   { title: "Trainers", icon: "people-outline" },
+  { title: "Contact", icon: "people-outline" },
 ];
 
 export default function More() {
@@ -28,6 +29,9 @@ export default function More() {
     }
     if (title === "Trainers") {
       router.push("/Pages/Trainers");
+    }
+    if (title === "Contact") {
+      router.push("/Pages/Contact");
     }
   };
 
