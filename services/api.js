@@ -138,6 +138,7 @@ export const clearUserCart = async (userId) => {
   return res.json();
 };
 
+
 export const serviceList = async () => {
   try {
     const res = await fetch(`${BASE_URL}/services`);
@@ -288,6 +289,8 @@ export const getUserOrders = async (userId) => {
   const res = await fetch(`${BASE_URL}/orders?userId=${userId}`);
   return res.json();
 };
+
+
 
 export default api;
 

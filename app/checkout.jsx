@@ -30,7 +30,7 @@ export default function Checkout() {
   const { user } = useAuth();
   const userId = user?.id;
 
-  
+
 
   const [shipping, setShipping] = useState({
     name: "",
@@ -78,51 +78,38 @@ export default function Checkout() {
         return;
       }
 
-      for (const key in shipping) {
-        if (!shipping[key]) {
-          Alert.alert("Error", `Fill ${key}`);
-          return;
-        }
-      }
+      console.log("STEP 1");
 
       const orderRes = await generateOrderId();
       const orderId = orderRes.order_id;
 
-      /* CHECK STOCK */
+      console.log("ORDER ID 👉", orderId);
+
+      console.log("STEP 2");
 
       for (const item of cartItems) {
-
         const product = await getProduct(item.productId);
-
-        let variant =
-          product.category === "Food"
-            ? item.weight
-            : `${item.size}-${item.gender}`;
-
-        const stock = product.stock?.[variant]?.qty || 0;
-
-        if (stock < item.quantity) {
-          Alert.alert("Stock Error", `${product.name} out of stock`);
-          return;
-        }
+        console.log("PRODUCT 👉", product);
       }
 
-      /* CREATE ORDER */
+      console.log("STEP 3 - CREATE PAYLOAD");
 
       const payload = {
         order_id: orderId,
         user_id: userId,
-        status: "orderPlaced",
+        status: "Order Placed",
         payment_status: "pending",
         total: total,
         order_type: "ONLINE",
         shipping: shipping,
+
         order_track: [
           {
-            status: "orderPlaced",
+            status: "Order Placed",
             time: new Date().toISOString(),
           },
         ],
+
         items: cartItems.map((item) => ({
           product_id: item.productId,
           product_name: item.name,
@@ -135,47 +122,27 @@ export default function Checkout() {
         })),
       };
 
+      console.log("PAYLOAD 👉", payload);
+
+      console.log("STEP 4");
+
       await createOrderApi(payload);
 
-      /* UPDATE STOCK */
-
-      for (const item of cartItems) {
-
-        const product = await getProduct(item.productId);
-
-        const variant =
-          product.category === "Food"
-            ? item.weight
-            : `${item.size}-${item.gender}`;
-
-        const stock = product.stock?.[variant]?.qty || 0;
-
-        const updatedStock = {
-          ...product.stock,
-          [variant]: {
-            ...product.stock[variant],
-            qty: stock - item.quantity,
-          },
-        };
-
-        await updateProductStock(item.productId, updatedStock);
-      }
-
-      /* CLEAR CART */
+      console.log("ORDER CREATED");
 
       await clearUserCart(userId);
+
       setCartItems([]);
 
       Alert.alert("Success", `Order placed! ${orderId}`, [
         {
           text: "View Orders",
-          onPress: () => router.push("/orders"),
+          onPress: () => router.push("/Orders"),
         },
       ]);
 
     } catch (err) {
-      console.log(err);
-      Alert.alert("Error", "Order failed");
+      console.log("ERROR 👉", err);
     }
   };
 

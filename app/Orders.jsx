@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,25 +11,36 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const orders = [
-  {
-    id: "ORD009",
-    date: "3/4/2026, 5:12 PM",
-    status: "Order Placed",
-    step: 1,
-    total: 2300,
-    product: "T-shirt",
-    image:
-      "https://images.unsplash.com/photo-1625047509248-ec889cbff17f",
-    quantity: 1,
-    customer: "Dhanush",
-    phone: "9080281344",
-    city: "Tirupattur",
-  },
-];
+import { useAuth } from "../context/AuthContext";
+import { getUserOrders } from "../services/api";
 
 export default function Orders() {
+  const { user } = useAuth();
+  const userId = user?.id;
+
+  const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchOrders = async () => {
+    try {
+      if (!userId) return;
+
+      const data = await getUserOrders(userId);
+
+      const userOrders = data.filter((order) => order.user_id === userId);
+
+      setOrders(userOrders);
+    } catch (err) {
+      console.log("Orders error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (userId) fetchOrders();
+  }, [userId]);
 
   const renderStatus = (step) => {
     const labels = [
@@ -42,12 +53,7 @@ export default function Orders() {
 
     return (
       <View style={{ marginTop: 20 }}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           {labels.map((label, index) => {
             const active = index + 1 <= step;
 
@@ -83,7 +89,6 @@ export default function Orders() {
           })}
         </View>
 
-        {/* LINE */}
         <View
           style={{
             position: "absolute",
@@ -98,32 +103,49 @@ export default function Orders() {
     );
   };
 
+  const getStep = (status) => {
+    switch (status) {
+      case "Order Placed":
+        return 1;
+      case "Processing":
+        return 2;
+      case "Packing":
+        return 3;
+      case "Out for Delivery":
+        return 4;
+      case "Delivered":
+        return 5;
+      default:
+        return 1;
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
       <View style={{ flex: 1, padding: 16 }}>
         <ScrollView showsVerticalScrollIndicator={false}>
-          
-          {/* FILTER BUTTON */}
-          <TouchableOpacity
+          <Text
             style={{
-              backgroundColor: "#e11d1d",
-              paddingHorizontal: 20,
-              paddingVertical: 10,
-              borderRadius: 30,
-              alignSelf: "flex-start",
-              flexDirection: "row",
-              alignItems: "center",
+              color: "white",
+              fontSize: 28,
+              fontWeight: "bold",
               marginBottom: 20,
             }}
           >
-            <Ionicons name="filter" color="white" size={16} />
-            <Text style={{ color: "white", marginLeft: 6 }}>Filter</Text>
-          </TouchableOpacity>
+            My Orders
+          </Text>
 
-          {/* ORDER LIST */}
+          {loading && (
+            <Text style={{ color: "#aaa" }}>Loading orders...</Text>
+          )}
+
+          {!loading && orders.length === 0 && (
+            <Text style={{ color: "#aaa" }}>No orders yet</Text>
+          )}
+
           {orders.map((order) => (
             <TouchableOpacity
-              key={order.id}
+              key={order.order_id}
               onPress={() => setSelectedOrder(order)}
               style={{
                 backgroundColor: "#111",
@@ -148,16 +170,11 @@ export default function Orders() {
                       fontSize: 16,
                     }}
                   >
-                    Order ID: {order.id}
+                    Order ID: {order.order_id}
                   </Text>
 
-                  <Text
-                    style={{
-                      color: "#aaa",
-                      marginTop: 4,
-                    }}
-                  >
-                    {order.date}
+                  <Text style={{ color: "#aaa", marginTop: 4 }}>
+                    {new Date(order.created_at).toLocaleString()}
                   </Text>
                 </View>
 
@@ -173,7 +190,7 @@ export default function Orders() {
                       marginTop: 4,
                     }}
                   >
-                    Total: ₹{order.total}
+                    ₹{order.total}
                   </Text>
                 </View>
               </View>
@@ -181,7 +198,7 @@ export default function Orders() {
           ))}
         </ScrollView>
 
-        {/* ORDER DETAILS MODAL */}
+        {/* MODAL */}
         <Modal transparent visible={!!selectedOrder} animationType="fade">
           <Pressable
             style={{
@@ -202,12 +219,10 @@ export default function Orders() {
                   borderColor: "#222",
                 }}
               >
-                {/* HEADER */}
                 <View
                   style={{
                     flexDirection: "row",
                     justifyContent: "space-between",
-                    alignItems: "center",
                     marginBottom: 16,
                   }}
                 >
@@ -218,55 +233,50 @@ export default function Orders() {
                       fontWeight: "bold",
                     }}
                   >
-                    Order ID: {selectedOrder.id}
+                    Order ID: {selectedOrder.order_id}
                   </Text>
 
-                  <TouchableOpacity
-                    onPress={() => setSelectedOrder(null)}
-                  >
+                  <TouchableOpacity onPress={() => setSelectedOrder(null)}>
                     <Ionicons name="close" color="white" size={24} />
                   </TouchableOpacity>
                 </View>
 
-                {/* PRODUCT */}
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginBottom: 16,
-                  }}
-                >
-                  <Image
-                    source={{ uri: selectedOrder.image }}
+                {/* ITEMS */}
+                {(selectedOrder.items || []).map((item, index) => (
+                  <View
+                    key={index}
                     style={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: 12,
-                      marginRight: 12,
-                    }}
-                  />
-
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: "white" }}>
-                      {selectedOrder.product}
-                    </Text>
-
-                    <Text style={{ color: "#aaa", marginTop: 2 }}>
-                      Qty: {selectedOrder.quantity} × ₹{selectedOrder.total}
-                    </Text>
-                  </View>
-
-                  <Text
-                    style={{
-                      color: "#e11d1d",
-                      fontWeight: "bold",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginBottom: 12,
                     }}
                   >
-                    ₹{selectedOrder.total}
-                  </Text>
-                </View>
+                    <Image
+                      source={{
+                        uri:
+                          item.image ||
+                          "https://via.placeholder.com/100",
+                      }}
+                      style={{
+                        width: 60,
+                        height: 60,
+                        borderRadius: 12,
+                        marginRight: 12,
+                      }}
+                    />
 
-                {/* TOTAL */}
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: "white" }}>
+                        {item.product_name}
+                      </Text>
+
+                      <Text style={{ color: "#aaa", marginTop: 2 }}>
+                        Qty: {item.qty}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+
                 <Text
                   style={{
                     color: "white",
@@ -277,7 +287,6 @@ export default function Orders() {
                   Total: ₹{selectedOrder.total}
                 </Text>
 
-                {/* SHIPPING */}
                 <Text
                   style={{
                     color: "#e11d1d",
@@ -285,32 +294,10 @@ export default function Orders() {
                     marginBottom: 8,
                   }}
                 >
-                  Shipping Details
-                </Text>
-
-                <Text style={{ color: "white" }}>
-                  {selectedOrder.customer}
-                </Text>
-
-                <Text style={{ color: "white" }}>
-                  {selectedOrder.phone}
-                </Text>
-
-                <Text style={{ color: "white", marginBottom: 20 }}>
-                  {selectedOrder.city}
-                </Text>
-
-                {/* ORDER STATUS */}
-                <Text
-                  style={{
-                    color: "#e11d1d",
-                    fontWeight: "600",
-                  }}
-                >
                   Order Status
                 </Text>
 
-                {renderStatus(selectedOrder.step)}
+                {renderStatus(getStep(selectedOrder.status))}
               </Pressable>
             )}
           </Pressable>
