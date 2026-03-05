@@ -119,6 +119,14 @@ export default function Profile() {
             <Ionicons name="chevron-forward" size={18} color="#888" />
           </TouchableOpacity>
 
+          <TouchableOpacity
+            onPress={() => router.push("/Address")}
+            className="flex-row justify-between items-center py-4 border-b border-[#222]"
+          >
+            <Text className="text-white">Address</Text>
+            <Ionicons name="chevron-forward" size={18} color="#888" />
+          </TouchableOpacity>
+
           <TouchableOpacity className="flex-row justify-between items-center py-4">
             <Text className="text-white">Settings</Text>
             <Ionicons name="chevron-forward" size={18} color="#888" />
