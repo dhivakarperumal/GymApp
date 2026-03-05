@@ -7,7 +7,12 @@ import {
   StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { getAllReviews, getUserAssignment } from "../../services/api";
+import {
+  getAllReviews,
+  getUserAssignment,
+  getDietPlans,
+  getTrainerWorkouts,
+} from "../../services/api";
 import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Dimensions } from "react-native";
@@ -23,13 +28,90 @@ export default function Home() {
   const scrollRef = useRef(null);
   const scrollX = useRef(0);
 
+  const [todayDiet, setTodayDiet] = useState(null);
+  const [dietTitle, setDietTitle] = useState("");
+  const [todayDay, setTodayDay] = useState("");
+
+  const [todayWorkout, setTodayWorkout] = useState(null);
+  const [todayWorkoutDay, setTodayWorkoutDay] = useState("");
+
   useEffect(() => {
     fetchReviews();
 
     if (user?.id) {
       fetchAssignment();
+      fetchTodayDiet();
+      fetchTodayWorkout();
     }
   }, [user]);
+
+  const fetchTodayDiet = async () => {
+    try {
+      const data = await getDietPlans();
+
+      if (!Array.isArray(data) || !user?.email) return;
+
+      const myDiet = data.find((item) => item.member_email === user.email);
+
+      if (!myDiet || !myDiet.days) return;
+
+      const createdDate = new Date(myDiet.created_at);
+      const today = new Date();
+
+      const diffDays =
+        Math.floor((today - createdDate) / (1000 * 60 * 60 * 24)) + 1;
+
+      const totalDays = Object.keys(myDiet.days).length;
+
+      // prevent overflow
+      const todayIndex = diffDays > totalDays ? totalDays : diffDays;
+
+      const todayKey = `Day${todayIndex}`;
+
+      const todayMeals = myDiet.days[todayKey];
+
+      if (todayMeals) {
+        setTodayDiet(todayMeals);
+        setDietTitle(myDiet.title);
+        setTodayDay(todayKey);
+      }
+    } catch (err) {
+      console.log("Today diet error:", err);
+    }
+  };
+
+  const fetchTodayWorkout = async () => {
+    try {
+      const data = await getTrainerWorkouts();
+
+      if (!Array.isArray(data) || !user?.email) return;
+
+      const myWorkout = data.find((item) => item.member_email === user.email);
+
+      if (!myWorkout || !myWorkout.days) return;
+
+      const createdDate = new Date(myWorkout.created_at);
+      const today = new Date();
+
+      const diffDays =
+        Math.floor((today - createdDate) / (1000 * 60 * 60 * 24)) + 1;
+
+      const totalDays = Object.keys(myWorkout.days).length;
+
+      const todayIndex = diffDays > totalDays ? totalDays : diffDays;
+
+      const todayKey = `Day${todayIndex}`;
+
+      const todayExercises = myWorkout.days[todayKey];
+
+      if (todayExercises) {
+        setTodayWorkout(todayExercises);
+        setTodayWorkoutDay(todayKey);
+      }
+    } catch (err) {
+      console.log("Workout fetch error:", err);
+    }
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -135,6 +217,107 @@ export default function Home() {
           </TouchableOpacity>
         </View>
 
+        {todayWorkout && (
+          <View
+            className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
+            style={{
+              shadowColor: "#ff3c00",
+              shadowOpacity: 0.25,
+              shadowRadius: 20,
+              elevation: 10,
+            }}
+          >
+            <View className="flex-row justify-between items-center mb-4">
+              <View>
+                <Text className="text-white text-lg font-bold">
+                  TODAY'S WORKOUT
+                </Text>
+
+                <Text className="text-gray-400 text-xs mt-1">
+                  {todayWorkoutDay} Plan
+                </Text>
+              </View>
+
+              <TouchableOpacity onPress={() => router.push("/workouts")}>
+                <Text className="text-primary text-sm font-semibold">
+                  VIEW FULL
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {todayWorkout.map((ex, index) => (
+              <View
+                key={index}
+                className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]"
+              >
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center">
+                    <Ionicons
+                      name="barbell-outline"
+                      size={18}
+                      color="#ff3c00"
+                    />
+                    <Text className="text-white ml-2">{ex.name}</Text>
+                  </View>
+
+                  <Text className="text-gray-400 text-xs">{ex.time}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {todayDiet && (
+          <View
+            className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
+            style={{
+              shadowColor: "#ff3c00",
+              shadowOpacity: 0.25,
+              shadowRadius: 20,
+              elevation: 10,
+            }}
+          >
+            <View className="flex-row justify-between items-center mb-4">
+              <View>
+                <Text className="text-white text-lg font-bold">
+                  TODAY'S DIET
+                </Text>
+
+                {todayDay && (
+                  <Text className="text-gray-400 text-xs mt-1">
+                    {todayDay} Meals
+                  </Text>
+                )}
+              </View>
+
+              <TouchableOpacity onPress={() => router.push("/diet")}>
+                <Text className="text-primary text-sm font-semibold">
+                  VIEW FULL
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {Object.entries(todayDiet).map(([meal, value]) => (
+              <View
+                key={meal}
+                className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]"
+              >
+                <Text className="text-primary text-xs font-semibold mb-1">
+                  {meal}
+                </Text>
+
+                <Text className="text-gray-300 text-sm">
+                  {value.food} ({value.quantity})
+                </Text>
+
+                <Text className="text-gray-500 text-xs mt-1">
+                  {value.calories} calories
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
         {/* 🔥 Reviews Section */}
         <View className="mt-6 mb-10">
           <Text className="text-white text-lg font-bold mb-4">
@@ -198,7 +381,6 @@ export default function Home() {
             ))}
           </ScrollView>
         </View>
-
 
         {/* 👨‍🏫 Trainer Section */}
         {assignment && (
