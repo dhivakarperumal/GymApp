@@ -11,6 +11,7 @@ import { getAllFacilities } from "../../services/api";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Header from "../Header";
 
 export default function Facilities() {
   const [facilities, setFacilities] = useState([]);
@@ -37,8 +38,10 @@ export default function Facilities() {
 
   return (
     <SafeAreaView className="flex-1 bg-black">
+      <Header />
       <ScrollView
         showsVerticalScrollIndicator={false}
+        className="pt-12"
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
       >
         {/* Header */}

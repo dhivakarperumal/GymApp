@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { getAllFacilities } from "../../services/api";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Header from "../Header";
 
 const { width } = Dimensions.get("window");
 
@@ -55,9 +56,10 @@ export default function FacilityDetails() {
 
   return (
     <SafeAreaView className="flex-1 bg-black">
+      <Header />
     <ScrollView
       showsVerticalScrollIndicator={false}
-      className="flex-1 bg-black"
+      className="flex-1 bg-black pt-12"
     >
       {/* Hero Image */}
       <View className="px-5 pt-6">

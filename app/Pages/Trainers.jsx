@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { getAllStaffs } from "../../services/api"; // adjust path
 import { SafeAreaView } from "react-native-safe-area-context";
+import Header from "../Header";
 
 export default function Trainers() {
   const [staffs, setStaffs] = useState([]);
@@ -33,6 +34,7 @@ export default function Trainers() {
 
   return (
     <SafeAreaView className="flex-1 bg-darkBg">
+      <Header />
     <ScrollView
       showsVerticalScrollIndicator={false}
       className="flex-1 bg-darkBg px-5 pt-12"
