@@ -22,7 +22,6 @@ export default function Home() {
   const [assignment, setAssignment] = useState(null);
   const scrollRef = useRef(null);
   const scrollX = useRef(0);
-  const router = useRouter();
 
   useEffect(() => {
     fetchReviews();
@@ -136,71 +135,6 @@ export default function Home() {
           </TouchableOpacity>
         </View>
 
-        {/* 👨‍🏫 Trainer Section */}
-        {assignment && (
-          <View className="bg-[#141414] rounded-3xl p-6 mb-6 border border-[#262626] shadow-lg">
-
-            {/* Trainer Header */}
-            <View className="flex-row items-center mb-4">
-
-              <View className="bg-primary/20 p-3 rounded-2xl mr-3">
-                <Ionicons name="fitness" size={22} color="#ff3c00" />
-              </View>
-
-              <View>
-                <Text className="text-gray-400 text-xs">YOUR TRAINER</Text>
-
-                <Text className="text-white text-xl font-bold">
-                  {assignment.trainerName}
-                </Text>
-              </View>
-
-            </View>
-
-            {/* Plan Details */}
-            <View className="flex-row mb-4">
-
-              <View className="bg-[#1f1f1f] px-3 py-2 rounded-xl mr-2">
-                <Text className="text-gray-300 text-xs">
-                  Plan : {assignment.planName}
-                </Text>
-              </View>
-
-              <View className="bg-[#1f1f1f] px-3 py-2 rounded-xl">
-                <Text className="text-gray-300 text-xs">
-                  {assignment.planDuration} Months
-                </Text>
-              </View>
-
-            </View>
-
-            {/* Buttons */}
-            <View className="flex-row">
-
-              <TouchableOpacity
-                onPress={() => router.push("/workouts")}
-                className="flex-1 bg-primary py-3 rounded-xl mr-2 items-center flex-row justify-center"
-              >
-                <Ionicons name="barbell" size={16} color="white" />
-                <Text className="text-white text-xs font-bold ml-2">
-                  VIEW WORKOUT
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => router.push("/diet")}
-                className="flex-1 bg-[#262626] py-3 rounded-xl items-center flex-row justify-center"
-              >
-                <Ionicons name="restaurant" size={16} color="white" />
-                <Text className="text-white text-xs font-bold ml-2">
-                  VIEW DIET
-                </Text>
-              </TouchableOpacity>
-
-            </View>
-
-          </View>
-        )}
 
         {/* 🔥 Reviews Section */}
         <View className="mt-6 mb-10">
@@ -324,18 +258,22 @@ export default function Home() {
             <View className="flex-row">
               <TouchableOpacity
                 onPress={() => router.push("/workouts")}
-                className="flex-1 bg-primary py-3 rounded-xl mr-3 items-center"
+                className="flex-1 bg-primary py-3 rounded-xl mr-2 items-center flex-row justify-center"
               >
-                <Text className="text-white font-bold text-sm">
+                <Ionicons name="barbell" size={16} color="white" />
+                <Text className="text-white text-sm font-bold ml-2">
                   VIEW WORKOUT
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => router.push("/diet")}
-                className="flex-1 bg-[#262626] py-3 rounded-xl items-center"
+                className="flex-1 bg-[#262626] py-3 rounded-xl items-center flex-row justify-center"
               >
-                <Text className="text-white font-bold text-sm">VIEW DIET</Text>
+                <Ionicons name="restaurant" size={16} color="white" />
+                <Text className="text-white text-sm font-bold ml-2">
+                  VIEW DIET
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
