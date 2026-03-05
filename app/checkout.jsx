@@ -19,6 +19,7 @@ import {
   updateProductStock,
   generateOrderId,
   createOrderApi,
+  clearUserCart,
 } from "../services/api";
 
 export default function Checkout() {
@@ -28,6 +29,8 @@ export default function Checkout() {
 
   const { user } = useAuth();
   const userId = user?.id;
+
+  
 
   const [shipping, setShipping] = useState({
     name: "",
@@ -63,12 +66,17 @@ export default function Checkout() {
   const delivery = cartItems.length > 0 ? 99 : 0;
   const total = subtotal + delivery;
 
+
+
   /* PLACE ORDER */
 
   const placeOrder = async () => {
     try {
 
-      /* 1️⃣ VALIDATE SHIPPING */
+      if (!cartItems.length) {
+        Alert.alert("Cart empty", "Add items before placing order");
+        return;
+      }
 
       for (const key in shipping) {
         if (!shipping[key]) {
@@ -77,27 +85,19 @@ export default function Checkout() {
         }
       }
 
-      /* 2️⃣ GENERATE ORDER ID */
-
-
       const orderRes = await generateOrderId();
-      console.log("ORDER RESPONSE 👉", orderRes);
-
       const orderId = orderRes.order_id;
 
-      /* 3️⃣ CHECK STOCK + UPDATE STOCK */
+      /* CHECK STOCK */
 
       for (const item of cartItems) {
 
         const product = await getProduct(item.productId);
 
-        let variant = "";
-
-        if (product.category === "Food") {
-          variant = item.weight;
-        } else {
-          variant = `${item.size}-${item.gender}`;
-        }
+        let variant =
+          product.category === "Food"
+            ? item.weight
+            : `${item.size}-${item.gender}`;
 
         const stock = product.stock?.[variant]?.qty || 0;
 
@@ -105,6 +105,50 @@ export default function Checkout() {
           Alert.alert("Stock Error", `${product.name} out of stock`);
           return;
         }
+      }
+
+      /* CREATE ORDER */
+
+      const payload = {
+        order_id: orderId,
+        user_id: userId,
+        status: "orderPlaced",
+        payment_status: "pending",
+        total: total,
+        order_type: "ONLINE",
+        shipping: shipping,
+        order_track: [
+          {
+            status: "orderPlaced",
+            time: new Date().toISOString(),
+          },
+        ],
+        items: cartItems.map((item) => ({
+          product_id: item.productId,
+          product_name: item.name,
+          price: item.price,
+          qty: item.quantity,
+          size: item.size || null,
+          color: item.gender || null,
+          weight: item.weight || null,
+          image: item.images?.[0] || null,
+        })),
+      };
+
+      await createOrderApi(payload);
+
+      /* UPDATE STOCK */
+
+      for (const item of cartItems) {
+
+        const product = await getProduct(item.productId);
+
+        const variant =
+          product.category === "Food"
+            ? item.weight
+            : `${item.size}-${item.gender}`;
+
+        const stock = product.stock?.[variant]?.qty || 0;
 
         const updatedStock = {
           ...product.stock,
@@ -117,55 +161,10 @@ export default function Checkout() {
         await updateProductStock(item.productId, updatedStock);
       }
 
-      /* 4️⃣ CREATE ORDER PAYLOAD */
+      /* CLEAR CART */
 
-      const payload = {
-        order_id: orderId,
-        user_id: userId,
-        status: "orderPlaced",
-        payment_status: "pending",
-        total: total,
-        order_type: "ONLINE",
-
-        shipping: shipping,
-
-        order_track: [
-          {
-            status: "orderPlaced",
-            time: new Date().toISOString(),
-          },
-        ],
-
-        items: cartItems.map((item) => {
-
-          if (item.weight) {
-            return {
-              product_id: item.productId,
-              product_name: item.name,
-              price: item.price,
-              qty: item.quantity,
-              weight: item.weight,
-              image: item.images?.[0],
-            };
-          }
-
-          return {
-            product_id: item.productId,
-            product_name: item.name,
-            price: item.price,
-            qty: item.quantity,
-            size: item.size,
-            color: item.gender,
-            image: item.images?.[0],
-          };
-
-        }),
-      };
-
-      /* 5️⃣ CREATE ORDER */
-      console.log("ORDER PAYLOAD 👉", payload);
-
-      await createOrderApi(payload);
+      await clearUserCart(userId);
+      setCartItems([]);
 
       Alert.alert("Success", `Order placed! ${orderId}`, [
         {

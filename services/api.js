@@ -1,4 +1,4 @@
-const BASE_URL = "http://192.168.1.8:5000/api";
+const BASE_URL = "http://192.168.1.4:5000/api";
 
 /* ------------------ HELPER ------------------ */
 // lightweight wrapper that mimics axios-style responses; screens currently
@@ -101,7 +101,10 @@ export const addToCartApi = async (data) => {
     body: JSON.stringify(data),
   });
 
-  return res.json();
+  const text = await res.text();
+  console.log("ADD CART RESPONSE 👉", text);
+
+  return JSON.parse(text);
 };
 
 // UPDATE CART
@@ -120,6 +123,15 @@ export const updateCartApi = async (id, quantity) => {
 // DELETE CART ITEM
 export const deleteCartApi = async (id) => {
   const res = await fetch(`${BASE_URL}/cart/${id}`, {
+    method: "DELETE",
+  });
+
+  return res.json();
+};
+
+// clear user cart (after order placed)
+export const clearUserCart = async (userId) => {
+  const res = await fetch(`${BASE_URL}/cart/user/${userId}`, {
     method: "DELETE",
   });
 
