@@ -146,26 +146,88 @@ export default function Header() {
               borderColor: "#333",
             }}
           >
-            <Text style={{ color: "white", fontWeight: "bold" }}>
-              {user?.username}
-            </Text>
+            <View style={{ marginBottom: 12 }}>
+              {user && (
+                <>
+                  <Text
+                    style={{
+                      color: "white",
+                      fontWeight: "bold",
+                      fontSize: 16,
+                    }}
+                  >
+                    {user.username}
+                  </Text>
+                  <Text style={{ color: "#aaa", fontSize: 13 }}>
+                    {user.role}
+                  </Text>
+                </>
+              )}
+            </View>
 
+            <View
+              style={{
+                height: 1,
+                backgroundColor: "#333",
+                marginVertical: 8,
+              }}
+            />
+
+            {/* PROFILE */}
             <TouchableOpacity
               onPress={() => {
                 setMenuVisible(false);
                 router.push("/profile");
               }}
-              style={{ marginTop: 10 }}
+              style={{ paddingVertical: 8 }}
             >
               <Text style={{ color: "white" }}>My Profile</Text>
             </TouchableOpacity>
 
+            {/* ROLE BASED */}
+            {user?.role === "admin" && (
+              <TouchableOpacity
+                onPress={() => {
+                  setMenuVisible(false);
+                  router.push("/(admin)");
+                }}
+                style={{ paddingVertical: 8 }}
+              >
+                <Text style={{ color: "#ef4444", fontWeight: "600" }}>
+                  Admin Panel
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {user?.role === "trainer" && (
+              <TouchableOpacity
+                onPress={() => {
+                  setMenuVisible(false);
+                  router.push("/(trainers)/dashboard");
+                }}
+                style={{ paddingVertical: 8 }}
+              >
+                <Text style={{ color: "#facc15", fontWeight: "600" }}>
+                  Trainer Panel
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            <View
+              style={{
+                height: 1,
+                backgroundColor: "#333",
+                marginVertical: 8,
+              }}
+            />
+
+            {/* LOGOUT */}
             <TouchableOpacity
               onPress={() => {
                 setMenuVisible(false);
                 setLogoutVisible(true);
               }}
-              style={{ marginTop: 10 }}
+              style={{ paddingVertical: 8 }}
             >
               <Text style={{ color: "#dc2626", fontWeight: "bold" }}>
                 Logout
@@ -176,40 +238,85 @@ export default function Header() {
       </Modal>
 
       {/* LOGOUT MODAL */}
-      <Modal transparent visible={logoutVisible} animationType="fade">
+      {/* CONFIRM LOGOUT MODAL */}
+      <Modal
+        transparent
+        visible={logoutVisible}
+        animationType="fade"
+        onRequestClose={() => setLogoutVisible(false)}
+      >
         <View
           style={{
             flex: 1,
             backgroundColor: "rgba(0,0,0,0.7)",
             justifyContent: "center",
             alignItems: "center",
+            paddingHorizontal: 20,
           }}
         >
           <View
             style={{
+              width: "100%",
               backgroundColor: "#1a1a1a",
-              padding: 20,
-              borderRadius: 20,
-              width: "80%",
+              borderRadius: 24,
+              padding: 24,
+              borderWidth: 1,
+              borderColor: "#333",
             }}
           >
-            <Text style={{ color: "white", textAlign: "center" }}>
+            <Text
+              style={{
+                color: "white",
+                fontSize: 18,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+            >
               Confirm Logout
             </Text>
 
-            <TouchableOpacity
-              onPress={handleLogout}
+            <Text
               style={{
-                marginTop: 20,
-                backgroundColor: "#e11d1d",
-                padding: 10,
-                borderRadius: 10,
+                color: "#aaa",
+                textAlign: "center",
+                marginTop: 10,
               }}
             >
-              <Text style={{ color: "white", textAlign: "center" }}>
-                Logout
-              </Text>
-            </TouchableOpacity>
+              Are you sure you want to logout?
+            </Text>
+
+            <View style={{ flexDirection: "row", marginTop: 20 }}>
+              {/* CANCEL */}
+              <TouchableOpacity
+                onPress={() => setLogoutVisible(false)}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#333",
+                  padding: 12,
+                  borderRadius: 20,
+                  marginRight: 10,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "white" }}>Cancel</Text>
+              </TouchableOpacity>
+
+              {/* LOGOUT */}
+              <TouchableOpacity
+                onPress={handleLogout}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#e11d1d",
+                  padding: 12,
+                  borderRadius: 20,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "white", fontWeight: "bold" }}>
+                  Logout
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

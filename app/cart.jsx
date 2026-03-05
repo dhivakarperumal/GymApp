@@ -9,6 +9,7 @@ import {
   getAllProducts,
 } from "../services/api";
 import { useEffect, useState } from "react";
+import Header from "./Header";
 
 export default function Cart() {
   const router = useRouter();
@@ -86,8 +87,9 @@ export default function Cart() {
 
   return (
     <SafeAreaView className="flex-1 bg-black">
+      <Header />
       {/* HEADER */}
-      <View className="px-6 pt-4 pb-6">
+      <View className="px-6 pt-12 pb-6">
         <Text className="text-white text-3xl font-bold">My Cart</Text>
         <Text className="text-gray-400 mt-1">{cartItems.length} Items</Text>
       </View>

@@ -14,6 +14,7 @@ import { getAllProducts } from "../../services/api";
 import { useRef } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getCart, addToCartApi, updateCartApi } from "../../services/api";
+import Header from "../Header";
 
 const { width } = Dimensions.get("window");
 
@@ -166,6 +167,7 @@ export default function ProductDetails() {
 
   return (
   <SafeAreaView className="flex-1 bg-darkBg">
+    <Header />
     <ScrollView className="flex-1 bg-darkBg">
   <View className="px-5 mt-20">
         <View
