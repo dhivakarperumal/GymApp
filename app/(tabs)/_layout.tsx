@@ -12,6 +12,8 @@ import { useState, useEffect } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 import { getCart } from "../../services/api";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 export default function TabLayout() {
   const router = useRouter();
@@ -21,20 +23,22 @@ export default function TabLayout() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [logoutVisible, setLogoutVisible] = useState(false);
 
-  useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        if (!user?.id) return;
+  useFocusEffect(
+    useCallback(() => {
+      const fetchCart = async () => {
+        try {
+          if (!user?.id) return;
 
-        const data = await getCart(user.id);
-        setCartCount(data?.length || 0);
-      } catch (err) {
-        console.log("Cart fetch error", err);
-      }
-    };
+          const data = await getCart(user.id);
+          setCartCount(data?.length || 0);
+        } catch (err) {
+          console.log("Cart fetch error", err);
+        }
+      };
 
-    fetchCart();
-  }, [user]);
+      fetchCart();
+    }, [user]),
+  );
 
   const handleLogout = async () => {
     setMenuVisible(false);

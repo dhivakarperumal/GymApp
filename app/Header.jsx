@@ -11,6 +11,8 @@ import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { getCart } from "../services/api";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 export default function Header() {
   const router = useRouter();
@@ -20,7 +22,8 @@ export default function Header() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [logoutVisible, setLogoutVisible] = useState(false);
 
-  useEffect(() => {
+useFocusEffect(
+  useCallback(() => {
     const fetchCart = async () => {
       try {
         if (!user?.id) return;
@@ -33,7 +36,8 @@ export default function Header() {
     };
 
     fetchCart();
-  }, [user]);
+  }, [user])
+);
 
   const handleLogout = async () => {
     setMenuVisible(false);
