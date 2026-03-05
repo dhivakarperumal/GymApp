@@ -103,7 +103,7 @@ export default function Cart() {
           <View className="items-center mt-24">
             {/* BIG ICON */}
             <View className="bg-[#111] p-8 rounded-full border border-[#222] mb-6">
-              <Ionicons name="cart-outline" size={70} color="#ff3c00" />
+              <Ionicons name="cart-outline" size={70} color="#e11d1d" />
             </View>
 
             <Text className="text-white text-xl font-bold mb-2">
@@ -234,12 +234,12 @@ export default function Cart() {
 
         <View className="flex-row justify-between mb-6">
           <Text className="text-white text-lg font-bold">Total</Text>
-          <Text className="text-red-500 text-xl font-bold">₹ {total}</Text>
+          <Text className="text-primary text-xl font-bold">₹ {total}</Text>
         </View>
 
         <TouchableOpacity
           onPress={() => router.push("/checkout")}
-          className="bg-red-600 py-4 rounded-2xl items-center"
+          className="bg-primary py-4 rounded-2xl items-center"
         >
           <Text className="text-white font-bold text-lg">Checkout Now</Text>
         </TouchableOpacity>
