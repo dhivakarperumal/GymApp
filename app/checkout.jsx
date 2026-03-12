@@ -19,6 +19,7 @@ import {
   updateProductStock,
   generateOrderId,
   createOrderApi,
+  clearUserCart,
 } from "../services/api";
 
 export default function Checkout() {
@@ -28,6 +29,8 @@ export default function Checkout() {
 
   const { user } = useAuth();
   const userId = user?.id;
+
+
 
   const [shipping, setShipping] = useState({
     name: "",
@@ -63,120 +66,83 @@ export default function Checkout() {
   const delivery = cartItems.length > 0 ? 99 : 0;
   const total = subtotal + delivery;
 
+
+
   /* PLACE ORDER */
 
   const placeOrder = async () => {
     try {
 
-      /* 1️⃣ VALIDATE SHIPPING */
-
-      for (const key in shipping) {
-        if (!shipping[key]) {
-          Alert.alert("Error", `Fill ${key}`);
-          return;
-        }
+      if (!cartItems.length) {
+        Alert.alert("Cart empty", "Add items before placing order");
+        return;
       }
 
-      /* 2️⃣ GENERATE ORDER ID */
-
+      console.log("STEP 1");
 
       const orderRes = await generateOrderId();
-      console.log("ORDER RESPONSE 👉", orderRes);
-
       const orderId = orderRes.order_id;
 
-      /* 3️⃣ CHECK STOCK + UPDATE STOCK */
+      console.log("ORDER ID 👉", orderId);
+
+      console.log("STEP 2");
 
       for (const item of cartItems) {
-
         const product = await getProduct(item.productId);
-
-        let variant = "";
-
-        if (product.category === "Food") {
-          variant = item.weight;
-        } else {
-          variant = `${item.size}-${item.gender}`;
-        }
-
-        const stock = product.stock?.[variant]?.qty || 0;
-
-        if (stock < item.quantity) {
-          Alert.alert("Stock Error", `${product.name} out of stock`);
-          return;
-        }
-
-        const updatedStock = {
-          ...product.stock,
-          [variant]: {
-            ...product.stock[variant],
-            qty: stock - item.quantity,
-          },
-        };
-
-        await updateProductStock(item.productId, updatedStock);
+        console.log("PRODUCT 👉", product);
       }
 
-      /* 4️⃣ CREATE ORDER PAYLOAD */
+      console.log("STEP 3 - CREATE PAYLOAD");
 
       const payload = {
         order_id: orderId,
         user_id: userId,
-        status: "orderPlaced",
+        status: "Order Placed",
         payment_status: "pending",
         total: total,
         order_type: "ONLINE",
-
         shipping: shipping,
 
         order_track: [
           {
-            status: "orderPlaced",
+            status: "Order Placed",
             time: new Date().toISOString(),
           },
         ],
 
-        items: cartItems.map((item) => {
-
-          if (item.weight) {
-            return {
-              product_id: item.productId,
-              product_name: item.name,
-              price: item.price,
-              qty: item.quantity,
-              weight: item.weight,
-              image: item.images?.[0],
-            };
-          }
-
-          return {
-            product_id: item.productId,
-            product_name: item.name,
-            price: item.price,
-            qty: item.quantity,
-            size: item.size,
-            color: item.gender,
-            image: item.images?.[0],
-          };
-
-        }),
+        items: cartItems.map((item) => ({
+          product_id: item.productId,
+          product_name: item.name,
+          price: item.price,
+          qty: item.quantity,
+          size: item.size || null,
+          color: item.gender || null,
+          weight: item.weight || null,
+          image: item.images?.[0] || null,
+        })),
       };
 
-      /* 5️⃣ CREATE ORDER */
-      console.log("ORDER PAYLOAD 👉", payload);
+      console.log("PAYLOAD 👉", payload);
+
+      console.log("STEP 4");
 
       await createOrderApi(payload);
+
+      console.log("ORDER CREATED");
+
+      await clearUserCart(userId);
+
+      setCartItems([]);
 
       Alert.alert("Success", `Order placed! ${orderId}`, [
         {
           text: "View Orders",
-          onPress: () => router.push("/orders"),
+          onPress: () => router.push("/Orders"),
         },
       ]);
 
     } catch (err) {
-      console.log(err);
-      Alert.alert("Error", "Order failed");
+      console.log("ERROR 👉", err);
     }
   };
 

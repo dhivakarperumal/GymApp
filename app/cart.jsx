@@ -1,23 +1,37 @@
-import { View, Text, ScrollView, Image, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useEffect, useState } from "react";
 import {
-  getCart,
-  updateCartApi,
+  Alert,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "../context/AuthContext";
+import {
   deleteCartApi,
   getAllProducts,
+  getCart,
+  updateCartApi,
 } from "../services/api";
-import { useEffect, useState } from "react";
 import Header from "./Header";
 
 export default function Cart() {
+
+  const { user } = useAuth();
+  const userId = user?.id;
+
+  console.log("USER 👉", user);
+  console.log("USER ID 👉", userId);
+
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
   const [cartItems, setCartItems] = useState([]);
   const [products, setProducts] = useState([]);
-  const userId = 5; // later from auth
 
   const fetchProducts = async () => {
     const data = await getAllProducts();
@@ -25,10 +39,15 @@ export default function Cart() {
     setProducts(list);
   };
 
-  const fetchCart = async () => {
-    try {
-      const data = await getCart(userId);
-      setCartItems(data);
+const fetchCart = async () => {
+  if (!userId) return;
+
+  try {
+    const data = await getCart(userId);
+
+    console.log("CART API RESPONSE 👉", data);
+
+    setCartItems(data);
     } catch (err) {
       console.log("Cart fetch error:", err);
     } finally {
@@ -37,9 +56,11 @@ export default function Cart() {
   };
 
   useEffect(() => {
-    fetchCart();
+    if (userId) {
+      fetchCart();
+    }
     fetchProducts();
-  }, []);
+  }, [userId]);
 
   const increaseQty = async (item) => {
     try {
@@ -124,7 +145,8 @@ export default function Cart() {
           </View>
         )}
         {cartItems.map((item) => {
-          const product = products.find((p) => p.id === item.productId);
+
+          const product = products.find(p => p.id === item.productId);
 
           let stock = 0;
 
@@ -143,6 +165,7 @@ export default function Cart() {
               className="bg-[#111] rounded-3xl p-4 mb-5 border border-[#1f1f1f]"
             >
               <View className="flex-row">
+
                 {/* PRODUCT IMAGE */}
                 <Image
                   source={{ uri: item.images?.[0] }}
@@ -151,14 +174,13 @@ export default function Cart() {
                 />
                 {/* DETAILS */}
                 <View className="flex-1 ml-4 justify-between">
+
                   <View>
                     <Text className="text-white text-lg font-semibold">
                       {item.name}
                     </Text>
                     {item.size && (
-                      <Text className="text-gray-400 text-sm">
-                        Size: {item.size}
-                      </Text>
+                      <Text className="text-gray-400 text-sm">Size: {item.size}</Text>
                     )}
 
                     {item.gender && (
@@ -167,12 +189,14 @@ export default function Cart() {
                       </Text>
                     )}
 
+                   
                     {item.weight && (
                       <Text className="text-gray-400 text-sm">
                         Weight: {item.weight}
                       </Text>
                     )}
 
+                  </View>
                     <Text className="text-red-500 text-lg font-bold mt-1">
                       ₹ {item.price}
                     </Text>
@@ -181,6 +205,7 @@ export default function Cart() {
                     </Text>
                   </View>
 
+                 
                   {/* QUANTITY + DELETE */}
                   <View className="flex-row items-center justify-between mt-4">
                     <View className="flex-row items-center bg-[#1a1a1a] rounded-full px-4 py-2">
@@ -202,6 +227,8 @@ export default function Cart() {
                         <Ionicons name="add" size={18} color="white" />
                       </TouchableOpacity>
                     </View>
+                      
+                    </View>
 
                     <TouchableOpacity onPress={() => deleteItem(item.id)}>
                       <Ionicons
@@ -212,8 +239,7 @@ export default function Cart() {
                     </TouchableOpacity>
                   </View>
                 </View>
-              </View>
-            </View>
+           
           );
         })}
       </ScrollView>
@@ -238,8 +264,14 @@ export default function Cart() {
         </View>
 
         <TouchableOpacity
-          onPress={() => router.push("/checkout")}
-          className="bg-primary py-4 rounded-2xl items-center"
+          onPress={() => {
+            if (!cartItems.length) {
+              Alert.alert("Cart empty", "Add items before checkout");
+              return;
+            }
+            router.push("/checkout");
+          }}
+          className="bg-red-600 py-4 rounded-2xl items-center"
         >
           <Text className="text-white font-bold text-lg">Checkout Now</Text>
         </TouchableOpacity>
