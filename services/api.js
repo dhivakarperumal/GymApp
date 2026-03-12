@@ -101,7 +101,10 @@ export const addToCartApi = async (data) => {
     body: JSON.stringify(data),
   });
 
-  return res.json();
+  const text = await res.text();
+  console.log("ADD CART RESPONSE 👉", text);
+
+  return JSON.parse(text);
 };
 
 // UPDATE CART
@@ -125,6 +128,16 @@ export const deleteCartApi = async (id) => {
 
   return res.json();
 };
+
+// clear user cart (after order placed)
+export const clearUserCart = async (userId) => {
+  const res = await fetch(`${BASE_URL}/cart/user/${userId}`, {
+    method: "DELETE",
+  });
+
+  return res.json();
+};
+
 
 export const serviceList = async () => {
   try {
@@ -276,6 +289,8 @@ export const getUserOrders = async (userId) => {
   const res = await fetch(`${BASE_URL}/orders?userId=${userId}`);
   return res.json();
 };
+
+
 
 export default api;
 
