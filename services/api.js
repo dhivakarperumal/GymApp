@@ -1,4 +1,4 @@
-const BASE_URL = "http://192.168.1.8:5000/api";
+const BASE_URL = "https://mygym.qtechx.com/api";
 
 /* ------------------ HELPER ------------------ */
 // lightweight wrapper that mimics axios-style responses; screens currently
