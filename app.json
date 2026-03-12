@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "gymsApp",
-    "slug": "gymsApp",
+    "name": "Arnold Gym",
+    "slug": "arnold-gym",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo_dark.png",
-    "scheme": "gymsapp",
+    "scheme": "arnold-gym",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -13,10 +13,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/logo_dark.png",
-        "backgroundImage": "./assets/images/logo_dark.png",
-        "monochromeImage": "./assets/images/logo_dark.png"
+        "backgroundColor": "#E6F4FE"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
