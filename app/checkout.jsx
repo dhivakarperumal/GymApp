@@ -1,34 +1,33 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Picker } from "@react-native-picker/picker";
+import { useLocalSearchParams } from "expo-router";
 import {
-  View,
+  Image,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  Image,
+  View,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import { Picker } from "@react-native-picker/picker";
 import Toast from "react-native-toast-message";
 
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
-import { useAuth } from "../context/AuthContext";
+import { useEffect, useState } from "react";
 import RazorpayCheckout from "react-native-razorpay";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "../context/AuthContext";
 
 import api from "../services/api";
 
 import {
-  getCart,
-  getProduct,
-  updateProductStock,
-  generateOrderId,
   createOrderApi,
-  clearUserCart,
   deleteCartApi,
+  generateOrderId,
+  getCart,
+  getProduct
 } from "../services/api";
-import Header from "./Header";
 import BackButton from "./BackButton";
+import Header from "./Header";
 
 export default function Checkout() {
   const [cartItems, setCartItems] = useState([]);
@@ -277,6 +276,16 @@ export default function Checkout() {
       // console.log("STEP 4");
 
       await createOrderApi(payload);
+
+      // Store ordered items locally so we can show them later even if the API doesn't return them
+      try {
+        await AsyncStorage.setItem(
+          `order_items_${orderId}`,
+          JSON.stringify(payload.items || [])
+        );
+      } catch (err) {
+        console.log("Failed to cache order items", err);
+      }
 
       // console.log("ORDER CREATED");
 
