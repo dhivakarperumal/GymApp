@@ -43,6 +43,7 @@ useFocusEffect(
     setMenuVisible(false);
     setLogoutVisible(false);
     await logout();
+    router.replace("/(auth)/login");
   };
 
   return (
@@ -241,7 +242,6 @@ useFocusEffect(
         </Pressable>
       </Modal>
 
-      {/* LOGOUT MODAL */}
       {/* CONFIRM LOGOUT MODAL */}
       <Modal
         transparent
