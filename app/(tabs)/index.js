@@ -12,12 +12,13 @@ import {
   getUserAssignment,
   getDietPlans,
   getTrainerWorkouts,
+  getAllProducts,
+  getUserMemberships
 } from "../../services/api";
 import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Dimensions } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { getAllProducts } from "../../services/api";
 import ProductCard from "../ProductCard";
 
 const { width } = Dimensions.get("window");
@@ -26,7 +27,7 @@ export default function Home() {
   const [reviews, setReviews] = useState([]);
   const { user } = useAuth();
   const router = useRouter();
-  const { planDetails } = useLocalSearchParams(); // Add this to get params
+  const { planDetails } = useLocalSearchParams();
   const [assignment, setAssignment] = useState(null);
   const scrollRef = useRef(null);
   const scrollX = useRef(0);
@@ -42,6 +43,25 @@ export default function Home() {
   const productScrollRef = useRef(null);
   const productScrollX = useRef(0);
 
+  const [userPlan, setUserPlan] = useState(null);
+
+  const fetchUserPlan = async () => {
+    try {
+      if (!user?.id) return;
+
+      const data = await getUserMemberships(user.id);
+
+      if (Array.isArray(data) && data.length > 0) {
+        const activePlan =
+          data.find((p) => new Date(p.endDate) > new Date()) || data[0];
+
+        setUserPlan(activePlan);
+      }
+    } catch (err) {
+      console.log("Plan fetch error:", err);
+    }
+  };
+
   // Parse planDetails if present
   const purchasedPlan = planDetails ? JSON.parse(planDetails) : null;
 
@@ -53,6 +73,7 @@ export default function Home() {
       fetchAssignment();
       fetchTodayDiet();
       fetchTodayWorkout();
+      fetchUserPlan();
     }
   }, [user]);
 
@@ -215,39 +236,63 @@ export default function Home() {
       <StatusBar barStyle="light-content" />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Purchased Plan Success Card - Show if planDetails present */}
-        {purchasedPlan && (
-          <View className="bg-[#141414] rounded-3xl p-5 mb-6 border border-primary">
-            <View className="flex-row items-center mb-4">
-              <Ionicons name="checkmark-circle" size={24} color="#ff3c00" />
-              <Text className="text-white text-lg font-bold ml-2">
-                Purchase Successful!
-              </Text>
-            </View>
-            <Text className="text-gray-300 text-sm mb-4">
-              Welcome to your new plan. Here are the details:
+        {!userPlan && (
+          <View className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]">
+            <Text className="text-white text-lg font-bold mb-2">
+              No Membership
             </Text>
-            <View className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]">
+
+            <Text className="text-gray-400 text-sm mb-4">
+              Unlock workouts, diet plans and trainers.
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => router.push("/pricing")}
+              className="bg-primary py-3 rounded-xl items-center"
+            >
+              <Text className="text-white font-bold">Explore Plans</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        {userPlan && (
+          <View
+            className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
+            style={{
+              shadowColor: "#ff3c00",
+              shadowOpacity: 0.25,
+              shadowRadius: 20,
+              elevation: 10,
+            }}
+          >
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-white text-lg font-bold">MY MEMBERSHIP</Text>
+
+              <TouchableOpacity onPress={() => router.push("/plans")}>
+                <Text className="text-primary text-sm font-semibold">
+                  VIEW DETAILS
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View className="bg-black rounded-xl p-4 border border-[#2a2a2a]">
               <Text className="text-primary text-lg font-bold mb-2">
-                {purchasedPlan.name}
+                {userPlan.planName}
               </Text>
-              <Text className="text-gray-400 text-sm mb-2">
-                {purchasedPlan.description}
+
+              <Text className="text-white font-semibold mb-2">
+                ₹{Number(userPlan.pricePaid || 0).toLocaleString()}
               </Text>
-              <Text className="text-white font-semibold">
-                Price: ₹{Number(purchasedPlan.price).toLocaleString()}
-              </Text>
+
               <Text className="text-gray-400 text-sm">
-                Duration: {purchasedPlan.duration}
+                Duration: {userPlan.duration}
               </Text>
+
               <Text className="text-gray-400 text-sm">
-                Start Date: {purchasedPlan.startDate}
+                Start: {new Date(userPlan.startDate).toLocaleDateString()}
               </Text>
+
               <Text className="text-gray-400 text-sm">
-                End Date: {purchasedPlan.endDate}
-              </Text>
-              <Text className="text-gray-400 text-sm">
-                Payment ID: {purchasedPlan.paymentId}
+                End: {new Date(userPlan.endDate).toLocaleDateString()}
               </Text>
             </View>
           </View>
