@@ -5,23 +5,93 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useLocalSearchParams, router } from "expo-router";
+import { useState, useEffect } from "react";
 import RazorpayCheckout from "react-native-razorpay";
 import { Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../Header";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // For storing user data locally if needed
+import api from "../../services/api"; // Assuming you have an API instance; if not, use fetch
 
 export default function BuyPlan() {
   const { plan } = useLocalSearchParams();
+  const TEST_MODE = false;
   const selectedPlan = plan ? JSON.parse(plan) : null;
+
+  const today = new Date().toISOString().split("T")[0];
 
   const [form, setForm] = useState({
     name: "",
     phone: "",
     email: "",
     address: "",
+    startDate: today,
+    endDate: "",
   });
+
+  const [user, setUser] = useState(null); // Assuming user data is stored locally
+
+  /* ================= PAGE PROTECTION ================= */
+  useEffect(() => {
+    const checkUser = async () => {
+      const storedUser = await AsyncStorage.getItem("user");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      } else {
+        Alert.alert("Error", "Please login to purchase a plan");
+        router.push("/login");
+      }
+    };
+    checkUser();
+
+    if (!selectedPlan) {
+      router.push("/pricing");
+    }
+  }, [selectedPlan]);
+
+  /* ================= FETCH USER PROFILE ================= */
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchUserProfile = async () => {
+      try {
+        const res = await api.get(`/users/${user.id}`);
+        if (res.data) {
+          setForm((prev) => ({
+            ...prev,
+            phone: res.data.mobile || "",
+            name: res.data.username || prev.name,
+            email: user.email || "",
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile", err);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
+
+  /* ================= CALCULATE END DATE ================= */
+  const getDaysFromDuration = (duration) => {
+    const number = parseInt(duration);
+    return number * 30; // Assuming duration is in months
+  };
+
+  useEffect(() => {
+    if (!selectedPlan) return;
+
+    const days = getDaysFromDuration(selectedPlan.duration);
+    const start = new Date(form.startDate);
+    const end = new Date(start);
+    end.setDate(start.getDate() + days);
+
+    setForm((prev) => ({
+      ...prev,
+      endDate: end.toISOString().split("T")[0],
+    }));
+  }, [form.startDate, selectedPlan]);
 
   const validateForm = () => {
     if (!form.name.trim()) {
@@ -56,7 +126,7 @@ export default function BuyPlan() {
       currency: "INR",
       key: "rzp_test_SGj8n5SyKSE10b",
       amount: Number(selectedPlan.price) * 100,
-      name: "Your Gym Name",
+      name: "Arnold Gym",
       prefill: {
         email: form.email,
         contact: form.phone,
@@ -66,17 +136,128 @@ export default function BuyPlan() {
     };
 
     RazorpayCheckout.open(options)
-      .then((data) => {
+      .then(async (data) => {
         // SUCCESS
         Alert.alert(
           "Payment Successful 🎉",
           `Payment ID: ${data.razorpay_payment_id}`,
         );
+
+        // Save to backend
+        try {
+          await api.post("/memberships", {
+            userId: user.id,
+            planId: selectedPlan.id,
+            planName: selectedPlan.name,
+            pricePaid: Number(selectedPlan.price),
+            duration: selectedPlan.duration,
+            startDate: form.startDate,
+            endDate: form.endDate,
+            paymentId: data.razorpay_payment_id,
+            status: "active",
+          });
+
+          // Navigate to home with details
+          router.push({
+            pathname: "/",
+            params: {
+              planDetails: JSON.stringify({
+                ...selectedPlan,
+                startDate: form.startDate,
+                endDate: form.endDate,
+                paymentId: data.razorpay_payment_id,
+              }),
+            },
+          });
+        } catch (err) {
+          console.error("Plan save error:", err);
+          Alert.alert("Error", "Payment successful but failed to save plan.");
+        }
       })
       .catch((error) => {
         Alert.alert("Payment Failed", error.description);
       });
   };
+
+//   const handlePayment = async () => {
+//   if (!validateForm()) return;
+
+//   // TEST MODE (skip Razorpay)
+//   if (TEST_MODE) {
+//     try {
+//       const fakePaymentId = "TEST_PAY_" + Date.now();
+
+//       await api.post("/memberships", {
+//         userId: user.id,
+//         planId: selectedPlan.id,
+//         planName: selectedPlan.name,
+//         pricePaid: Number(selectedPlan.price),
+//         duration: selectedPlan.duration,
+//         startDate: form.startDate,
+//         endDate: form.endDate,
+//         paymentId: fakePaymentId,
+//         status: "active",
+//       });
+
+//       Alert.alert("Test Purchase Successful 🎉");
+
+//       router.push({
+//         pathname: "/",
+//         params: {
+//           planDetails: JSON.stringify({
+//             ...selectedPlan,
+//             startDate: form.startDate,
+//             endDate: form.endDate,
+//             paymentId: fakePaymentId,
+//           }),
+//         },
+//       });
+//     } catch (err) {
+//       console.log("Test purchase error:", err);
+//       Alert.alert("Error", "Failed to save plan");
+//     }
+
+//     return;
+//   }
+
+//   // REAL PAYMENT (Razorpay)
+//   const options = {
+//     description: selectedPlan.name,
+//     image: "https://yourgymlogo.com/logo.png",
+//     currency: "INR",
+//     key: "rzp_test_SGj8n5SyKSE10b",
+//     amount: Number(selectedPlan.price) * 100,
+//     name: "Arnold Gym",
+//     prefill: {
+//       email: form.email,
+//       contact: form.phone,
+//       name: form.name,
+//     },
+//     theme: { color: "#ff3c00" },
+//   };
+
+//   RazorpayCheckout.open(options)
+//     .then(async (data) => {
+//       await api.post("/memberships", {
+//         userId: user.id,
+//         planId: selectedPlan.id,
+//         planName: selectedPlan.name,
+//         pricePaid: Number(selectedPlan.price),
+//         duration: selectedPlan.duration,
+//         startDate: form.startDate,
+//         endDate: form.endDate,
+//         paymentId: data.razorpay_payment_id,
+//         status: "active",
+//       });
+
+//       Alert.alert("Payment Successful 🎉");
+
+//       router.push("/home");
+//     })
+//     .catch((error) => {
+//       Alert.alert("Payment Failed", error.description);
+//     });
+// };
 
   if (!selectedPlan) {
     return (
@@ -117,6 +298,7 @@ export default function BuyPlan() {
                 placeholder="Enter your full name"
                 placeholderTextColor="#888"
                 className="bg-[#0f0f0f] text-white px-5 py-4 rounded-2xl border border-border focus:border-primary"
+                value={form.name}
                 onChangeText={(text) => setForm({ ...form, name: text })}
               />
             </View>
@@ -131,7 +313,12 @@ export default function BuyPlan() {
                 placeholderTextColor="#888"
                 keyboardType="phone-pad"
                 className="bg-[#0f0f0f] text-white px-5 py-4 rounded-2xl border border-border focus:border-primary"
-                onChangeText={(text) => setForm({ ...form, phone: text })}
+                value={form.phone}
+                maxLength={10}
+                onChangeText={(text) => {
+                  const value = text.replace(/\D/g, "");
+                  setForm({ ...form, phone: value });
+                }}
               />
             </View>
 
@@ -145,12 +332,13 @@ export default function BuyPlan() {
                 placeholderTextColor="#888"
                 keyboardType="email-address"
                 className="bg-[#0f0f0f] text-white px-5 py-4 rounded-2xl border border-border focus:border-primary"
+                value={form.email}
                 onChangeText={(text) => setForm({ ...form, email: text })}
               />
             </View>
 
             {/* Address */}
-            <View className="mb-8">
+            <View className="mb-5">
               <Text className="text-gray-200 text-xs mb-2 tracking-widest">
                 ADDRESS
               </Text>
@@ -161,7 +349,36 @@ export default function BuyPlan() {
                 numberOfLines={3}
                 textAlignVertical="top"
                 className="bg-[#0f0f0f] text-white px-5 py-4 rounded-2xl border border-border h-28 focus:border-primary"
+                value={form.address}
                 onChangeText={(text) => setForm({ ...form, address: text })}
+              />
+            </View>
+
+            {/* Start Date */}
+            <View className="mb-5">
+              <Text className="text-gray-200 text-xs mb-2 tracking-widest">
+                START DATE
+              </Text>
+              <TextInput
+                placeholder="Start Date"
+                placeholderTextColor="#888"
+                className="bg-[#0f0f0f] text-white px-5 py-4 rounded-2xl border border-border focus:border-primary"
+                value={form.startDate}
+                onChangeText={(text) => setForm({ ...form, startDate: text })}
+              />
+            </View>
+
+            {/* End Date */}
+            <View className="mb-8">
+              <Text className="text-gray-200 text-xs mb-2 tracking-widest">
+                END DATE
+              </Text>
+              <TextInput
+                placeholder="End Date"
+                placeholderTextColor="#888"
+                className="bg-[#0f0f0f] text-white px-5 py-4 rounded-2xl border border-border focus:border-primary"
+                value={form.endDate}
+                editable={false}
               />
             </View>
 

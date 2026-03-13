@@ -24,9 +24,6 @@ export default function Cart() {
   const { user } = useAuth();
   const userId = user?.id;
 
-  console.log("USER 👉", user);
-  console.log("USER ID 👉", userId);
-
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
@@ -45,11 +42,11 @@ const fetchCart = async () => {
   try {
     const data = await getCart(userId);
 
-    console.log("CART API RESPONSE 👉", data);
+    // console.log("CART API RESPONSE 👉", data);
 
     setCartItems(data);
     } catch (err) {
-      console.log("Cart fetch error:", err);
+      // console.log("Cart fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -67,7 +64,7 @@ const fetchCart = async () => {
       await updateCartApi(item.id, item.quantity + 1);
       fetchCart();
     } catch (err) {
-      console.log("Increase qty error:", err);
+      // console.log("Increase qty error:", err);
     }
   };
 
@@ -78,7 +75,7 @@ const fetchCart = async () => {
       await updateCartApi(item.id, item.quantity - 1);
       fetchCart();
     } catch (err) {
-      console.log("Decrease qty error:", err);
+      // console.log("Decrease qty error:", err);
     }
   };
 
@@ -87,7 +84,7 @@ const fetchCart = async () => {
       await deleteCartApi(id);
       fetchCart();
     } catch (err) {
-      console.log("Delete error:", err);
+      // console.log("Delete error:", err);
     }
   };
 

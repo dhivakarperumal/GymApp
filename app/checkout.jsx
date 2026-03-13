@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { useAuth } from "../context/AuthContext";
+import RazorpayCheckout from "react-native-razorpay";
 
 import {
   getCart,
@@ -26,11 +27,10 @@ export default function Checkout() {
 
   const [cartItems, setCartItems] = useState([]);
   const router = useRouter();
+  const [paymentMethod, setPaymentMethod] = useState("ONLINE");
 
   const { user } = useAuth();
   const userId = user?.id;
-
-
 
   const [shipping, setShipping] = useState({
     name: "",
@@ -46,7 +46,7 @@ export default function Checkout() {
   /* FETCH CART */
   const fetchCart = async () => {
     const data = await getCart(userId);
-    console.log("CART DATA 👉", data);
+    // console.log("CART DATA 👉", data);
     setCartItems(data);
   };
 
@@ -66,11 +66,46 @@ export default function Checkout() {
   const delivery = cartItems.length > 0 ? 99 : 0;
   const total = subtotal + delivery;
 
+  const handleOnlinePayment = () => {
 
+    if (!shipping.name || !shipping.phone || !shipping.address) {
+      Alert.alert("Missing Details", "Please fill shipping details");
+      return;
+    }
+
+    const options = {
+      description: "Order Payment",
+      image: "https://yourlogo.com/logo.png",
+      currency: "INR",
+      key: "rzp_test_SGj8n5SyKSE10b",
+      amount: total * 100,
+      name: "Your Store Name",
+      prefill: {
+        email: shipping.email,
+        contact: shipping.phone,
+        name: shipping.name,
+      },
+      theme: { color: "#ef4444" },
+    };
+
+    RazorpayCheckout.open(options)
+      .then(async (data) => {
+
+        await placeOrder("paid");
+
+        Alert.alert(
+          "Payment Successful 🎉",
+          `Payment ID: ${data.razorpay_payment_id}`
+        );
+      })
+      .catch((error) => {
+        Alert.alert("Payment Failed", error?.description || "Payment cancelled");
+      });
+  };
 
   /* PLACE ORDER */
 
-  const placeOrder = async () => {
+  const placeOrder = async (paymentStatus = "pending") => {
     try {
 
       if (!cartItems.length) {
@@ -78,29 +113,29 @@ export default function Checkout() {
         return;
       }
 
-      console.log("STEP 1");
+      // console.log("STEP 1");
 
       const orderRes = await generateOrderId();
       const orderId = orderRes.order_id;
 
-      console.log("ORDER ID 👉", orderId);
+      // console.log("ORDER ID 👉", orderId);
 
-      console.log("STEP 2");
+      // console.log("STEP 2");
 
       for (const item of cartItems) {
         const product = await getProduct(item.productId);
-        console.log("PRODUCT 👉", product);
+        // console.log("PRODUCT 👉", product);
       }
 
-      console.log("STEP 3 - CREATE PAYLOAD");
+      // console.log("STEP 3 - CREATE PAYLOAD");
 
       const payload = {
         order_id: orderId,
         user_id: userId,
         status: "Order Placed",
-        payment_status: "pending",
+        payment_status: paymentStatus,
         total: total,
-        order_type: "ONLINE",
+        order_type: paymentMethod,
         shipping: shipping,
 
         order_track: [
@@ -122,13 +157,13 @@ export default function Checkout() {
         })),
       };
 
-      console.log("PAYLOAD 👉", payload);
+      // console.log("PAYLOAD 👉", payload);
 
-      console.log("STEP 4");
+      // console.log("STEP 4");
 
       await createOrderApi(payload);
 
-      console.log("ORDER CREATED");
+      // console.log("ORDER CREATED");
 
       await clearUserCart(userId);
 
@@ -176,6 +211,38 @@ export default function Checkout() {
             className="bg-[#111] text-white p-4 rounded-xl mb-4"
           />
         ))}
+
+        <Text className="text-white text-lg mt-6 mb-4">
+          Payment Method
+        </Text>
+
+        <View className="bg-[#111] p-4 rounded-2xl mb-4">
+
+          {/* ONLINE PAYMENT */}
+          <TouchableOpacity
+            className="flex-row items-center mb-3"
+            onPress={() => setPaymentMethod("ONLINE")}
+          >
+            <View
+              className={`w-5 h-5 rounded-full border-2 mr-3 ${paymentMethod === "ONLINE" ? "border-red-500 bg-red-500" : "border-gray-400"
+                }`}
+            />
+            <Text className="text-white">Online Payment (Razorpay)</Text>
+          </TouchableOpacity>
+
+          {/* COD */}
+          <TouchableOpacity
+            className="flex-row items-center"
+            onPress={() => setPaymentMethod("COD")}
+          >
+            <View
+              className={`w-5 h-5 rounded-full border-2 mr-3 ${paymentMethod === "COD" ? "border-red-500 bg-red-500" : "border-gray-400"
+                }`}
+            />
+            <Text className="text-white">Cash on Delivery</Text>
+          </TouchableOpacity>
+
+        </View>
 
         {/* ORDER SUMMARY */}
 
@@ -255,7 +322,13 @@ export default function Checkout() {
         {/* PLACE ORDER */}
 
         <TouchableOpacity
-          onPress={placeOrder}
+          onPress={() => {
+            if (paymentMethod === "ONLINE") {
+              handleOnlinePayment();
+            } else {
+              placeOrder("pending");
+            }
+          }}
           className="bg-red-600 py-5 rounded-2xl items-center mt-6"
         >
           <Text className="text-white font-bold text-lg">
