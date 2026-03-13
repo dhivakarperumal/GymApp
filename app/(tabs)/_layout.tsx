@@ -1,19 +1,18 @@
-import { Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import { Tabs, useRouter } from "expo-router";
+import { useCallback, useState, useEffect } from "react";
 import {
-  View,
-  Text,
   Image,
-  TouchableOpacity,
   Modal,
   Pressable,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useState, useEffect } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 import { getCart } from "../../services/api";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
 
 export default function TabLayout() {
   const router = useRouter();
@@ -40,10 +39,17 @@ export default function TabLayout() {
     }, [user]),
   );
 
+  useEffect(() => {
+    if (!user) {
+      router.replace("/(auth)/login");
+    }
+  }, [user]);
+
   const handleLogout = async () => {
     setMenuVisible(false);
     setLogoutVisible(false);
-    await logout(); // RootNavigator will handle redirect
+
+    await logout();
   };
 
   const initial = user?.username?.charAt(0)?.toUpperCase() || "U";
