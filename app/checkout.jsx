@@ -1,34 +1,33 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Picker } from "@react-native-picker/picker";
+import { useLocalSearchParams } from "expo-router";
 import {
-  View,
+  Image,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  Image,
+  View,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import { Picker } from "@react-native-picker/picker";
 import Toast from "react-native-toast-message";
 
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
-import { useAuth } from "../context/AuthContext";
+import { useEffect, useState } from "react";
 import RazorpayCheckout from "react-native-razorpay";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "../context/AuthContext";
 
 import api from "../services/api";
 
 import {
-  getCart,
-  getProduct,
-  updateProductStock,
-  generateOrderId,
   createOrderApi,
-  clearUserCart,
   deleteCartApi,
+  generateOrderId,
+  getCart,
+  getProduct
 } from "../services/api";
-import Header from "./Header";
 import BackButton from "./BackButton";
+import Header from "./Header";
 
 export default function Checkout() {
   const [cartItems, setCartItems] = useState([]);
@@ -128,7 +127,7 @@ export default function Checkout() {
     0,
   );
 
-  const delivery = cartItems.length > 0 ? 99 : 0;
+  const delivery = cartItems.length > 0 ? 0 : 0;
   const total = subtotal + delivery;
 
   const handleOnlinePayment = () => {
@@ -148,7 +147,7 @@ export default function Checkout() {
       currency: "INR",
       key: "rzp_test_SGj8n5SyKSE10b",
       amount: total * 100,
-      name: "Your Store Name",
+      name: "Arnold Gym",
       prefill: {
         email: shipping.email,
         contact: shipping.phone,
@@ -182,49 +181,85 @@ export default function Checkout() {
   const placeOrder = async (paymentStatus = "pending") => {
     try {
       if (!cartItems.length) {
-        Alert.alert("Cart empty", "Add items before placing order");
+        Toast.show({
+          type: "error",
+          text1: "Cart Empty",
+          text2: "Add items before placing order",
+        });
         return;
       }
 
       /* VALIDATE SHIPPING */
 
       if (!shipping.name.trim()) {
-        Alert.alert("Validation Error", "Please enter your name");
+        Toast.show({
+          type: "error",
+          text1: "Validation Error",
+          text2: "Please enter your name",
+        });
         return;
       }
 
       if (!/^[6-9]\d{9}$/.test(shipping.phone)) {
-        Alert.alert("Validation Error", "Enter a valid 10 digit phone number");
+        Toast.show({
+          type: "error",
+          text1: "Validation Error",
+          text2: "Enter a valid 10 digit phone number",
+        });
         return;
       }
 
       if (!/^\S+@\S+\.\S+$/.test(shipping.email)) {
-        Alert.alert("Validation Error", "Enter a valid email address");
+        Toast.show({
+          type: "error",
+          text1: "Validation Error",
+          text2: "Enter a valid email address",
+        });
         return;
       }
 
       if (!shipping.address.trim()) {
-        Alert.alert("Validation Error", "Please enter your address");
+        Toast.show({
+          type: "error",
+          text1: "Validation Error",
+          text2: "Please enter your city",
+        });
         return;
       }
 
       if (!shipping.city.trim()) {
-        Alert.alert("Validation Error", "Please enter your city");
+        Toast.show({
+          type: "error",
+          text1: "Validation Error",
+          text2: "Please enter your city",
+        });
         return;
       }
 
       if (!shipping.state.trim()) {
-        Alert.alert("Validation Error", "Please enter your state");
+        Toast.show({
+          type: "error",
+          text1: "Validation Error",
+          text2: "Please enter your state",
+        });
         return;
       }
 
       if (!/^\d{6}$/.test(shipping.zip)) {
-        Alert.alert("Validation Error", "Enter a valid 6 digit ZIP code");
+        Toast.show({
+          type: "error",
+          text1: "Validation Error",
+          text2: "Enter a valid 6 digit ZIP code",
+        });
         return;
       }
 
       if (!shipping.country.trim()) {
-        Alert.alert("Validation Error", "Please enter your country");
+        Toast.show({
+          type: "error",
+          text1: "Validation Error",
+          text2: "Please enter your country",
+        });
         return;
       }
 
@@ -277,6 +312,16 @@ export default function Checkout() {
       // console.log("STEP 4");
 
       await createOrderApi(payload);
+
+      // Store ordered items locally so we can show them later even if the API doesn't return them
+      try {
+        await AsyncStorage.setItem(
+          `order_items_${orderId}`,
+          JSON.stringify(payload.items || [])
+        );
+      } catch (err) {
+        console.log("Failed to cache order items", err);
+      }
 
       // console.log("ORDER CREATED");
 
@@ -348,27 +393,26 @@ export default function Checkout() {
               placeholderTextColor="#888"
               value={shipping[key]}
               keyboardType={key === "phone" ? "number-pad" : "default"}
-            maxLength={key === "phone" ? 10 : undefined}
-            onChangeText={(text) =>
-                {
-              if (key === "phone") {
-                // allow only numbers
-                const numeric = text.replace(/[^0-9]/g, "");
+              maxLength={key === "phone" ? 10 : undefined}
+              onChangeText={(text) => {
+                if (key === "phone") {
+                  // allow only numbers
+                  const numeric = text.replace(/[^0-9]/g, "");
 
-                // prevent first digit < 6
-                if (numeric.length === 1 && !/[6-9]/.test(numeric)) {
-                  return;
-                }
+                  // prevent first digit < 6
+                  if (numeric.length === 1 && !/[6-9]/.test(numeric)) {
+                    return;
+                  }
 
-                // max 10 digits
-                if (numeric.length <= 10) {
-                  setShipping({ ...shipping, phone: numeric });
+                  // max 10 digits
+                  if (numeric.length <= 10) {
+                    setShipping({ ...shipping, phone: numeric });
+                  }
+                } else {
+                  setShipping({ ...shipping, [key]: text })
+                    ;
                 }
-              } else {
-                setShipping({ ...shipping, [key]: text })
-              ;
-              }
-            }}
+              }}
               className="bg-[#111] text-white p-4 rounded-xl mb-4"
             />
           );
@@ -429,9 +473,9 @@ export default function Checkout() {
 
         <Text className="text-white text-lg mt-6 mb-4">Order Summary</Text>
 
-        {cartItems.map((item) => (
+        {cartItems.map((item, index) => (
           <View
-            key={item.id}
+            key={item.id || item.productId || index}
             className="flex-row items-center mb-4 bg-[#111] p-4 rounded-2xl"
           >
             <Image
