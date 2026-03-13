@@ -25,6 +25,7 @@ import {
   generateOrderId,
   createOrderApi,
   clearUserCart,
+  deleteCartApi,
 } from "../services/api";
 
 export default function Checkout() {
@@ -229,7 +230,11 @@ export default function Checkout() {
       // console.log("ORDER CREATED");
 
       if (!buyNow) {
-        await clearUserCart(userId);
+        const cart = await getCart(userId);
+
+        for (const item of cart) {
+          await deleteCartApi(item.id);
+        }
       }
 
       setCartItems([]);
@@ -237,9 +242,17 @@ export default function Checkout() {
       Alert.alert("Success", `Order placed! ${orderId}`, [
         {
           text: "View Orders",
-          onPress: () => router.push("/Orders"),
+          onPress: () => router.replace("/Orders"),
         },
       ]);
+
+      if (!buyNow) {
+        const cart = await getCart(userId);
+
+        for (const item of cart) {
+          await deleteCartApi(item.id);
+        }
+      }
 
     } catch (err) {
       console.log("ERROR 👉", err);

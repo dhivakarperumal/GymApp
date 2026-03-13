@@ -18,6 +18,8 @@ import {
   updateCartApi,
 } from "../services/api";
 import Header from "./Header";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 export default function Cart() {
 
@@ -52,12 +54,14 @@ const fetchCart = async () => {
     }
   };
 
-  useEffect(() => {
+useFocusEffect(
+  useCallback(() => {
     if (userId) {
       fetchCart();
     }
     fetchProducts();
-  }, [userId]);
+  }, [userId])
+);
 
   const increaseQty = async (item) => {
     try {
