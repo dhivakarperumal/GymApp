@@ -69,10 +69,10 @@ export default function Profile() {
     } catch (err) {
       console.log("UPDATE ERROR:", err);
       Toast.show({
-  type: "error",
-  text1: "Update Failed",
-  text2: "Profile update failed",
-});
+        type: "error",
+        text1: "Update Failed",
+        text2: "Profile update failed",
+      });
     }
   };
 
@@ -94,11 +94,16 @@ export default function Profile() {
       <Header />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 20 }}
+        contentContainerStyle={{
+          padding: 20,
+          paddingBottom: 120,
+        }}
       >
         <BackButton style={{ marginTop: 20 }} />
         {/* HEADER */}
-        <Text className="text-white text-3xl font-bold mt-7 mb-8">My Profile</Text>
+        <Text className="text-white text-3xl font-bold mt-7 mb-8">
+          My Profile
+        </Text>
 
         {/* PROFILE CARD */}
         <View className="bg-[#111] rounded-3xl p-6 items-center mb-8">
@@ -136,11 +141,6 @@ export default function Profile() {
             className="flex-row justify-between items-center py-4 border-b border-[#222]"
           >
             <Text className="text-white">Address</Text>
-            <Ionicons name="chevron-forward" size={18} color="#888" />
-          </TouchableOpacity>
-
-          <TouchableOpacity className="flex-row justify-between items-center py-4">
-            <Text className="text-white">Settings</Text>
             <Ionicons name="chevron-forward" size={18} color="#888" />
           </TouchableOpacity>
         </View>

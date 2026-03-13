@@ -121,6 +121,13 @@ export default function TabLayout() {
               </View>
             </TouchableOpacity>
 
+            <TouchableOpacity
+              onPress={() => router.push("/Orders")}
+              style={{ marginRight: 16 }}
+            >
+              <Ionicons name="cube-outline" size={22} color="white" />
+            </TouchableOpacity>
+
             {/* NOTIFICATION */}
             <TouchableOpacity style={{ marginRight: 16 }}>
               <Ionicons name="notifications-outline" size={22} color="white" />
