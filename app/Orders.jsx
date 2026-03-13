@@ -99,6 +99,7 @@ export default function Orders() {
             right: 18,
             height: 2,
             backgroundColor: "#333",
+            zIndex: -1,
           }}
         />
       </View>
@@ -134,7 +135,7 @@ export default function Orders() {
               fontSize: 28,
               fontWeight: "bold",
               marginBottom: 20,
-              marginTop:20,
+              marginTop: 20,
             }}
           >
             My Orders
@@ -202,13 +203,14 @@ export default function Orders() {
         </ScrollView>
 
         {/* MODAL */}
+        {/* MODAL */}
         <Modal transparent visible={!!selectedOrder} animationType="fade">
           <Pressable
             style={{
               flex: 1,
-              backgroundColor: "rgba(0,0,0,0.8)",
+              backgroundColor: "rgba(0,0,0,0.85)",
               justifyContent: "center",
-              padding: 20,
+              padding: 16,
             }}
             onPress={() => setSelectedOrder(null)}
           >
@@ -217,88 +219,206 @@ export default function Orders() {
                 style={{
                   backgroundColor: "#111",
                   borderRadius: 24,
-                  padding: 20,
                   borderWidth: 1,
                   borderColor: "#222",
+                  maxHeight: "85%",
+                  padding: 20,
                 }}
               >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    marginBottom: 16,
-                  }}
-                >
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  {/* HEADER */}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: 16,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#e11d1d",
+                        fontSize: 18,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Order #{selectedOrder.order_id}
+                    </Text>
+
+                    <TouchableOpacity onPress={() => setSelectedOrder(null)}>
+                      <Ionicons name="close" size={22} color="white" />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* ORDER INFO */}
+                  <View style={{ marginBottom: 18 }}>
+                    <Text style={{ color: "#aaa", fontSize: 12 }}>
+                      Ordered On:{" "}
+                      {new Date(selectedOrder.created_at).toLocaleString()}
+                    </Text>
+
+                    <Text style={{ color: "#aaa", fontSize: 12, marginTop: 4 }}>
+                      Payment Method: {selectedOrder.payment_method}
+                    </Text>
+
+                    <Text style={{ color: "#aaa", fontSize: 12 }}>
+                      Payment Status: {selectedOrder.payment_status}
+                    </Text>
+
+                    <Text style={{ color: "#aaa", fontSize: 12 }}>
+                      Order Type: {selectedOrder.order_type}
+                    </Text>
+                  </View>
+
+                  {/* DIVIDER */}
+                  <View
+                    style={{
+                      height: 1,
+                      backgroundColor: "#222",
+                      marginBottom: 16,
+                    }}
+                  />
+
+                  {/* ITEMS */}
+                  {(selectedOrder.items || []).map((item, index) => (
+                    <View
+                      key={index}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginBottom: 14,
+                        backgroundColor: "#1a1a1a",
+                        padding: 10,
+                        borderRadius: 12,
+                      }}
+                    >
+                      <Image
+                        source={{
+                          uri: item.image?.startsWith("data:image")
+                            ? item.image
+                            : `data:image/png;base64,${item.image}`,
+                        }}
+                        style={{
+                          width: 60,
+                          height: 60,
+                          borderRadius: 12,
+                          marginRight: 12,
+                        }}
+                      />
+
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={{
+                            color: "white",
+                            fontWeight: "600",
+                          }}
+                        >
+                          {item.product_name}
+                        </Text>
+
+                        <Text
+                          style={{ color: "#aaa", fontSize: 12, marginTop: 2 }}
+                        >
+                          Qty: {item.qty}
+                        </Text>
+                      </View>
+
+                      <Text style={{ color: "#e11d1d", fontWeight: "600" }}>
+                        ₹{item.price}
+                      </Text>
+                    </View>
+                  ))}
+
+                  {/* SHIPPING DETAILS */}
+                  {selectedOrder.shipping &&
+                    (() => {
+                      const shipping =
+                        typeof selectedOrder.shipping === "string"
+                          ? JSON.parse(selectedOrder.shipping)
+                          : selectedOrder.shipping;
+
+                      return (
+                        <>
+                          <View
+                            style={{
+                              height: 1,
+                              backgroundColor: "#222",
+                              marginVertical: 16,
+                            }}
+                          />
+
+                          <Text
+                            style={{
+                              color: "#e11d1d",
+                              fontWeight: "600",
+                              marginBottom: 8,
+                            }}
+                          >
+                            Shipping Details
+                          </Text>
+
+                          <Text style={{ color: "#aaa", fontSize: 12 }}>
+                            {shipping.name}
+                          </Text>
+
+                          <Text style={{ color: "#aaa", fontSize: 12 }}>
+                            {shipping.phone}
+                          </Text>
+
+                          <Text style={{ color: "#aaa", fontSize: 12 }}>
+                            {shipping.email}
+                          </Text>
+
+                          <Text style={{ color: "#aaa", fontSize: 12 }}>
+                            {shipping.address}
+                          </Text>
+
+                          <Text style={{ color: "#aaa", fontSize: 12 }}>
+                            {shipping.city}, {shipping.state} {shipping.zip}
+                          </Text>
+
+                          <Text style={{ color: "#aaa", fontSize: 12 }}>
+                            {shipping.country}
+                          </Text>
+                        </>
+                      );
+                    })()}
+
+                  {/* TOTAL */}
+                  <View
+                    style={{
+                      marginTop: 20,
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Text style={{ color: "#aaa" }}>Total</Text>
+
+                    <Text
+                      style={{
+                        color: "#e11d1d",
+                        fontSize: 18,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      ₹{selectedOrder.total}
+                    </Text>
+                  </View>
+
+                  {/* ORDER STATUS */}
                   <Text
                     style={{
                       color: "#e11d1d",
-                      fontSize: 18,
-                      fontWeight: "bold",
+                      fontWeight: "600",
+                      marginTop: 20,
+                      marginBottom: 8,
                     }}
                   >
-                    Order ID: {selectedOrder.order_id}
+                    Order Status
                   </Text>
 
-                  <TouchableOpacity onPress={() => setSelectedOrder(null)}>
-                    <Ionicons name="close" color="white" size={24} />
-                  </TouchableOpacity>
-                </View>
-
-                {/* ITEMS */}
-                {(selectedOrder.items || []).map((item, index) => (
-                  <View
-                    key={index}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      marginBottom: 12,
-                    }}
-                  >
-                    <Image
-                      source={{
-                        uri: item.image || "https://via.placeholder.com/100",
-                      }}
-                      style={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: 12,
-                        marginRight: 12,
-                      }}
-                    />
-
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: "white" }}>
-                        {item.product_name}
-                      </Text>
-
-                      <Text style={{ color: "#aaa", marginTop: 2 }}>
-                        Qty: {item.qty}
-                      </Text>
-                    </View>
-                  </View>
-                ))}
-
-                <Text
-                  style={{
-                    color: "white",
-                    fontSize: 16,
-                    marginBottom: 16,
-                  }}
-                >
-                  Total: ₹{selectedOrder.total}
-                </Text>
-
-                <Text
-                  style={{
-                    color: "#e11d1d",
-                    fontWeight: "600",
-                    marginBottom: 8,
-                  }}
-                >
-                  Order Status
-                </Text>
-
-                {renderStatus(getStep(selectedOrder.status))}
+                  {renderStatus(getStep(selectedOrder.status))}
+                </ScrollView>
               </Pressable>
             )}
           </Pressable>

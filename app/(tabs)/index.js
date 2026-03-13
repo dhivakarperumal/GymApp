@@ -17,6 +17,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Dimensions } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { getAllProducts } from "../../services/api";
+import ProductCard from "../ProductCard";
 
 const { width } = Dimensions.get("window");
 
@@ -36,11 +38,16 @@ export default function Home() {
   const [todayWorkout, setTodayWorkout] = useState(null);
   const [todayWorkoutDay, setTodayWorkoutDay] = useState("");
 
+  const [products, setProducts] = useState([]);
+  const productScrollRef = useRef(null);
+  const productScrollX = useRef(0);
+
   // Parse planDetails if present
   const purchasedPlan = planDetails ? JSON.parse(planDetails) : null;
 
   useEffect(() => {
     fetchReviews();
+    fetchProducts();
 
     if (user?.id) {
       fetchAssignment();
@@ -136,6 +143,27 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [reviews]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (productScrollRef.current && products.length > 0) {
+        const cardWidth = 201; // card width + margin
+
+        productScrollX.current += cardWidth;
+
+        if (productScrollX.current >= products.length * cardWidth) {
+          productScrollX.current = 0;
+        }
+
+        productScrollRef.current.scrollTo({
+          x: productScrollX.current,
+          animated: true,
+        });
+      }
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [products]);
+
   const fetchReviews = async () => {
     try {
       const data = await getAllReviews();
@@ -147,6 +175,20 @@ export default function Home() {
       }
     } catch (err) {
       console.log("Reviews fetch error:", err.message);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const data = await getAllProducts();
+
+      const productList = data.products || data;
+
+      if (Array.isArray(productList)) {
+        setProducts(productList.slice(0, 10)); // limit for swiper
+      }
+    } catch (err) {
+      console.log("Products fetch error:", err);
     }
   };
 
@@ -360,6 +402,36 @@ export default function Home() {
             ))}
           </View>
         )}
+
+        {/* 🛒 PRODUCTS */}
+        <View className="mb-6">
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-white text-lg font-bold">
+              SUPPLEMENTS & GEAR
+            </Text>
+
+            <TouchableOpacity onPress={() => router.push("shop")}>
+              <Text className="text-primary text-sm font-semibold">
+                VIEW ALL
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            ref={productScrollRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={101}
+            decelerationRate="fast"
+            snapToAlignment="start"
+          >
+            {products.map((item) => (
+              <View key={item.id} style={{ width: 190, marginRight: 11 }}>
+                <ProductCard item={item} />
+              </View>
+            ))}
+          </ScrollView>
+        </View>
 
         {/* 🔥 Reviews Section */}
         <View className="mt-6 mb-10">

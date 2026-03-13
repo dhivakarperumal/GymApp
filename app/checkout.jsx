@@ -182,11 +182,49 @@ export default function Checkout() {
   const placeOrder = async (paymentStatus = "pending") => {
     try {
       if (!cartItems.length) {
-        Toast.show({
-          type: "error",
-          text1: "Cart Empty",
-          text2: "Add items before placing order",
-        });
+        Alert.alert("Cart empty", "Add items before placing order");
+        return;
+      }
+
+      /* VALIDATE SHIPPING */
+
+      if (!shipping.name.trim()) {
+        Alert.alert("Validation Error", "Please enter your name");
+        return;
+      }
+
+      if (!/^[6-9]\d{9}$/.test(shipping.phone)) {
+        Alert.alert("Validation Error", "Enter a valid 10 digit phone number");
+        return;
+      }
+
+      if (!/^\S+@\S+\.\S+$/.test(shipping.email)) {
+        Alert.alert("Validation Error", "Enter a valid email address");
+        return;
+      }
+
+      if (!shipping.address.trim()) {
+        Alert.alert("Validation Error", "Please enter your address");
+        return;
+      }
+
+      if (!shipping.city.trim()) {
+        Alert.alert("Validation Error", "Please enter your city");
+        return;
+      }
+
+      if (!shipping.state.trim()) {
+        Alert.alert("Validation Error", "Please enter your state");
+        return;
+      }
+
+      if (!/^\d{6}$/.test(shipping.zip)) {
+        Alert.alert("Validation Error", "Enter a valid 6 digit ZIP code");
+        return;
+      }
+
+      if (!shipping.country.trim()) {
+        Alert.alert("Validation Error", "Please enter your country");
         return;
       }
 
@@ -309,9 +347,28 @@ export default function Checkout() {
               placeholder={fieldLabels[key]}
               placeholderTextColor="#888"
               value={shipping[key]}
-              onChangeText={(text) =>
+              keyboardType={key === "phone" ? "number-pad" : "default"}
+            maxLength={key === "phone" ? 10 : undefined}
+            onChangeText={(text) =>
+                {
+              if (key === "phone") {
+                // allow only numbers
+                const numeric = text.replace(/[^0-9]/g, "");
+
+                // prevent first digit < 6
+                if (numeric.length === 1 && !/[6-9]/.test(numeric)) {
+                  return;
+                }
+
+                // max 10 digits
+                if (numeric.length <= 10) {
+                  setShipping({ ...shipping, phone: numeric });
+                }
+              } else {
                 setShipping({ ...shipping, [key]: text })
+              ;
               }
+            }}
               className="bg-[#111] text-white p-4 rounded-xl mb-4"
             />
           );
