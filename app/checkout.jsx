@@ -7,6 +7,7 @@ import {
   Image,
   Alert,
 } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
@@ -28,6 +29,7 @@ export default function Checkout() {
   const [cartItems, setCartItems] = useState([]);
   const router = useRouter();
   const [paymentMethod, setPaymentMethod] = useState("ONLINE");
+  const { buyNow } = useLocalSearchParams();
 
   const { user } = useAuth();
   const userId = user?.id;
@@ -51,10 +53,15 @@ export default function Checkout() {
   };
 
   useEffect(() => {
-    if (userId) {
+
+    if (buyNow) {
+      const item = JSON.parse(buyNow);
+      setCartItems([item]);
+    } else if (userId) {
       fetchCart();
     }
-  }, [userId]);
+
+  }, [userId, buyNow]);
 
   /* PRICE CALCULATION */
 
@@ -165,7 +172,9 @@ export default function Checkout() {
 
       // console.log("ORDER CREATED");
 
-      await clearUserCart(userId);
+      if (!buyNow) {
+        await clearUserCart(userId);
+      }
 
       setCartItems([]);
 

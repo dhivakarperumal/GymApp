@@ -101,6 +101,39 @@ export default function ProductDetails() {
     return null;
   })();
 
+
+  const handleBuyNow = () => {
+
+    if (!user || !user.id) {
+      alert("Please login first");
+      return;
+    }
+
+    if (!variant) {
+      alert("Please select variant");
+      return;
+    }
+
+    const buyNowItem = {
+      productId: product.id,
+      name: product.name,
+      price: price,
+      quantity: quantity,
+      size: selectedSize || null,
+      gender: selectedGender || null,
+      weight: selectedWeight || null,
+      variant: variant,
+      images: product.images,
+    };
+
+    router.push({
+      pathname: "/checkout",
+      params: {
+        buyNow: JSON.stringify(buyNowItem),
+      },
+    });
+  };
+
   const variant =
     product?.category === "Food"
       ? selectedWeight
@@ -171,7 +204,7 @@ export default function ProductDetails() {
     }
   };
 
-  
+
   return (
     <SafeAreaView className="flex-1 bg-darkBg">
       <ScrollView className="flex-1 bg-darkBg">
@@ -437,12 +470,13 @@ export default function ProductDetails() {
             {/* BUY NOW */}
             <TouchableOpacity
               disabled={remainingStock === 0 || quantity > remainingStock}
+              onPress={handleBuyNow}
               className={`w-[48%] py-4 rounded-2xl items-center ${remainingStock === 0
-                ? "bg-gray-600"
-                : "bg-[#1f1f1f] border border-primary"
+                  ? "bg-gray-600"
+                  : "bg-[#1f1f1f] border border-primary"
                 }`}
             >
-              <Text className="text-white font-bold text-lg">BUY NOW</Text>
+               <Text className="text-white font-bold text-lg">BUY NOW</Text>
             </TouchableOpacity>
           </View>
         </View>
