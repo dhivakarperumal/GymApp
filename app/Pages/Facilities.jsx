@@ -12,6 +12,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../Header";
+import BackButton from "../BackButton";
 
 export default function Facilities() {
   const [facilities, setFacilities] = useState([]);
@@ -41,9 +42,9 @@ export default function Facilities() {
       <Header />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        className="pt-12"
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
       >
+        <BackButton style={{ marginTop: 20, marginBottom: 20 }} />
         {/* Header */}
         <Text className="text-white text-3xl font-extrabold mb-2">
           Our Facilities
@@ -96,20 +97,14 @@ export default function Facilities() {
                 </Text>
 
                 <TouchableOpacity
-                  onPress={() =>
-                    router.push(`/facilities/${item.slug}`)
-                  }
+                  onPress={() => router.push(`/facilities/${item.slug}`)}
                   className="flex-row items-center"
                 >
                   <Text className="text-primary font-semibold mr-2 tracking-wide">
                     VIEW DETAILS
                   </Text>
                   <View className="border border-primary p-2 ml-3 rounded-full">
-                    <Ionicons
-                      name="arrow-forward"
-                      size={18}
-                      color="#e11d1d"
-                    />
+                    <Ionicons name="arrow-forward" size={18} color="#e11d1d" />
                   </View>
                 </TouchableOpacity>
               </View>

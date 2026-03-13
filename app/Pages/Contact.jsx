@@ -1,19 +1,23 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../Header";
+import BackButton from "../BackButton";
 
 export default function Contact() {
   return (
     <SafeAreaView className="flex-1 bg-card">
-
       {/* HEADER */}
       <Header />
 
-      <ScrollView
-        className="flex-1 px-5 pt-12"
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
+        <BackButton style={{ marginTop: 20, marginBottom: 20 }} />
 
         {/* TITLE */}
         <Text className="text-primary text-sm font-semibold mb-2 mt-4">
@@ -32,7 +36,6 @@ export default function Contact() {
         {/* CONTACT INFO */}
 
         <View className="mb-8">
-
           <View className="flex-row items-center bg-darkcard p-4 rounded-2xl border border-border mb-4">
             <View className="bg-card p-3 rounded-xl mr-4 border border-border">
               <Ionicons name="location-outline" size={20} color="#e11d1d" />
@@ -46,26 +49,20 @@ export default function Contact() {
             <View className="bg-card p-3 rounded-xl mr-4 border border-border">
               <Ionicons name="call-outline" size={20} color="#e11d1d" />
             </View>
-            <Text className="text-background flex-1">
-              +1 800 555 25 69
-            </Text>
+            <Text className="text-background flex-1">+1 800 555 25 69</Text>
           </View>
 
           <View className="flex-row items-center bg-darkcard p-4 rounded-2xl border border-border">
             <View className="bg-card p-3 rounded-xl mr-4 border border-border">
               <Ionicons name="mail-outline" size={20} color="#e11d1d" />
             </View>
-            <Text className="text-background flex-1">
-              info@example.com
-            </Text>
+            <Text className="text-background flex-1">info@example.com</Text>
           </View>
-
         </View>
 
         {/* PREMIUM CONTACT FORM */}
 
         <View className="bg-darkcard p-6 rounded-3xl border border-border">
-
           <Text className="text-background text-lg font-bold mb-6">
             Send Message
           </Text>
@@ -124,17 +121,12 @@ export default function Contact() {
 
           {/* BUTTON */}
           <TouchableOpacity className="bg-primary py-4 rounded-xl items-center">
-            <Text className="text-white font-bold text-base">
-              Send Message
-            </Text>
+            <Text className="text-white font-bold text-base">Send Message</Text>
           </TouchableOpacity>
-
         </View>
 
         <View className="h-20" />
-
       </ScrollView>
-
     </SafeAreaView>
   );
 }

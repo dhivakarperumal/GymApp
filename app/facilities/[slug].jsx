@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { getAllFacilities } from "../../services/api";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../Header";
+import BackButton from "../BackButton";
 
 const { width } = Dimensions.get("window");
 
@@ -57,70 +58,66 @@ export default function FacilityDetails() {
   return (
     <SafeAreaView className="flex-1 bg-black">
       <Header />
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      className="flex-1 bg-black pt-12"
-    >
-      {/* Hero Image */}
-      <View className="px-5 pt-6">
-        <Image
-          source={{ uri: facility.hero_image }}
-          style={{
-            width: width - 40,
-            height: 280,
-            borderRadius: 24,
-          }}
-          resizeMode="cover"
-        />
-      </View>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        className="flex-1 bg-black"
+      >
+        <View className="px-5 pt-6">
+          <BackButton style={{ marginBottom: 20 }} />
+          <Image
+            source={{ uri: facility.hero_image }}
+            style={{
+              width: width - 40,
+              height: 280,
+              borderRadius: 24,
+            }}
+            resizeMode="cover"
+          />
+        </View>
 
-      <View className="px-5 py-8">
+        <View className="px-5 py-8">
+          {/* Title */}
+          <Text className="text-white text-3xl font-extrabold mb-3">
+            {facility.title}
+          </Text>
 
-        {/* Title */}
-        <Text className="text-white text-3xl font-extrabold mb-3">
-          {facility.title}
-        </Text>
+          {/* Short Description */}
+          <Text className="text-gray-400 mb-6">
+            {facility.short_description}
+          </Text>
 
-        {/* Short Description */}
-        <Text className="text-gray-400 mb-6">
-          {facility.short_description}
-        </Text>
+          {/* Full Description */}
+          <Text className="text-gray-300 leading-6 mb-10">
+            {facility.description}
+          </Text>
 
-        {/* Full Description */}
-        <Text className="text-gray-300 leading-6 mb-10">
-          {facility.description}
-        </Text>
+          {/* Equipments */}
+          {Array.isArray(facility.equipments) &&
+            facility.equipments.length > 0 && (
+              <View className="mb-10">
+                <Text className="text-primary text-lg font-bold mb-5">
+                  Equipments Available
+                </Text>
 
-        {/* Equipments */}
-        {Array.isArray(facility.equipments) &&
-          facility.equipments.length > 0 && (
-            <View className="mb-10">
-              <Text className="text-primary text-lg font-bold mb-5">
-                Equipments Available
-              </Text>
+                {facility.equipments.map((item, index) => (
+                  <View
+                    key={index}
+                    className="flex-row items-center mb-4 bg-[#141414] p-4 rounded-2xl border border-[#262626]"
+                  >
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={20}
+                      color="#ff3c00"
+                      style={{ marginRight: 10 }}
+                    />
+                    <Text className="text-gray-300">{item}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
 
-              {facility.equipments.map((item, index) => (
-                <View
-                  key={index}
-                  className="flex-row items-center mb-4 bg-[#141414] p-4 rounded-2xl border border-[#262626]"
-                >
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={20}
-                    color="#ff3c00"
-                    style={{ marginRight: 10 }}
-                  />
-                  <Text className="text-gray-300">
-                    {item}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-        {/* Workouts */}
-        {Array.isArray(facility.workouts) &&
-          facility.workouts.length > 0 && (
+          {/* Workouts */}
+          {Array.isArray(facility.workouts) && facility.workouts.length > 0 && (
             <View className="mb-10">
               <Text className="text-primary text-lg font-bold mb-5">
                 Supported Workouts
@@ -137,17 +134,14 @@ export default function FacilityDetails() {
                     color="#ff3c00"
                     style={{ marginRight: 10 }}
                   />
-                  <Text className="text-gray-300">
-                    {item}
-                  </Text>
+                  <Text className="text-gray-300">{item}</Text>
                 </View>
               ))}
             </View>
           )}
 
-        {/* Gallery */}
-        {Array.isArray(facility.gallery) &&
-          facility.gallery.length > 0 && (
+          {/* Gallery */}
+          {Array.isArray(facility.gallery) && facility.gallery.length > 0 && (
             <View className="mb-10">
               <Text className="text-primary text-2xl font-bold mb-5">
                 Gallery
@@ -168,11 +162,10 @@ export default function FacilityDetails() {
               ))}
             </View>
           )}
+        </View>
 
-      </View>
-
-      <View className="h-10" />
-    </ScrollView>
+        <View className="h-10" />
+      </ScrollView>
     </SafeAreaView>
   );
 }
