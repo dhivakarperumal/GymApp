@@ -148,7 +148,7 @@ export default function Checkout() {
       currency: "INR",
       key: "rzp_test_SGj8n5SyKSE10b",
       amount: total * 100,
-      name: "Your Store Name",
+      name: "Arnold Gym",
       prefill: {
         email: shipping.email,
         contact: shipping.phone,
