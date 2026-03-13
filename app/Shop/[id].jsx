@@ -174,6 +174,7 @@ export default function ProductDetails() {
   
   return (
     <SafeAreaView className="flex-1 bg-darkBg">
+      <Header />
       <ScrollView className="flex-1 bg-darkBg">
         <View className="px-5 mt-20">
           <View

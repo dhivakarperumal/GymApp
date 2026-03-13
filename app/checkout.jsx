@@ -21,6 +21,7 @@ import {
   createOrderApi,
   clearUserCart,
 } from "../services/api";
+import Header from "./Header";
 
 export default function Checkout() {
 
@@ -148,7 +149,7 @@ export default function Checkout() {
 
   return (
     <SafeAreaView className="flex-1 bg-black">
-
+      <Header />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
@@ -167,7 +168,7 @@ export default function Checkout() {
         {Object.keys(shipping).map((key) => (
           <TextInput
             key={key}
-            placeholder={key}
+            placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
             placeholderTextColor="#888"
             value={shipping[key]}
             onChangeText={(text) =>
