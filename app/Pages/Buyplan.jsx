@@ -11,6 +11,7 @@ import RazorpayCheckout from "react-native-razorpay";
 import { Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../Header";
+import BackButton from "../BackButton";
 
 export default function BuyPlan() {
   const { plan } = useLocalSearchParams();
@@ -91,8 +92,9 @@ export default function BuyPlan() {
       <Header />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        className="flex-1 bg-[#0f0f0f] px-5 pt-12"
+        className="flex-1 bg-[#0f0f0f] px-5"
       >
+        <BackButton style={{ marginTop: 20, marginBottom: 20 }} />
         {/* Header */}
         <Text className="text-white text-3xl font-extrabold mb-8">
           Buy Membership Plan

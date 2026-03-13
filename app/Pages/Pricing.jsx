@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../Header";
+import BackButton from "../BackButton";
 
 export default function Pricing() {
   const [plans, setPlans] = useState([]);
@@ -35,8 +36,9 @@ export default function Pricing() {
       <Header />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        className="flex-1 bg-[#090909] px-5 pt-12"
+        className="flex-1 bg-[#090909] px-5"
       >
+        <BackButton style={{ marginTop: 20, marginBottom: 20 }} />
         {/* Header */}
         <Text className="text-white text-3xl font-extrabold mb-2">
           Membership Plans

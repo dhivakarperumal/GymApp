@@ -125,15 +125,16 @@ export default function Orders() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
       <Header />
-      <BackButton style={{ marginLeft: 20, marginTop: 20 }} />
       <View style={{ flex: 1, padding: 16 }}>
         <ScrollView showsVerticalScrollIndicator={false}>
+          <BackButton style={{ marginLeft: 4, marginTop: 20 }} />
           <Text
             style={{
               color: "white",
               fontSize: 28,
               fontWeight: "bold",
               marginBottom: 20,
+              marginTop:20,
             }}
           >
             My Orders
