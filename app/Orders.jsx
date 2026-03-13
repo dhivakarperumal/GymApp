@@ -135,8 +135,42 @@ export default function Orders() {
     );
   };
 
+  const normalizeStatus = (status) => {
+    if (!status) return "Order Placed";
+
+    const key = status.toLowerCase().replace(/\s/g, "");
+
+    const map = {
+      orderplaced: "Order Placed",
+      ordered: "Order Placed",
+      orderplace: "Order Placed",
+
+      processing: "Processing",
+      procceing: "Processing",
+
+      packing: "Packing",
+      paking: "Packing",
+      packed: "Packing",
+
+      shipped: "Out for Delivery",
+
+      outfordelivery: "Out for Delivery",
+      outofdelivery: "Out for Delivery",
+      outdelivery: "Out for Delivery",
+
+      delivered: "Delivered",
+
+      cancelled: "Cancelled",
+      canceled: "Cancelled",
+    };
+
+    return map[key] || "Order Placed";
+  };
+
   const getStep = (status) => {
-    switch (status) {
+    const normalized = normalizeStatus(status);
+
+    switch (normalized) {
       case "Order Placed":
         return 1;
       case "Processing":
@@ -215,7 +249,7 @@ export default function Orders() {
 
                 <View style={{ alignItems: "flex-end" }}>
                   <Text style={{ color: "#f59e0b", fontWeight: "600" }}>
-                    {order.status}
+                    {normalizeStatus(order.status)}
                   </Text>
 
                   <Text
@@ -490,7 +524,7 @@ export default function Orders() {
                     Order Status
                   </Text>
 
-                  {renderStatus(getStep(selectedOrder.status))}
+                  {renderStatus(getStep(normalizeStatus(selectedOrder.status)))}
                 </ScrollView>
               </Pressable>
             )}
