@@ -1,20 +1,21 @@
-import { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Modal,
-  Image,
-  Pressable,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
+import {
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "../context/AuthContext";
 import { getUserOrders } from "../services/api";
-import Header from "./Header";
 import BackButton from "./BackButton";
+import Header from "./Header";
 
 export default function Orders() {
   const { user } = useAuth();
@@ -22,6 +23,7 @@ export default function Orders() {
 
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedOrderItems, setSelectedOrderItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchOrders = async () => {
@@ -29,6 +31,8 @@ export default function Orders() {
       if (!userId) return;
 
       const data = await getUserOrders(userId);
+
+      // console.log("ORDERS DATA 👉", data);   // ADD THIS
 
       const userOrders = data.filter((order) => order.user_id === userId);
 
@@ -43,6 +47,31 @@ export default function Orders() {
   useEffect(() => {
     if (userId) fetchOrders();
   }, [userId]);
+
+  useEffect(() => {
+    if (!selectedOrder) return;
+
+    // Prefer items returned by the API, fallback to cached items stored at order time.
+    if (Array.isArray(selectedOrder.items) && selectedOrder.items.length > 0) {
+      setSelectedOrderItems(selectedOrder.items);
+      return;
+    }
+
+    const loadCachedItems = async () => {
+      try {
+        const cached = await AsyncStorage.getItem(
+          `order_items_${selectedOrder.order_id}`
+        );
+        if (cached) {
+          setSelectedOrderItems(JSON.parse(cached));
+        }
+      } catch (err) {
+        console.log("Failed to load cached order items", err);
+      }
+    };
+
+    loadCachedItems();
+  }, [selectedOrder]);
 
   const renderStatus = (step) => {
     const labels = [
@@ -106,8 +135,42 @@ export default function Orders() {
     );
   };
 
+  const normalizeStatus = (status) => {
+    if (!status) return "Order Placed";
+
+    const key = status.toLowerCase().replace(/\s/g, "");
+
+    const map = {
+      orderplaced: "Order Placed",
+      ordered: "Order Placed",
+      orderplace: "Order Placed",
+
+      processing: "Processing",
+      procceing: "Processing",
+
+      packing: "Packing",
+      paking: "Packing",
+      packed: "Packing",
+
+      shipped: "Out for Delivery",
+
+      outfordelivery: "Out for Delivery",
+      outofdelivery: "Out for Delivery",
+      outdelivery: "Out for Delivery",
+
+      delivered: "Delivered",
+
+      cancelled: "Cancelled",
+      canceled: "Cancelled",
+    };
+
+    return map[key] || "Order Placed";
+  };
+
   const getStep = (status) => {
-    switch (status) {
+    const normalized = normalizeStatus(status);
+
+    switch (normalized) {
       case "Order Placed":
         return 1;
       case "Processing":
@@ -150,7 +213,9 @@ export default function Orders() {
           {orders.map((order) => (
             <TouchableOpacity
               key={order.order_id}
-              onPress={() => setSelectedOrder(order)}
+              onPress={() => {
+                setSelectedOrder(order);
+              }}
               style={{
                 backgroundColor: "#111",
                 borderRadius: 18,
@@ -184,7 +249,7 @@ export default function Orders() {
 
                 <View style={{ alignItems: "flex-end" }}>
                   <Text style={{ color: "#f59e0b", fontWeight: "600" }}>
-                    {order.status}
+                    {normalizeStatus(order.status)}
                   </Text>
 
                   <Text
@@ -212,7 +277,10 @@ export default function Orders() {
               justifyContent: "center",
               padding: 16,
             }}
-            onPress={() => setSelectedOrder(null)}
+            onPress={() => {
+              setSelectedOrder(null);
+              setSelectedOrderItems([]);
+            }}
           >
             {selectedOrder && (
               <Pressable
@@ -245,7 +313,12 @@ export default function Orders() {
                       Order #{selectedOrder.order_id}
                     </Text>
 
-                    <TouchableOpacity onPress={() => setSelectedOrder(null)}>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setSelectedOrder(null);
+                        setSelectedOrderItems([]);
+                      }}
+                    >
                       <Ionicons name="close" size={22} color="white" />
                     </TouchableOpacity>
                   </View>
@@ -280,54 +353,88 @@ export default function Orders() {
                   />
 
                   {/* ITEMS */}
-                  {(selectedOrder.items || []).map((item, index) => (
-                    <View
-                      key={index}
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginBottom: 14,
-                        backgroundColor: "#1a1a1a",
-                        padding: 10,
-                        borderRadius: 12,
-                      }}
-                    >
-                      <Image
-                        source={{
-                          uri: item.image?.startsWith("data:image")
-                            ? item.image
-                            : `data:image/png;base64,${item.image}`,
-                        }}
+                  {/* ORDERED PRODUCTS */}
+                  {selectedOrderItems.length > 0 ? (
+                    <>
+                      <Text
                         style={{
-                          width: 60,
-                          height: 60,
-                          borderRadius: 12,
-                          marginRight: 12,
+                          color: "#e11d1d",
+                          fontWeight: "600",
+                          marginBottom: 10,
                         }}
-                      />
+                      >
+                        Ordered Products
+                      </Text>
 
-                      <View style={{ flex: 1 }}>
-                        <Text
+                      {selectedOrderItems.map((item, index) => (
+                        <View
+                          key={index}
                           style={{
-                            color: "white",
-                            fontWeight: "600",
+                            flexDirection: "row",
+                            alignItems: "center",
+                            marginBottom: 14,
+                            backgroundColor: "#1a1a1a",
+                            padding: 10,
+                            borderRadius: 12,
                           }}
                         >
-                          {item.product_name}
-                        </Text>
+                          <Image
+                            source={{
+                              uri: item.image?.startsWith("data:image")
+                                ? item.image
+                                : `data:image/png;base64,${item.image}`,
+                            }}
+                            style={{
+                              width: 60,
+                              height: 60,
+                              borderRadius: 12,
+                              marginRight: 12,
+                            }}
+                          />
 
-                        <Text
-                          style={{ color: "#aaa", fontSize: 12, marginTop: 2 }}
-                        >
-                          Qty: {item.qty}
-                        </Text>
-                      </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ color: "white", fontWeight: "600" }}>
+                              {item.product_name || item.name}
+                            </Text>
 
-                      <Text style={{ color: "#e11d1d", fontWeight: "600" }}>
-                        ₹{item.price}
-                      </Text>
-                    </View>
-                  ))}
+                            <Text style={{ color: "#aaa", fontSize: 12 }}>
+                              Qty: {item.qty || item.quantity}
+                            </Text>
+
+                            <Text style={{ color: "#aaa", fontSize: 12 }}>
+                              Price: ₹{item.price}
+                            </Text>
+
+                            {item.size && (
+                              <Text style={{ color: "#aaa", fontSize: 12 }}>
+                                Size: {item.size}
+                              </Text>
+                            )}
+
+                            {item.weight && (
+                              <Text style={{ color: "#aaa", fontSize: 12 }}>
+                                Weight: {item.weight}
+                              </Text>
+                            )}
+
+                            {(item.color || item.gender) && (
+                              <Text style={{ color: "#aaa", fontSize: 12 }}>
+                                Gender: {item.color || item.gender}
+                              </Text>
+                            )}
+                          </View>
+
+                          <Text style={{ color: "#e11d1d", fontWeight: "600" }}>
+                            ₹{Number(item.price) * (item.qty || item.quantity)}
+                          </Text>
+                        </View>
+                      ))}
+                    </>
+                  ) : (
+                    <Text style={{ color: "#aaa", marginBottom: 12 }}>
+                      Product details not available for this order.
+                    </Text>
+                  )}
 
                   {/* SHIPPING DETAILS */}
                   {selectedOrder.shipping &&
@@ -417,7 +524,7 @@ export default function Orders() {
                     Order Status
                   </Text>
 
-                  {renderStatus(getStep(selectedOrder.status))}
+                  {renderStatus(getStep(normalizeStatus(selectedOrder.status)))}
                 </ScrollView>
               </Pressable>
             )}

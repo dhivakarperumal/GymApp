@@ -69,12 +69,12 @@ export default function Trainers() {
             return (
               <TouchableOpacity
                 key={trainer.id}
-                onPress={() =>
-                  router.push({
-                    pathname: "/trainer-details",
-                    params: { id: trainer.id },
-                  })
-                }
+                // onPress={() =>
+                //   router.push({
+                //     pathname: "/trainer-details",
+                //     params: { id: trainer.id },
+                //   })
+                // }
                 className="mb-6 bg-darkBg rounded-3xl overflow-hidden border border-[#1f1f1f]"
               >
                 <Image

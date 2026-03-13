@@ -290,6 +290,15 @@ export const getUserOrders = async (userId) => {
   return res.json();
 };
 
+export const getUserMemberships = async (userId) => {
+  try {
+    const res = await api.get(`/memberships/user/${userId}`);
+    return res.data;
+  } catch (error) {
+    console.log("Membership API error:", error);
+    return [];
+  }
+};
 
 
 export default api;

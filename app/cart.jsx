@@ -147,7 +147,7 @@ export default function Cart() {
             </TouchableOpacity>
           </View>
         )}
-        {cartItems.map((item) => {
+        {cartItems.map((item, index) => {
 
           const product = products.find(p => p.id === item.productId);
 
@@ -164,7 +164,7 @@ export default function Cart() {
 
           return (
             <View
-              key={item.id}
+              key={item.id || item.productId || index}
               className="bg-[#111] rounded-3xl p-4 mb-5 border border-[#1f1f1f]"
             >
               <View className="flex-row">
