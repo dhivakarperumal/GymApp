@@ -22,16 +22,14 @@ import {
   clearUserCart,
 } from "../services/api";
 import Header from "./Header";
+import BackButton from "./BackButton";
 
 export default function Checkout() {
-
   const [cartItems, setCartItems] = useState([]);
   const router = useRouter();
 
   const { user } = useAuth();
   const userId = user?.id;
-
-
 
   const [shipping, setShipping] = useState({
     name: "",
@@ -61,19 +59,16 @@ export default function Checkout() {
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + Number(item.price) * item.quantity,
-    0
+    0,
   );
 
   const delivery = cartItems.length > 0 ? 99 : 0;
   const total = subtotal + delivery;
 
-
-
   /* PLACE ORDER */
 
   const placeOrder = async () => {
     try {
-
       if (!cartItems.length) {
         Alert.alert("Cart empty", "Add items before placing order");
         return;
@@ -141,7 +136,6 @@ export default function Checkout() {
           onPress: () => router.push("/Orders"),
         },
       ]);
-
     } catch (err) {
       console.log("ERROR 👉", err);
     }
@@ -150,20 +144,17 @@ export default function Checkout() {
   return (
     <SafeAreaView className="flex-1 bg-black">
       <Header />
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
       >
-
-        <Text className="text-white text-3xl font-bold mb-8">
-          Checkout
-        </Text>
+        <BackButton style={{ marginBottom: 20 }} />
+        <Text className="text-white text-3xl font-bold mb-8">Checkout</Text>
 
         {/* SHIPPING */}
 
-        <Text className="text-white text-lg mb-4">
-          Shipping Details
-        </Text>
+        <Text className="text-white text-lg mb-4">Shipping Details</Text>
 
         {Object.keys(shipping).map((key) => (
           <TextInput
@@ -171,71 +162,52 @@ export default function Checkout() {
             placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
             placeholderTextColor="#888"
             value={shipping[key]}
-            onChangeText={(text) =>
-              setShipping({ ...shipping, [key]: text })
-            }
+            onChangeText={(text) => setShipping({ ...shipping, [key]: text })}
             className="bg-[#111] text-white p-4 rounded-xl mb-4"
           />
         ))}
 
         {/* ORDER SUMMARY */}
 
-        <Text className="text-white text-lg mt-6 mb-4">
-          Order Summary
-        </Text>
+        <Text className="text-white text-lg mt-6 mb-4">Order Summary</Text>
 
         {cartItems.map((item) => (
           <View
             key={item.id}
             className="flex-row items-center mb-4 bg-[#111] p-4 rounded-2xl"
           >
-
             <Image
               source={{ uri: item.images?.[0] }}
               className="w-16 h-16 rounded-xl"
             />
 
             <View className="flex-1 ml-4">
+              <Text className="text-white font-semibold">{item.name}</Text>
 
-              <Text className="text-white font-semibold">
-                {item.name}
-              </Text>
-
-              <Text className="text-gray-400">
-                Qty: {item.quantity}
-              </Text>
+              <Text className="text-gray-400">Qty: {item.quantity}</Text>
 
               {item.size && (
-                <Text className="text-gray-400">
-                  Size: {item.size}
-                </Text>
+                <Text className="text-gray-400">Size: {item.size}</Text>
               )}
 
               {item.gender && (
-                <Text className="text-gray-400">
-                  Gender: {item.gender}
-                </Text>
+                <Text className="text-gray-400">Gender: {item.gender}</Text>
               )}
 
               {item.weight && (
-                <Text className="text-gray-400">
-                  Weight: {item.weight}
-                </Text>
+                <Text className="text-gray-400">Weight: {item.weight}</Text>
               )}
-
             </View>
 
             <Text className="text-white font-bold">
               ₹ {item.price * item.quantity}
             </Text>
-
           </View>
         ))}
 
         {/* BILL */}
 
         <View className="bg-[#111] p-5 rounded-2xl mt-4">
-
           <View className="flex-row justify-between mb-2">
             <Text className="text-gray-400">Subtotal</Text>
             <Text className="text-white">₹ {subtotal}</Text>
@@ -250,7 +222,6 @@ export default function Checkout() {
             <Text className="text-white font-bold">Total</Text>
             <Text className="text-red-500 font-bold">₹ {total}</Text>
           </View>
-
         </View>
 
         {/* PLACE ORDER */}
@@ -259,13 +230,9 @@ export default function Checkout() {
           onPress={placeOrder}
           className="bg-red-600 py-5 rounded-2xl items-center mt-6"
         >
-          <Text className="text-white font-bold text-lg">
-            Place Order
-          </Text>
+          <Text className="text-white font-bold text-lg">Place Order</Text>
         </TouchableOpacity>
-
       </ScrollView>
-
     </SafeAreaView>
   );
 }

@@ -18,6 +18,7 @@ import {
   updateCartApi,
 } from "../services/api";
 import Header from "./Header";
+import BackButton from "./BackButton";
 
 export default function Cart() {
 
@@ -110,7 +111,8 @@ const fetchCart = async () => {
     <SafeAreaView className="flex-1 bg-black">
       <Header />
       {/* HEADER */}
-      <View className="px-6 pt-12 pb-6">
+      <BackButton style={{ marginLeft: 20, marginTop: 20 }} />
+      <View className="px-6 pt-6 pb-6">
         <Text className="text-white text-3xl font-bold">My Cart</Text>
         <Text className="text-gray-400 mt-1">{cartItems.length} Items</Text>
       </View>
