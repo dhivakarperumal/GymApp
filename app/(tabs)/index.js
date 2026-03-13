@@ -74,17 +74,22 @@ export default function Home() {
 
       const totalDays = Object.keys(myDiet.days).length;
 
-      // prevent overflow
-      const todayIndex = diffDays > totalDays ? totalDays : diffDays;
+      // Diet plan finished
+      if (diffDays > totalDays) {
+        setTodayDiet(null);
+        setTodayDay("");
+        return;
+      }
 
-      const todayKey = `Day${todayIndex}`;
-
+      const todayKey = `Day${diffDays}`;
       const todayMeals = myDiet.days[todayKey];
 
       if (todayMeals) {
         setTodayDiet(todayMeals);
-        setDietTitle(myDiet.title);
         setTodayDay(todayKey);
+        setDietTitle(myDiet.title);
+      } else {
+        setTodayDiet(null);
       }
     } catch (err) {
       console.log("Today diet error:", err);
@@ -352,6 +357,38 @@ export default function Home() {
           </View>
         )}
 
+        {!todayWorkout && (
+          <View
+            className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
+            style={{
+              shadowColor: "#ff3c00",
+              shadowOpacity: 0.25,
+              shadowRadius: 20,
+              elevation: 10,
+            }}
+          >
+            <View className="flex-row items-center mb-3">
+              <Ionicons
+                name="information-circle-outline"
+                size={20}
+                color="#ff3c00"
+              />
+              <Text className="text-white text-lg font-bold ml-2">
+                TODAY'S WORKOUT
+              </Text>
+            </View>
+
+            <Text className="text-gray-400 text-sm">
+              No assigned exercise for today.
+            </Text>
+
+            <Text className="text-gray-500 text-xs mt-2">
+              Your trainer has not scheduled a workout for today. Check back
+              later or contact your trainer for the next session.
+            </Text>
+          </View>
+        )}
+
         {todayDiet && (
           <View
             className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
@@ -400,6 +437,34 @@ export default function Home() {
                 </Text>
               </View>
             ))}
+          </View>
+        )}
+
+        {!todayDiet && (
+          <View
+            className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
+            style={{
+              shadowColor: "#ff3c00",
+              shadowOpacity: 0.25,
+              shadowRadius: 20,
+              elevation: 10,
+            }}
+          >
+            <View className="flex-row items-center mb-3">
+              <Ionicons name="restaurant-outline" size={20} color="#ff3c00" />
+              <Text className="text-white text-lg font-bold ml-2">
+                TODAY'S DIET
+              </Text>
+            </View>
+
+            <Text className="text-gray-400 text-sm">
+              No assigned diet for today.
+            </Text>
+
+            <Text className="text-gray-500 text-xs mt-2">
+              Your trainer has not scheduled a meal plan for today. Please check
+              again later or contact your trainer for guidance.
+            </Text>
           </View>
         )}
 
