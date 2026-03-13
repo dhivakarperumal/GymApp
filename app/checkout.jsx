@@ -372,9 +372,9 @@ export default function Checkout() {
 
         <Text className="text-white text-lg mt-6 mb-4">Order Summary</Text>
 
-        {cartItems.map((item) => (
+        {cartItems.map((item, index) => (
           <View
-            key={item.id}
+            key={item.id || item.productId || index}
             className="flex-row items-center mb-4 bg-[#111] p-4 rounded-2xl"
           >
             <Image
