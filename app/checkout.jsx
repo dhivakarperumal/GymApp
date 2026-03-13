@@ -5,10 +5,10 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  Alert,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Picker } from "@react-native-picker/picker";
+import Toast from "react-native-toast-message";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
@@ -133,7 +133,11 @@ export default function Checkout() {
   const handleOnlinePayment = () => {
 
     if (!shipping.name || !shipping.phone || !shipping.address) {
-      Alert.alert("Missing Details", "Please fill shipping details");
+      Toast.show({
+        type: "error",
+        text1: "Missing Details",
+        text2: "Please fill shipping details",
+      });
       return;
     }
 
@@ -157,13 +161,18 @@ export default function Checkout() {
 
         await placeOrder("paid");
 
-        Alert.alert(
-          "Payment Successful 🎉",
-          `Payment ID: ${data.razorpay_payment_id}`
-        );
+        Toast.show({
+          type: "success",
+          text1: "Payment Successful",
+          text2: `Payment ID: ${data.razorpay_payment_id}`,
+        });
       })
       .catch((error) => {
-        Alert.alert("Payment Failed", error?.description || "Payment cancelled");
+        Toast.show({
+          type: "error",
+          text1: "Payment Failed",
+          text2: error?.description || "Payment cancelled",
+        });
       });
   };
 
@@ -173,7 +182,11 @@ export default function Checkout() {
     try {
 
       if (!cartItems.length) {
-        Alert.alert("Cart empty", "Add items before placing order");
+        Toast.show({
+          type: "error",
+          text1: "Cart Empty",
+          text2: "Add items before placing order",
+        });
         return;
       }
 
@@ -239,12 +252,15 @@ export default function Checkout() {
 
       setCartItems([]);
 
-      Alert.alert("Success", `Order placed! ${orderId}`, [
-        {
-          text: "View Orders",
-          onPress: () => router.replace("/Orders"),
-        },
-      ]);
+      Toast.show({
+        type: "success",
+        text1: "Order Placed",
+        text2: `Order ID: ${orderId}`,
+      });
+
+      setTimeout(() => {
+        router.replace("/Orders");
+      }, 1200);
 
       if (!buyNow) {
         const cart = await getCart(userId);

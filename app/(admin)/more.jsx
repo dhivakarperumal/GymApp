@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, Image, ScrollView, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
-
+import Toast from "react-native-toast-message";
 
 export default function More() {
   const router = useRouter();
@@ -9,7 +9,20 @@ export default function More() {
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
       { text: "Cancel" },
-      { text: "Logout", onPress: () => router.replace("/") },
+      {
+        text: "Logout",
+        onPress: () => {
+          Toast.show({
+            type: "success",
+            text1: "Logged Out",
+            text2: "You have been logged out successfully",
+          });
+
+          setTimeout(() => {
+            router.replace("/");
+          }, 800);
+        },
+      },
     ]);
   };
 
@@ -30,7 +43,7 @@ export default function More() {
 
   return (
     <ScrollView className="flex-1 bg-gray-100 px-4 pt-6">
-      
+
       {/* Profile Card */}
       <View className="bg-white rounded-2xl p-5 mb-6 shadow items-center">
         <Image

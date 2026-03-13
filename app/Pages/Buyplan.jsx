@@ -8,11 +8,10 @@ import {
 import { useLocalSearchParams, router } from "expo-router";
 import { useState, useEffect } from "react";
 import RazorpayCheckout from "react-native-razorpay";
-import { Alert } from "react-native";
+import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../Header";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // For storing user data locally if needed
-import api from "../../services/api"; // Assuming you have an API instance; if not, use fetch
+import AsyncStorage from "@react-native-async-storage/async-storage"; 
 
 export default function BuyPlan() {
   const { plan } = useLocalSearchParams();
@@ -39,7 +38,11 @@ export default function BuyPlan() {
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       } else {
-        Alert.alert("Error", "Please login to purchase a plan");
+        Toast.show({
+          type: "error",
+          text1: "Login Required",
+          text2: "Please login to purchase a plan",
+        });
         router.push("/login");
       }
     };
@@ -95,22 +98,38 @@ export default function BuyPlan() {
 
   const validateForm = () => {
     if (!form.name.trim()) {
-      Alert.alert("Validation Error", "Full name is required");
+      Toast.show({
+        type: "error",
+        text1: "Validation Error",
+        text2: "Full name is required",
+      });
       return false;
     }
 
     if (!/^[6-9]\d{9}$/.test(form.phone)) {
-      Alert.alert("Validation Error", "Enter valid 10-digit phone number");
+      Toast.show({
+        type: "error",
+        text1: "Invalid Phone",
+        text2: "Enter valid 10-digit phone number",
+      });
       return false;
     }
 
     if (!/^\S+@\S+\.\S+$/.test(form.email)) {
-      Alert.alert("Validation Error", "Enter valid email address");
+      Toast.show({
+        type: "error",
+        text1: "Invalid Email",
+        text2: "Enter valid email address",
+      });
       return false;
     }
 
     if (!form.address.trim()) {
-      Alert.alert("Validation Error", "Address is required");
+      Toast.show({
+        type: "error",
+        text1: "Address Required",
+        text2: "Please enter your address",
+      });
       return false;
     }
 
@@ -138,10 +157,11 @@ export default function BuyPlan() {
     RazorpayCheckout.open(options)
       .then(async (data) => {
         // SUCCESS
-        Alert.alert(
-          "Payment Successful 🎉",
-          `Payment ID: ${data.razorpay_payment_id}`,
-        );
+        Toast.show({
+          type: "success",
+          text1: "Payment Successful",
+          text2: `Payment ID: ${data.razorpay_payment_id}`,
+        });
 
         // Save to backend
         try {
@@ -171,93 +191,101 @@ export default function BuyPlan() {
           });
         } catch (err) {
           console.error("Plan save error:", err);
-          Alert.alert("Error", "Payment successful but failed to save plan.");
+          Toast.show({
+            type: "error",
+            text1: "Save Failed",
+            text2: "Payment successful but plan saving failed",
+          });
         }
       })
       .catch((error) => {
-        Alert.alert("Payment Failed", error.description);
+        Toast.show({
+          type: "error",
+          text1: "Payment Failed",
+          text2: error.description || "Payment cancelled",
+        });
       });
   };
 
-//   const handlePayment = async () => {
-//   if (!validateForm()) return;
+  //   const handlePayment = async () => {
+  //   if (!validateForm()) return;
 
-//   // TEST MODE (skip Razorpay)
-//   if (TEST_MODE) {
-//     try {
-//       const fakePaymentId = "TEST_PAY_" + Date.now();
+  //   // TEST MODE (skip Razorpay)
+  //   if (TEST_MODE) {
+  //     try {
+  //       const fakePaymentId = "TEST_PAY_" + Date.now();
 
-//       await api.post("/memberships", {
-//         userId: user.id,
-//         planId: selectedPlan.id,
-//         planName: selectedPlan.name,
-//         pricePaid: Number(selectedPlan.price),
-//         duration: selectedPlan.duration,
-//         startDate: form.startDate,
-//         endDate: form.endDate,
-//         paymentId: fakePaymentId,
-//         status: "active",
-//       });
+  //       await api.post("/memberships", {
+  //         userId: user.id,
+  //         planId: selectedPlan.id,
+  //         planName: selectedPlan.name,
+  //         pricePaid: Number(selectedPlan.price),
+  //         duration: selectedPlan.duration,
+  //         startDate: form.startDate,
+  //         endDate: form.endDate,
+  //         paymentId: fakePaymentId,
+  //         status: "active",
+  //       });
 
-//       Alert.alert("Test Purchase Successful 🎉");
+  //       Alert.alert("Test Purchase Successful 🎉");
 
-//       router.push({
-//         pathname: "/",
-//         params: {
-//           planDetails: JSON.stringify({
-//             ...selectedPlan,
-//             startDate: form.startDate,
-//             endDate: form.endDate,
-//             paymentId: fakePaymentId,
-//           }),
-//         },
-//       });
-//     } catch (err) {
-//       console.log("Test purchase error:", err);
-//       Alert.alert("Error", "Failed to save plan");
-//     }
+  //       router.push({
+  //         pathname: "/",
+  //         params: {
+  //           planDetails: JSON.stringify({
+  //             ...selectedPlan,
+  //             startDate: form.startDate,
+  //             endDate: form.endDate,
+  //             paymentId: fakePaymentId,
+  //           }),
+  //         },
+  //       });
+  //     } catch (err) {
+  //       console.log("Test purchase error:", err);
+  //       Alert.alert("Error", "Failed to save plan");
+  //     }
 
-//     return;
-//   }
+  //     return;
+  //   }
 
-//   // REAL PAYMENT (Razorpay)
-//   const options = {
-//     description: selectedPlan.name,
-//     image: "https://yourgymlogo.com/logo.png",
-//     currency: "INR",
-//     key: "rzp_test_SGj8n5SyKSE10b",
-//     amount: Number(selectedPlan.price) * 100,
-//     name: "Arnold Gym",
-//     prefill: {
-//       email: form.email,
-//       contact: form.phone,
-//       name: form.name,
-//     },
-//     theme: { color: "#ff3c00" },
-//   };
+  //   // REAL PAYMENT (Razorpay)
+  //   const options = {
+  //     description: selectedPlan.name,
+  //     image: "https://yourgymlogo.com/logo.png",
+  //     currency: "INR",
+  //     key: "rzp_test_SGj8n5SyKSE10b",
+  //     amount: Number(selectedPlan.price) * 100,
+  //     name: "Arnold Gym",
+  //     prefill: {
+  //       email: form.email,
+  //       contact: form.phone,
+  //       name: form.name,
+  //     },
+  //     theme: { color: "#ff3c00" },
+  //   };
 
-//   RazorpayCheckout.open(options)
-//     .then(async (data) => {
-//       await api.post("/memberships", {
-//         userId: user.id,
-//         planId: selectedPlan.id,
-//         planName: selectedPlan.name,
-//         pricePaid: Number(selectedPlan.price),
-//         duration: selectedPlan.duration,
-//         startDate: form.startDate,
-//         endDate: form.endDate,
-//         paymentId: data.razorpay_payment_id,
-//         status: "active",
-//       });
+  //   RazorpayCheckout.open(options)
+  //     .then(async (data) => {
+  //       await api.post("/memberships", {
+  //         userId: user.id,
+  //         planId: selectedPlan.id,
+  //         planName: selectedPlan.name,
+  //         pricePaid: Number(selectedPlan.price),
+  //         duration: selectedPlan.duration,
+  //         startDate: form.startDate,
+  //         endDate: form.endDate,
+  //         paymentId: data.razorpay_payment_id,
+  //         status: "active",
+  //       });
 
-//       Alert.alert("Payment Successful 🎉");
+  //       Alert.alert("Payment Successful 🎉");
 
-//       router.push("/home");
-//     })
-//     .catch((error) => {
-//       Alert.alert("Payment Failed", error.description);
-//     });
-// };
+  //       router.push("/home");
+  //     })
+  //     .catch((error) => {
+  //       Alert.alert("Payment Failed", error.description);
+  //     });
+  // };
 
   if (!selectedPlan) {
     return (

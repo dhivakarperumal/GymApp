@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { getCart, addToCartApi, updateCartApi } from "../../services/api";
 import Header from "../Header";
 import { useAuth } from "../../context/AuthContext";
+import Toast from "react-native-toast-message";
 
 const { width } = Dimensions.get("window");
 
@@ -105,12 +106,20 @@ export default function ProductDetails() {
   const handleBuyNow = () => {
 
     if (!user || !user.id) {
-      alert("Please login first");
+      Toast.show({
+        type: "error",
+        text1: "Login Required",
+        text2: "Please login first",
+      });
       return;
     }
 
     if (!variant) {
-      alert("Please select variant");
+      Toast.show({
+        type: "error",
+        text1: "Variant Missing",
+        text2: "Please select variant",
+      });
       return;
     }
 
@@ -166,7 +175,11 @@ export default function ProductDetails() {
     try {
 
       if (!user || !user.id) {
-        alert("Please login first");
+        Toast.show({
+          type: "error",
+          text1: "Login Required",
+          text2: "Please login to add items to cart",
+        });
         return;
       }
 
@@ -472,11 +485,11 @@ export default function ProductDetails() {
               disabled={remainingStock === 0 || quantity > remainingStock}
               onPress={handleBuyNow}
               className={`w-[48%] py-4 rounded-2xl items-center ${remainingStock === 0
-                  ? "bg-gray-600"
-                  : "bg-[#1f1f1f] border border-primary"
+                ? "bg-gray-600"
+                : "bg-[#1f1f1f] border border-primary"
                 }`}
             >
-               <Text className="text-white font-bold text-lg">BUY NOW</Text>
+              <Text className="text-white font-bold text-lg">BUY NOW</Text>
             </TouchableOpacity>
           </View>
         </View>

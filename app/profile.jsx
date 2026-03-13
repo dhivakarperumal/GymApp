@@ -3,7 +3,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Alert,
   Modal,
   ScrollView,
   Text,
@@ -13,6 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { updateUserApi } from "../services/api";
+import Toast from "react-native-toast-message";
 
 export default function Profile() {
   const router = useRouter();
@@ -59,10 +59,18 @@ export default function Profile() {
       setUser(updatedUser);
       setEditVisible(false);
 
-      Alert.alert("Success", "Profile updated successfully 🎉");
+      Toast.show({
+        type: "success",
+        text1: "Profile Updated",
+        text2: "Your profile was updated successfully",
+      });
     } catch (err) {
       console.log("UPDATE ERROR:", err);
-      Alert.alert("Error", "Profile update failed");
+      Toast.show({
+  type: "error",
+  text1: "Update Failed",
+  text2: "Profile update failed",
+});
     }
   };
 
