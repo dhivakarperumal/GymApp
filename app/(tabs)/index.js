@@ -16,7 +16,7 @@ import {
 import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Dimensions } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
@@ -24,6 +24,7 @@ export default function Home() {
   const [reviews, setReviews] = useState([]);
   const { user } = useAuth();
   const router = useRouter();
+  const { planDetails } = useLocalSearchParams(); // Add this to get params
   const [assignment, setAssignment] = useState(null);
   const scrollRef = useRef(null);
   const scrollX = useRef(0);
@@ -34,6 +35,9 @@ export default function Home() {
 
   const [todayWorkout, setTodayWorkout] = useState(null);
   const [todayWorkoutDay, setTodayWorkoutDay] = useState("");
+
+  // Parse planDetails if present
+  const purchasedPlan = planDetails ? JSON.parse(planDetails) : null;
 
   useEffect(() => {
     fetchReviews();
@@ -163,11 +167,50 @@ export default function Home() {
       console.log("Assignment fetch error:", err);
     }
   };
+
   return (
     <View className="flex-1 bg-card pt-12 px-5">
       <StatusBar barStyle="light-content" />
 
       <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Purchased Plan Success Card - Show if planDetails present */}
+        {purchasedPlan && (
+          <View className="bg-[#141414] rounded-3xl p-5 mb-6 border border-primary">
+            <View className="flex-row items-center mb-4">
+              <Ionicons name="checkmark-circle" size={24} color="#ff3c00" />
+              <Text className="text-white text-lg font-bold ml-2">
+                Purchase Successful!
+              </Text>
+            </View>
+            <Text className="text-gray-300 text-sm mb-4">
+              Welcome to your new plan. Here are the details:
+            </Text>
+            <View className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]">
+              <Text className="text-primary text-lg font-bold mb-2">
+                {purchasedPlan.name}
+              </Text>
+              <Text className="text-gray-400 text-sm mb-2">
+                {purchasedPlan.description}
+              </Text>
+              <Text className="text-white font-semibold">
+                Price: ₹{Number(purchasedPlan.price).toLocaleString()}
+              </Text>
+              <Text className="text-gray-400 text-sm">
+                Duration: {purchasedPlan.duration}
+              </Text>
+              <Text className="text-gray-400 text-sm">
+                Start Date: {purchasedPlan.startDate}
+              </Text>
+              <Text className="text-gray-400 text-sm">
+                End Date: {purchasedPlan.endDate}
+              </Text>
+              <Text className="text-gray-400 text-sm">
+                Payment ID: {purchasedPlan.paymentId}
+              </Text>
+            </View>
+          </View>
+        )}
+
         <View className="flex-row justify-between items-center mb-4">
           <Text className="text-white text-lg font-bold">TODAY'S MISSION</Text>
           <Text className="text-primary text-sm font-semibold">VIEW ALL</Text>

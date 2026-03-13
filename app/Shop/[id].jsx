@@ -17,6 +17,7 @@ import { getCart, addToCartApi, updateCartApi } from "../../services/api";
 import Header from "../Header";
 import { useAuth } from "../../context/AuthContext";
 import BackButton from "../BackButton";
+import Toast from "react-native-toast-message";
 
 const { width } = Dimensions.get("window");
 
@@ -102,6 +103,47 @@ export default function ProductDetails() {
     return null;
   })();
 
+
+  const handleBuyNow = () => {
+
+    if (!user || !user.id) {
+      Toast.show({
+        type: "error",
+        text1: "Login Required",
+        text2: "Please login first",
+      });
+      return;
+    }
+
+    if (!variant) {
+      Toast.show({
+        type: "error",
+        text1: "Variant Missing",
+        text2: "Please select variant",
+      });
+      return;
+    }
+
+    const buyNowItem = {
+      productId: product.id,
+      name: product.name,
+      price: price,
+      quantity: quantity,
+      size: selectedSize || null,
+      gender: selectedGender || null,
+      weight: selectedWeight || null,
+      variant: variant,
+      images: product.images,
+    };
+
+    router.push({
+      pathname: "/checkout",
+      params: {
+        buyNow: JSON.stringify(buyNowItem),
+      },
+    });
+  };
+
   const variant =
     product?.category === "Food"
       ? selectedWeight
@@ -132,7 +174,11 @@ export default function ProductDetails() {
   const handleAddToCart = async () => {
     try {
       if (!user || !user.id) {
-        alert("Please login first");
+        Toast.show({
+          type: "error",
+          text1: "Login Required",
+          text2: "Please login to add items to cart",
+        });
         return;
       }
 
@@ -448,11 +494,11 @@ export default function ProductDetails() {
             {/* BUY NOW */}
             <TouchableOpacity
               disabled={remainingStock === 0 || quantity > remainingStock}
-              className={`w-[48%] py-4 rounded-2xl items-center ${
-                remainingStock === 0
-                  ? "bg-gray-600"
-                  : "bg-[#1f1f1f] border border-primary"
-              }`}
+              onPress={handleBuyNow}
+              className={`w-[48%] py-4 rounded-2xl items-center ${remainingStock === 0
+                ? "bg-gray-600"
+                : "bg-[#1f1f1f] border border-primary"
+                }`}
             >
               <Text className="text-white font-bold text-lg">BUY NOW</Text>
             </TouchableOpacity>

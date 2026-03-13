@@ -2,7 +2,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Alert,
   Image,
   ScrollView,
   Text,
@@ -19,14 +18,14 @@ import {
 } from "../services/api";
 import Header from "./Header";
 import BackButton from "./BackButton";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+import Toast from "react-native-toast-message";
 
 export default function Cart() {
 
   const { user } = useAuth();
   const userId = user?.id;
-
-  console.log("USER 👉", user);
-  console.log("USER ID 👉", userId);
 
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -40,35 +39,37 @@ export default function Cart() {
     setProducts(list);
   };
 
-const fetchCart = async () => {
-  if (!userId) return;
+  const fetchCart = async () => {
+    if (!userId) return;
 
-  try {
-    const data = await getCart(userId);
+    try {
+      const data = await getCart(userId);
 
-    console.log("CART API RESPONSE 👉", data);
+      // console.log("CART API RESPONSE 👉", data);
 
-    setCartItems(data);
+      setCartItems(data);
     } catch (err) {
-      console.log("Cart fetch error:", err);
+      // console.log("Cart fetch error:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (userId) {
-      fetchCart();
-    }
-    fetchProducts();
-  }, [userId]);
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) {
+        fetchCart();
+      }
+      fetchProducts();
+    }, [userId])
+  );
 
   const increaseQty = async (item) => {
     try {
       await updateCartApi(item.id, item.quantity + 1);
       fetchCart();
     } catch (err) {
-      console.log("Increase qty error:", err);
+      // console.log("Increase qty error:", err);
     }
   };
 
@@ -79,7 +80,7 @@ const fetchCart = async () => {
       await updateCartApi(item.id, item.quantity - 1);
       fetchCart();
     } catch (err) {
-      console.log("Decrease qty error:", err);
+      // console.log("Decrease qty error:", err);
     }
   };
 
@@ -88,7 +89,7 @@ const fetchCart = async () => {
       await deleteCartApi(id);
       fetchCart();
     } catch (err) {
-      console.log("Delete error:", err);
+      // console.log("Delete error:", err);
     }
   };
 
@@ -191,7 +192,7 @@ const fetchCart = async () => {
                       </Text>
                     )}
 
-                   
+
                     {item.weight && (
                       <Text className="text-gray-400 text-sm">
                         Weight: {item.weight}
@@ -199,49 +200,49 @@ const fetchCart = async () => {
                     )}
 
                   </View>
-                    <Text className="text-red-500 text-lg font-bold mt-1">
-                      ₹ {item.price}
+                  <Text className="text-red-500 text-lg font-bold mt-1">
+                    ₹ {item.price}
+                  </Text>
+                  <Text className="text-gray-400 text-sm">
+                    Stock Available: {stock}
+                  </Text>
+                </View>
+
+
+                {/* QUANTITY + DELETE */}
+                <View className="flex-row items-center justify-between mt-4">
+                  <View className="flex-row items-center bg-[#1a1a1a] rounded-full px-4 py-2">
+                    <TouchableOpacity onPress={() => decreaseQty(item)}>
+                      <Ionicons name="remove" size={18} color="white" />
+                    </TouchableOpacity>
+
+                    <Text className="text-white mx-4 font-semibold">
+                      {item.quantity}
                     </Text>
-                    <Text className="text-gray-400 text-sm">
-                      Stock Available: {stock}
-                    </Text>
-                  </View>
 
-                 
-                  {/* QUANTITY + DELETE */}
-                  <View className="flex-row items-center justify-between mt-4">
-                    <View className="flex-row items-center bg-[#1a1a1a] rounded-full px-4 py-2">
-                      <TouchableOpacity onPress={() => decreaseQty(item)}>
-                        <Ionicons name="remove" size={18} color="white" />
-                      </TouchableOpacity>
-
-                      <Text className="text-white mx-4 font-semibold">
-                        {item.quantity}
-                      </Text>
-
-                      <TouchableOpacity
-                        onPress={() => {
-                          if (item.quantity < stock) {
-                            increaseQty(item);
-                          }
-                        }}
-                      >
-                        <Ionicons name="add" size={18} color="white" />
-                      </TouchableOpacity>
-                    </View>
-                      
-                    </View>
-
-                    <TouchableOpacity onPress={() => deleteItem(item.id)}>
-                      <Ionicons
-                        name="trash-outline"
-                        size={20}
-                        color="#ff4d4d"
-                      />
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (item.quantity < stock) {
+                          increaseQty(item);
+                        }
+                      }}
+                    >
+                      <Ionicons name="add" size={18} color="white" />
                     </TouchableOpacity>
                   </View>
+
                 </View>
-           
+
+                <TouchableOpacity onPress={() => deleteItem(item.id)}>
+                  <Ionicons
+                    name="trash-outline"
+                    size={20}
+                    color="#ff4d4d"
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
           );
         })}
       </ScrollView>
@@ -268,7 +269,11 @@ const fetchCart = async () => {
         <TouchableOpacity
           onPress={() => {
             if (!cartItems.length) {
-              Alert.alert("Cart empty", "Add items before checkout");
+              Toast.show({
+                type: "error",
+                text1: "Cart Empty",
+                text2: "Add items before checkout",
+              });
               return;
             }
             router.push("/checkout");
