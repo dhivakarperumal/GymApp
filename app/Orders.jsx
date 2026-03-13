@@ -32,7 +32,7 @@ export default function Orders() {
 
       const data = await getUserOrders(userId);
 
-      console.log("ORDERS DATA 👉", data);   // ADD THIS
+      // console.log("ORDERS DATA 👉", data);   // ADD THIS
 
       const userOrders = data.filter((order) => order.user_id === userId);
 
@@ -181,7 +181,6 @@ export default function Orders() {
               key={order.order_id}
               onPress={() => {
                 setSelectedOrder(order);
-                setSelectedOrderItems([]);
               }}
               style={{
                 backgroundColor: "#111",
@@ -368,9 +367,19 @@ export default function Orders() {
                               Qty: {item.qty || item.quantity}
                             </Text>
 
-                            {(item.size || item.size) && (
+                            <Text style={{ color: "#aaa", fontSize: 12 }}>
+                              Price: ₹{item.price}
+                            </Text>
+
+                            {item.size && (
                               <Text style={{ color: "#aaa", fontSize: 12 }}>
                                 Size: {item.size}
+                              </Text>
+                            )}
+
+                            {item.weight && (
+                              <Text style={{ color: "#aaa", fontSize: 12 }}>
+                                Weight: {item.weight}
                               </Text>
                             )}
 
