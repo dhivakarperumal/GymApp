@@ -38,7 +38,11 @@ export default function More() {
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      className="flex-1 bg-[#0f0f0f] px-5 pt-12"
+      className="bg-[#0f0f0f] px-5 pt-12"
+      contentContainerStyle={{
+        flexGrow: 1,
+        paddingBottom: 120,
+      }}
     >
       {/* Header */}
       <Text className="text-white text-3xl font-extrabold mb-2">More</Text>

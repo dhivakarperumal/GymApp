@@ -22,22 +22,22 @@ export default function Header() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [logoutVisible, setLogoutVisible] = useState(false);
 
-useFocusEffect(
-  useCallback(() => {
-    const fetchCart = async () => {
-      try {
-        if (!user?.id) return;
+  useFocusEffect(
+    useCallback(() => {
+      const fetchCart = async () => {
+        try {
+          if (!user?.id) return;
 
-        const data = await getCart(user.id);
-        setCartCount(data?.length || 0);
-      } catch (err) {
-        console.log("Cart fetch error", err);
-      }
-    };
+          const data = await getCart(user.id);
+          setCartCount(data?.length || 0);
+        } catch (err) {
+          console.log("Cart fetch error", err);
+        }
+      };
 
-    fetchCart();
-  }, [user])
-);
+      fetchCart();
+    }, [user]),
+  );
 
   const handleLogout = async () => {
     setMenuVisible(false);
@@ -100,6 +100,13 @@ useFocusEffect(
               </View>
             )}
           </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => router.push("/Orders")}
+          style={{ marginRight: 16 }}
+        >
+          <Ionicons name="cube-outline" size={22} color="white" />
         </TouchableOpacity>
 
         {/* NOTIFICATION */}
