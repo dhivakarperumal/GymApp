@@ -8,12 +8,15 @@ import {
   Alert,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
+import { Picker } from "@react-native-picker/picker";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { useAuth } from "../context/AuthContext";
 import RazorpayCheckout from "react-native-razorpay";
+
+import api from "../services/api";
 
 import {
   getCart,
@@ -33,6 +36,36 @@ export default function Checkout() {
 
   const { user } = useAuth();
   const userId = user?.id;
+  const states = [
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chhattisgarh",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal"
+  ];
 
   const [shipping, setShipping] = useState({
     name: "",
@@ -62,6 +95,29 @@ export default function Checkout() {
     }
 
   }, [userId, buyNow]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchUserProfile = async () => {
+      try {
+        const res = await api.get(`/users/${userId}`);
+
+        if (res.data) {
+          setShipping((prev) => ({
+            ...prev,
+            name: res.data.username || "",
+            phone: res.data.mobile || "",
+            email: res.data.email || "",
+          }));
+        }
+      } catch (err) {
+        console.log("User fetch failed", err);
+      }
+    };
+
+    fetchUserProfile();
+  }, [userId]);
 
   /* PRICE CALCULATION */
 
@@ -190,6 +246,16 @@ export default function Checkout() {
     }
   };
 
+  const fieldLabels = {
+    name: "Full Name",
+    phone: "Phone Number",
+    email: "Email Address",
+    address: "Address",
+    city: "City",
+    zip: "Zip Code",
+    country: "Country",
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-black">
 
@@ -208,18 +274,41 @@ export default function Checkout() {
           Shipping Details
         </Text>
 
-        {Object.keys(shipping).map((key) => (
-          <TextInput
-            key={key}
-            placeholder={key}
-            placeholderTextColor="#888"
-            value={shipping[key]}
-            onChangeText={(text) =>
-              setShipping({ ...shipping, [key]: text })
+        {Object.keys(shipping).map((key) => {
+          if (key === "state") return null; // we will use dropdown
+
+          return (
+            <TextInput
+              key={key}
+              placeholder={fieldLabels[key]}
+              placeholderTextColor="#888"
+              value={shipping[key]}
+              onChangeText={(text) =>
+                setShipping({ ...shipping, [key]: text })
+              }
+              className="bg-[#111] text-white p-4 rounded-xl mb-4"
+            />
+          );
+        })}
+
+        <Text className="text-white mb-2">State</Text>
+
+        <View className="bg-[#111] rounded-xl mb-4">
+          <Picker
+            selectedValue={shipping.state}
+            dropdownIconColor="white"
+            style={{ color: "white" }}
+            onValueChange={(value) =>
+              setShipping({ ...shipping, state: value })
             }
-            className="bg-[#111] text-white p-4 rounded-xl mb-4"
-          />
-        ))}
+          >
+            <Picker.Item label="Select State" value="" />
+
+            {states.map((state) => (
+              <Picker.Item key={state} label={state} value={state} />
+            ))}
+          </Picker>
+        </View>
 
         <Text className="text-white text-lg mt-6 mb-4">
           Payment Method
