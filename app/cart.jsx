@@ -18,6 +18,7 @@ import {
   updateCartApi,
 } from "../services/api";
 import Header from "./Header";
+import BackButton from "./BackButton";
 
 export default function Cart() {
 
@@ -110,7 +111,8 @@ const fetchCart = async () => {
     <SafeAreaView className="flex-1 bg-black">
       <Header />
       {/* HEADER */}
-      <View className="px-6 pt-12 pb-6">
+      <BackButton style={{ marginLeft: 20, marginTop: 20 }} />
+      <View className="px-6 pt-6 pb-6">
         <Text className="text-white text-3xl font-bold">My Cart</Text>
         <Text className="text-gray-400 mt-1">{cartItems.length} Items</Text>
       </View>
@@ -124,7 +126,7 @@ const fetchCart = async () => {
           <View className="items-center mt-24">
             {/* BIG ICON */}
             <View className="bg-[#111] p-8 rounded-full border border-[#222] mb-6">
-              <Ionicons name="cart-outline" size={70} color="#ff3c00" />
+              <Ionicons name="cart-outline" size={70} color="#e11d1d" />
             </View>
 
             <Text className="text-white text-xl font-bold mb-2">
@@ -260,7 +262,7 @@ const fetchCart = async () => {
 
         <View className="flex-row justify-between mb-6">
           <Text className="text-white text-lg font-bold">Total</Text>
-          <Text className="text-red-500 text-xl font-bold">₹ {total}</Text>
+          <Text className="text-primary text-xl font-bold">₹ {total}</Text>
         </View>
 
         <TouchableOpacity

@@ -13,6 +13,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "../context/AuthContext";
 import { getUserOrders } from "../services/api";
+import Header from "./Header";
+import BackButton from "./BackButton";
 
 export default function Orders() {
   const { user } = useAuth();
@@ -122,22 +124,23 @@ export default function Orders() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
+      <Header />
       <View style={{ flex: 1, padding: 16 }}>
         <ScrollView showsVerticalScrollIndicator={false}>
+          <BackButton style={{ marginLeft: 4, marginTop: 20 }} />
           <Text
             style={{
               color: "white",
               fontSize: 28,
               fontWeight: "bold",
               marginBottom: 20,
+              marginTop:20,
             }}
           >
             My Orders
           </Text>
 
-          {loading && (
-            <Text style={{ color: "#aaa" }}>Loading orders...</Text>
-          )}
+          {loading && <Text style={{ color: "#aaa" }}>Loading orders...</Text>}
 
           {!loading && orders.length === 0 && (
             <Text style={{ color: "#aaa" }}>No orders yet</Text>
@@ -253,9 +256,7 @@ export default function Orders() {
                   >
                     <Image
                       source={{
-                        uri:
-                          item.image ||
-                          "https://via.placeholder.com/100",
+                        uri: item.image || "https://via.placeholder.com/100",
                       }}
                       style={{
                         width: 60,

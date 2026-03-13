@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { getCart, addToCartApi, updateCartApi } from "../../services/api";
 import Header from "../Header";
 import { useAuth } from "../../context/AuthContext";
+import BackButton from "../BackButton";
 
 const { width } = Dimensions.get("window");
 
@@ -128,10 +129,8 @@ export default function ProductDetails() {
   const price = pricing ? Number(pricing.offerPrice) : 0;
   const oldPrice = pricing ? Number(pricing.mrp) : 0;
 
-
   const handleAddToCart = async () => {
     try {
-
       if (!user || !user.id) {
         alert("Please login first");
         return;
@@ -142,9 +141,7 @@ export default function ProductDetails() {
       const cartItems = await getCart(userId);
 
       const existing = cartItems.find(
-        (item) =>
-          item.productId === product.id &&
-          item.variant === variant
+        (item) => item.productId === product.id && item.variant === variant,
       );
 
       if (existing) {
@@ -165,17 +162,17 @@ export default function ProductDetails() {
       }
 
       router.push("/cart");
-
     } catch (err) {
       console.log("Add to cart error:", err);
     }
   };
 
-  
   return (
     <SafeAreaView className="flex-1 bg-darkBg">
+      <Header />
       <ScrollView className="flex-1 bg-darkBg">
-        <View className="px-5 mt-20">
+        <BackButton style={{ marginLeft: 20, marginTop: 20 }} />
+        <View className="px-5 mt-9">
           <View
             className="rounded-3xl overflow-hidden border border-[#1f1f1f]"
             style={{
@@ -215,7 +212,6 @@ export default function ProductDetails() {
                   )}
                 </View>
               ))}
-
             </ScrollView>
           </View>
 
@@ -235,8 +231,11 @@ export default function ProductDetails() {
                     animated: true,
                   });
                 }}
-                className={`mr-3 rounded-xl overflow-hidden border-2 ${activeIndex === index ? "border-primary" : "border-transparent"
-                  }`}
+                className={`mr-3 rounded-xl overflow-hidden border-2 ${
+                  activeIndex === index
+                    ? "border-primary"
+                    : "border-transparent"
+                }`}
               >
                 <Image
                   source={{ uri: img }}
@@ -312,21 +311,25 @@ export default function ProductDetails() {
 
           {product.category === "Food" && product.weight?.length > 0 && (
             <View className="mb-8">
-              <Text className="text-white font-semibold mb-3">Select Weight</Text>
+              <Text className="text-white font-semibold mb-3">
+                Select Weight
+              </Text>
 
               <View className="flex-row flex-wrap">
                 {product.weight.map((w) => (
                   <TouchableOpacity
                     key={w}
                     onPress={() => setSelectedWeight(w)}
-                    className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${selectedWeight === w
-                      ? "bg-primary border-primary"
-                      : "border-gray-700"
-                      }`}
+                    className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${
+                      selectedWeight === w
+                        ? "bg-primary border-primary"
+                        : "border-gray-700"
+                    }`}
                   >
                     <Text
-                      className={`${selectedWeight === w ? "text-white" : "text-gray-300"
-                        }`}
+                      className={`${
+                        selectedWeight === w ? "text-white" : "text-gray-300"
+                      }`}
                     >
                       {w}
                     </Text>
@@ -346,14 +349,16 @@ export default function ProductDetails() {
                   <TouchableOpacity
                     key={size}
                     onPress={() => setSelectedSize(size)}
-                    className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${selectedSize === size
-                      ? "bg-primary border-primary"
-                      : "border-gray-700"
-                      }`}
+                    className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${
+                      selectedSize === size
+                        ? "bg-primary border-primary"
+                        : "border-gray-700"
+                    }`}
                   >
                     <Text
-                      className={`${selectedSize === size ? "text-white" : "text-gray-300"
-                        }`}
+                      className={`${
+                        selectedSize === size ? "text-white" : "text-gray-300"
+                      }`}
                     >
                       {size}
                     </Text>
@@ -365,21 +370,26 @@ export default function ProductDetails() {
 
           {product.gender?.length > 0 && (
             <View className="mb-6">
-              <Text className="text-white font-semibold mb-3">Select Gender</Text>
+              <Text className="text-white font-semibold mb-3">
+                Select Gender
+              </Text>
 
               <View className="flex-row flex-wrap">
                 {product.gender.map((gender) => (
                   <TouchableOpacity
                     key={gender}
                     onPress={() => setSelectedGender(gender)}
-                    className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${selectedGender === gender
-                      ? "bg-primary border-primary"
-                      : "border-gray-700"
-                      }`}
+                    className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${
+                      selectedGender === gender
+                        ? "bg-primary border-primary"
+                        : "border-gray-700"
+                    }`}
                   >
                     <Text
                       className={
-                        selectedGender === gender ? "text-white" : "text-gray-300"
+                        selectedGender === gender
+                          ? "text-white"
+                          : "text-gray-300"
                       }
                     >
                       {gender}
@@ -424,10 +434,11 @@ export default function ProductDetails() {
             <TouchableOpacity
               disabled={remainingStock === 0 || quantity > remainingStock}
               onPress={handleAddToCart}
-              className={`w-[48%] py-4 rounded-2xl items-center ${remainingStock === 0
-                ? "bg-gray-600"
-                : "bg-[#1f1f1f] border border-primary"
-                }`}
+              className={`w-[48%] py-4 rounded-2xl items-center ${
+                remainingStock === 0
+                  ? "bg-gray-600"
+                  : "bg-[#1f1f1f] border border-primary"
+              }`}
             >
               <Text className="text-primary font-bold text-lg">
                 ADD TO CART
@@ -437,10 +448,11 @@ export default function ProductDetails() {
             {/* BUY NOW */}
             <TouchableOpacity
               disabled={remainingStock === 0 || quantity > remainingStock}
-              className={`w-[48%] py-4 rounded-2xl items-center ${remainingStock === 0
-                ? "bg-gray-600"
-                : "bg-[#1f1f1f] border border-primary"
-                }`}
+              className={`w-[48%] py-4 rounded-2xl items-center ${
+                remainingStock === 0
+                  ? "bg-gray-600"
+                  : "bg-[#1f1f1f] border border-primary"
+              }`}
             >
               <Text className="text-white font-bold text-lg">BUY NOW</Text>
             </TouchableOpacity>

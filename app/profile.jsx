@@ -13,6 +13,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { updateUserApi } from "../services/api";
+import Header from "./Header";
+import BackButton from "./BackButton";
 
 export default function Profile() {
   const router = useRouter();
@@ -81,12 +83,14 @@ export default function Profile() {
 
   return (
     <SafeAreaView className="flex-1 bg-black">
+      <Header />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 20 }}
       >
+        <BackButton style={{ marginTop: 20 }} />
         {/* HEADER */}
-        <Text className="text-white text-3xl font-bold mb-8">My Profile</Text>
+        <Text className="text-white text-3xl font-bold mt-7 mb-8">My Profile</Text>
 
         {/* PROFILE CARD */}
         <View className="bg-[#111] rounded-3xl p-6 items-center mb-8">

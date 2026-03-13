@@ -10,6 +10,8 @@ import {
   View,
   ActivityIndicator,
   Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { getAllProducts } from "../../services/api";
 
@@ -78,8 +80,17 @@ export default function Shop() {
     });
   }, [search, products, selectedCategory, minPrice, maxPrice, minRating]);
 
-  return (
-    <ScrollView className="flex-1 bg-darkBg px-4 pt-12">
+return (
+  <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+  >
+    <ScrollView
+      className="flex-1 bg-darkBg px-4 pt-12"
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{ paddingBottom: 120 }}
+      showsVerticalScrollIndicator={false}
+    >
       {/* SEARCH */}
       <View className="flex-row items-center bg-darkcard rounded-xl px-4 py-3 mb-5">
         {/* FILTER BUTTON */}
@@ -361,5 +372,6 @@ export default function Shop() {
         </TouchableOpacity>
       </Modal>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

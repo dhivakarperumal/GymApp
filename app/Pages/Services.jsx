@@ -11,6 +11,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../Header";
+import BackButton from "../BackButton";
 
 const { width } = Dimensions.get("window");
 
@@ -43,8 +44,9 @@ export default function Services() {
       <Header />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        className="flex-1 bg-[#0a0a0a] px-5 pt-12"
+        className="flex-1 bg-[#0a0a0a] px-5"
       >
+        <BackButton style={{ marginTop: 20, marginBottom: 20 }} />
         {/* Header */}
         <Text className="text-white text-3xl font-extrabold mb-2">
           Premium Services
