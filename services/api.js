@@ -292,8 +292,6 @@ export const getUserOrders = async (userId) => {
 
 /* ------------------ TRAINER DASHBOARD ------------------ */
 
-/* ------------------ TRAINER DASHBOARD ------------------ */
-
 export const getTrainerDashboard = async (trainerId, user) => {
   try {
     /* ---------------- ASSIGNMENTS ---------------- */
