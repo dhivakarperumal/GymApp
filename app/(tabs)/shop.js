@@ -145,7 +145,7 @@ export default function Shop() {
         <View className="flex-row flex-wrap justify-between">
           {!loading &&
             filteredProducts.map((item) => (
-              <ProductCard key={item.id} item={item} />
+              <ProductCard key={item.id} item={item} grid />
             ))}
         </View>
 

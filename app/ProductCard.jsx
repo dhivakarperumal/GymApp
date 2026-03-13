@@ -2,7 +2,7 @@ import { View, Text, Image, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
-export default function ProductCard({ item }) {
+export default function ProductCard({ item, grid }) {
   const router = useRouter();
 
   let price = 0;
@@ -25,10 +25,11 @@ export default function ProductCard({ item }) {
 
   return (
     <TouchableOpacity
-      activeOpacity={0.92}
-      onPress={() => router.push(`/Shop/${item.id}`)}
-      className="w-[48%] mb-6"
-    >
+  activeOpacity={0.92}
+  onPress={() => router.push(`/Shop/${item.id}`)}
+  className={grid ? "w-[48%] mb-6" : "mb-6"}
+  style={!grid ? { width: "100%" } : {}}
+>
       <View
         className="rounded-3xl overflow-hidden"
         style={{
