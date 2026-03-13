@@ -236,75 +236,10 @@ export default function Home() {
       <StatusBar barStyle="light-content" />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {!userPlan && (
-          <View className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]">
-            <Text className="text-white text-lg font-bold mb-2">
-              No Membership
-            </Text>
 
-            <Text className="text-gray-400 text-sm mb-4">
-              Unlock workouts, diet plans and trainers.
-            </Text>
-
-            <TouchableOpacity
-              onPress={() => router.push("/pricing")}
-              className="bg-primary py-3 rounded-xl items-center"
-            >
-              <Text className="text-white font-bold">Explore Plans</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        {userPlan && (
-          <View
-            className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
-            style={{
-              shadowColor: "#ff3c00",
-              shadowOpacity: 0.25,
-              shadowRadius: 20,
-              elevation: 10,
-            }}
-          >
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-white text-lg font-bold">MY MEMBERSHIP</Text>
-
-              <TouchableOpacity onPress={() => router.push("/plans")}>
-                <Text className="text-primary text-sm font-semibold">
-                  VIEW DETAILS
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <View className="bg-black rounded-xl p-4 border border-[#2a2a2a]">
-              <Text className="text-primary text-lg font-bold mb-2">
-                {userPlan.planName}
-              </Text>
-
-              <Text className="text-white font-semibold mb-2">
-                ₹{Number(userPlan.pricePaid || 0).toLocaleString()}
-              </Text>
-
-              <Text className="text-gray-400 text-sm">
-                Duration: {userPlan.duration}
-              </Text>
-
-              <Text className="text-gray-400 text-sm">
-                Start: {new Date(userPlan.startDate).toLocaleDateString()}
-              </Text>
-
-              <Text className="text-gray-400 text-sm">
-                End: {new Date(userPlan.endDate).toLocaleDateString()}
-              </Text>
-            </View>
-          </View>
-        )}
-
-        <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-white text-lg font-bold">TODAY'S MISSION</Text>
-          <Text className="text-primary text-sm font-semibold">VIEW ALL</Text>
-        </View>
-
-        {/* 🔥 Featured Workout Card */}
+        {/* PREMIUM PLAN HERO CARD */}
         <View className="relative rounded-3xl overflow-hidden mb-6">
+
           <Image
             source={{
               uri: "https://images.unsplash.com/photo-1594737625785-a6cbdabd333c",
@@ -312,39 +247,93 @@ export default function Home() {
             className="w-full h-80"
           />
 
-          {/* Dark overlay */}
-          <View className="absolute inset-0 bg-card/60 p-5 justify-end">
-            <View className="bg-primary px-3 py-1 rounded-full self-start mb-3">
-              <Text className="text-white text-xs font-bold">
-                HIGH INTENSITY
-              </Text>
-            </View>
+          {/* Gradient Overlay */}
+          <View className="absolute inset-0 bg-black/60 p-6 justify-between">
 
-            <View className="flex-row items-center mb-2">
-              <View className="flex-row items-center mr-4">
-                <Ionicons name="time-outline" size={14} color="#e11d1d" />
-                <Text className="text-gray-300 text-md ml-1">45 MIN</Text>
-              </View>
+            {userPlan ? (
+              <>
+                {/* Badge */}
+                <View className="bg-primary self-start px-4 py-1 rounded-full">
+                  <Text className="text-white text-xs font-bold">
+                    YOUR ACTIVE PLAN
+                  </Text>
+                </View>
 
-              <View className="flex-row items-center ml-2">
-                <Ionicons name="flash-outline" size={14} color="#e11d1d" />
-                <Text className="text-gray-300 text-md ml-1">ADVANCED</Text>
-              </View>
-            </View>
+                {/* Plan Info */}
+                <View>
+                  <Text className="text-white text-3xl font-extrabold mb-2">
+                    {userPlan.planName}
+                  </Text>
 
-            <Text className="text-white text-2xl font-bold">
-              UPPER BODY POWER
-            </Text>
+                  <View className="flex-row items-center mb-3">
+                    <Text className="text-primary text-2xl font-bold mr-3">
+                      ₹{Number(userPlan.pricePaid || 0).toLocaleString()}
+                    </Text>
 
-            <Text className="text-textSecondary text-sm mt-1">
-              Chest, shoulders, triceps...
-            </Text>
+                    <View className="bg-white/10 px-3 py-1 rounded-full">
+                      <Text className="text-gray-200 text-xs">
+                        {userPlan.duration}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Dates */}
+                  <View className="flex-row justify-between mt-3">
+
+                    <View>
+                      <Text className="text-gray-400 text-[11px] uppercase">
+                        Start Date
+                      </Text>
+
+                      <Text className="text-white text-sm font-semibold">
+                        {userPlan.startDate
+                          ? new Date(userPlan.startDate).toLocaleDateString()
+                          : "N/A"}
+                      </Text>
+                    </View>
+
+                    <View>
+                      <Text className="text-gray-400 text-[11px] uppercase">
+                        End Date
+                      </Text>
+
+                      <Text className="text-white text-sm font-semibold">
+                        {userPlan.endDate
+                          ? new Date(userPlan.endDate).toLocaleDateString()
+                          : "N/A"}
+                      </Text>
+                    </View>
+
+                  </View>
+                </View>
+              </>
+            ) : (
+              <>
+                {/* Motivation Text */}
+                <View>
+                  <Text className="text-white text-3xl font-bold mb-2">
+                    Transform Your Body
+                  </Text>
+
+                  <Text className="text-gray-300 text-sm">
+                    Join a personalized fitness program with workouts,
+                    trainers and diet plans designed for you.
+                  </Text>
+                </View>
+
+                {/* CTA */}
+                <TouchableOpacity
+                  onPress={() => router.push("/pricing")}
+                  className="bg-primary py-4 rounded-2xl items-center mt-6"
+                >
+                  <Text className="text-white font-bold text-lg">
+                    Explore Plans
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+
           </View>
-
-          {/* Play Button */}
-          <TouchableOpacity className="absolute bottom-6 right-6 bg-primary p-4 rounded-full">
-            <Ionicons name="play" size={20} color="white" />
-          </TouchableOpacity>
         </View>
 
         {todayWorkout && (
