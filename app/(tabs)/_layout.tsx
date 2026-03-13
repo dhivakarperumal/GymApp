@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 import { getCart } from "../../services/api";
+import { BackHandler } from "react-native";
 
 export default function TabLayout() {
   const router = useRouter();
@@ -44,6 +45,22 @@ export default function TabLayout() {
       router.replace("/(auth)/login");
     }
   }, [user]);
+
+  useEffect(() => {
+  const backAction = () => {
+    if (!user) {
+      return true; // prevent going back
+    }
+    return false;
+  };
+
+  const backHandler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    backAction
+  );
+
+  return () => backHandler.remove();
+}, [user]);
 
   const handleLogout = async () => {
     setMenuVisible(false);
