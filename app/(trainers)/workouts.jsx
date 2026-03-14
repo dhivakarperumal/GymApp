@@ -194,7 +194,7 @@ export default function Workouts() {
         [
           {
             text: "OK",
-            onPress: () => router.replace("/(trainers)/AllWorkouts"),
+            onPress: () => router.replace("/trainerdiet/AllWorkouts"),
           },
         ],
       );
@@ -214,7 +214,7 @@ export default function Workouts() {
         </Text>
 
         <TouchableOpacity
-          onPress={() => router.push("/(trainers)/AllWorkouts")}
+          onPress={() => router.push("/trainerdiet/AllWorkouts")}
           className="bg-primary px-4 py-3 rounded-lg"
         >
           <Text className="text-white font-semibold">All Workouts</Text>
