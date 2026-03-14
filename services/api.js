@@ -452,5 +452,45 @@ export const getTrainerDietPlans = async (trainerId) => {
   }
 };
 
+/* ---------------- WORKOUTS ---------------- */
+
+// GET ASSIGNED MEMBERS
+export const getAssignments = async () => {
+  const res = await fetch(`${BASE_URL}/assignments`);
+  return res.json();
+};
+
+// GET SINGLE WORKOUT
+export const getWorkout = async (id) => {
+  const res = await fetch(`${BASE_URL}/workouts/${id}`);
+  return res.json();
+};
+
+// CREATE WORKOUT
+export const createWorkout = async (data) => {
+  const res = await fetch(`${BASE_URL}/workouts`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  return res.json();
+};
+
+// UPDATE WORKOUT
+export const updateWorkout = async (id, data) => {
+  const res = await fetch(`${BASE_URL}/workouts/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  return res.json();
+};
+
 export default api;
 

@@ -11,8 +11,13 @@ import { Picker } from "@react-native-picker/picker";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
+import {
+  getAssignments,
+  getWorkout,
+  createWorkout,
+  updateWorkout,
+} from "../../services/api";
 
-const API_BASE = "https://mygym.qtechx.com/api";
 
 const timeOptions = [
   "06:00-08:00",
@@ -39,6 +44,7 @@ export default function Workouts() {
 
   const [members, setMembers] = useState([]);
 
+
   const [form, setForm] = useState({
     memberId: "",
     memberName: "",
@@ -61,8 +67,7 @@ export default function Workouts() {
 
     const fetchMembers = async () => {
       try {
-        const res = await fetch(`${API_BASE}/assignments`);
-        const data = await res.json();
+        const data = await getAssignments();
 
         const assignments = Array.isArray(data)
           ? data
@@ -94,8 +99,7 @@ export default function Workouts() {
 
     const fetchWorkout = async () => {
       try {
-        const res = await fetch(`${API_BASE}/workouts/${id}`);
-        const data = await res.json();
+        const data = await getWorkout(id);
 
         setForm({
           memberId: String(data.member_id),
@@ -178,15 +182,11 @@ export default function Workouts() {
         status: "active",
       };
 
-      const url = id ? `${API_BASE}/workouts/${id}` : `${API_BASE}/workouts`;
-
-      const method = id ? "PUT" : "POST";
-
-      await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      if (id) {
+        await updateWorkout(id, payload);
+      } else {
+        await createWorkout(payload);
+      }
 
       Alert.alert(
         "Success",
@@ -194,7 +194,7 @@ export default function Workouts() {
         [
           {
             text: "OK",
-            onPress: () => router.replace("/(trainers)/AllWorkouts"),
+            onPress: () => router.replace("/trainerdiet/AllWorkouts"),
           },
         ],
       );
@@ -214,7 +214,7 @@ export default function Workouts() {
         </Text>
 
         <TouchableOpacity
-          onPress={() => router.push("/(trainers)/AllWorkouts")}
+          onPress={() => router.push("/trainerdiet/AllWorkouts")}
           className="bg-primary px-4 py-3 rounded-lg"
         >
           <Text className="text-white font-semibold">All Workouts</Text>
