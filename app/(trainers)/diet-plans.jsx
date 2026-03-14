@@ -33,7 +33,7 @@ export default function AddDietPlan() {
   const { id } = useLocalSearchParams();
 
   const [members, setMembers] = useState([]);
-  const [expandedDay, setExpandedDay] = useState("Day1");
+  const [expandedDay, setExpandedDay] = useState(null);
 
   const [form, setForm] = useState({
     memberId: "",
@@ -53,6 +53,8 @@ export default function AddDietPlan() {
       Day7: generateSingleDay(),
     },
   });
+
+
 
   /* ---------------- FETCH MEMBERS ---------------- */
 
@@ -89,29 +91,102 @@ export default function AddDietPlan() {
   }, [form.days]);
 
   useEffect(() => {
-  if (!id) return;
+    if (!id) return;
 
-  const loadDiet = async () => {
-    const res = await fetch(
-      `https://mygym.qtechx.com/api/diet-plans/${id}`
-    );
+    const loadDiet = async () => {
+      const res = await fetch(
+        `https://mygym.qtechx.com/api/diet-plans/${id}`
+      );
 
-    const data = await res.json();
+      const data = await res.json();
 
-    setForm({
-      memberId: String(data.member_id),
-      memberName: data.member_name,
-      memberEmail: data.member_email || "",
-      memberMobile: data.member_mobile || "",
-      title: data.title,
-      totalCalories: data.total_calories,
-      duration: data.duration,
-      days: data.days,
-    });
+      setForm({
+        memberId: String(data.memberId || data.member_id),
+        memberName: data.member_name,
+        memberEmail: data.member_email || "",
+        memberMobile: data.member_mobile || "",
+        title: data.title,
+        totalCalories: data.totalCalories || data.total_calories || 0,
+        duration: data.duration || 1,
+        days: data.days || { Day1: generateSingleDay() },
+      });
+    };
+
+    loadDiet();
+  }, [id]);
+
+  const handleSaveDiet = async () => {
+    try {
+      console.log("===== SAVE DIET START =====");
+
+      if (!form.memberId) {
+        alert("Please select member");
+        return;
+      }
+
+      if (!form.title) {
+        alert("Please enter diet title");
+        return;
+      }
+
+      const payload = {
+        trainerId: user?.id,
+        trainerName: user?.name || user?.username || "trainer",
+        trainerSource: "trainer",
+
+        memberId: Number(form.memberId),
+        memberName: form.memberName,
+        memberEmail: form.memberEmail,
+        memberMobile: form.memberMobile,
+
+        title: form.title,
+        totalCalories: Number(form.totalCalories) || 0,
+
+        duration: Object.keys(form.days).length,
+
+        days: form.days,
+
+        status: "active"
+      };
+
+      console.log("Payload:", JSON.stringify(payload, null, 2));
+
+      const url = id
+        ? `https://mygym.qtechx.com/api/diet-plans/${id}`
+        : `https://mygym.qtechx.com/api/diet-plans`;
+
+      const method = id ? "PUT" : "POST";
+
+      console.log("API URL:", url);
+      console.log("METHOD:", method);
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      console.log("Response Status:", res.status);
+
+      const data = await res.json();
+
+      console.log("Response Data:", data);
+
+      if (res.ok) {
+        alert(id ? "Diet plan updated" : "Diet plan created");
+        router.push("/trainerdiet/dietplan");
+      } else {
+        alert(data.message || "Something went wrong");
+      }
+
+    } catch (err) {
+      console.log("===== SAVE DIET ERROR =====");
+      console.log(err);
+      alert("Error saving diet plan");
+    }
   };
-
-  loadDiet();
-}, [id]);
 
   /* ---------------- HANDLE MEAL CHANGE ---------------- */
 
@@ -182,7 +257,7 @@ export default function AddDietPlan() {
 
       <View className="flex-row justify-between items-center mb-6">
         <Text className="text-white text-2xl font-bold">
-          Create Diet Plan
+          {id ? "Edit Diet Plan" : "Create Diet Plan"}
         </Text>
 
         <TouchableOpacity
@@ -203,7 +278,7 @@ export default function AddDietPlan() {
           dropdownIconColor="white"
           style={{ color: "white" }}
           onValueChange={(value) => {
-            const m = members.find((x) => x.id === value);
+            const m = members.find((x) => String(x.id) === String(value));
 
             setForm((p) => ({
               ...p,
@@ -232,7 +307,9 @@ export default function AddDietPlan() {
         placeholder="Diet Title"
         placeholderTextColor="#aaa"
         value={form.title}
-        onChangeText={(text) => setForm({ ...form, title: text })}
+        onChangeText={(text) =>
+          setForm((prev) => ({ ...prev, title: text }))
+        }
         className="bg-[#141414] text-white rounded-xl px-4 py-3 mb-4"
       />
 
@@ -333,7 +410,7 @@ export default function AddDietPlan() {
                       placeholderTextColor="#aaa"
                       value={form.days[day][meal].quantity}
                       onChangeText={(text) =>
-                        handleMealChange(day, meal, "quantity", text)
+                        handleMealChange(day, meal, "quantity", text.trim())
                       }
                       className="bg-black text-white px-3 py-2 rounded-lg mb-2"
                     />
@@ -344,7 +421,7 @@ export default function AddDietPlan() {
                       keyboardType="numeric"
                       value={form.days[day][meal].calories}
                       onChangeText={(text) =>
-                        handleMealChange(day, meal, "calories", text)
+                        handleMealChange(day, meal, "calories", text.replace(/[^0-9]/g, ""))
                       }
                       className="bg-black text-white px-3 py-2 rounded-lg"
                     />
@@ -360,7 +437,7 @@ export default function AddDietPlan() {
 
       {/* SAVE BUTTON */}
 
-      <TouchableOpacity className="bg-red-600 p-4 rounded-xl mb-10">
+      <TouchableOpacity onPress={handleSaveDiet} className="bg-red-600 p-4 rounded-xl mb-10">
         <Text className="text-white text-center font-bold">
           Save Diet Plan
         </Text>
