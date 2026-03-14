@@ -77,10 +77,33 @@ function TrainerHeader() {
         </TouchableOpacity>
       </View>
 
+      {/* OUTSIDE CLICK */}
+      {(showDropdown || showProfileMenu) && (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            setShowDropdown(false);
+            setShowProfileMenu(false);
+          }}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 999,
+            elevation: 999,
+          }}
+        />
+      )}
+
       {/* DROPDOWN */}
 
       {showDropdown && (
-        <View className="absolute top-20 right-4 w-64 bg-[#141414] border border-[#262626] rounded-xl p-3">
+        <View
+          style={{ zIndex: 1000, elevation: 1000 }}
+          className="absolute top-20 right-4 w-64 bg-[#141414] border border-[#262626] rounded-xl p-3"
+        >
           <Text className="text-white font-bold mb-2">New Members</Text>
 
           {newMembers.length === 0 ? (
@@ -103,21 +126,12 @@ function TrainerHeader() {
 
       {showProfileMenu && (
         <>
-          {/* OUTSIDE CLICK */}
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => setShowProfileMenu(false)}
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-            }}
-          />
 
           {/* POPUP MENU */}
-          <View className="absolute top-20 right-2 w-80 bg-[#141414] border border-[#262626] rounded-xl p-2">
+          <View
+            style={{ zIndex: 1000, elevation: 1000 }}
+            className="absolute top-20 right-2 w-80 bg-[#141414] border border-[#262626] rounded-xl p-2"
+          >
             <TouchableOpacity
               onPress={() => {
                 setShowProfileMenu(false);
