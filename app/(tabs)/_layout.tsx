@@ -9,11 +9,11 @@ import {
   Text,
   TouchableOpacity,
   View,
+  BackHandler,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 import { getCart } from "../../services/api";
-import { BackHandler } from "react-native";
 
 export default function TabLayout() {
   const router = useRouter();
@@ -37,7 +37,7 @@ export default function TabLayout() {
       };
 
       fetchCart();
-    }, [user]),
+    }, [user])
   );
 
   useEffect(() => {
@@ -47,29 +47,24 @@ export default function TabLayout() {
   }, [user]);
 
   useEffect(() => {
-  const backAction = () => {
-    if (!user) {
-      return true; // prevent going back
-    }
-    return false;
-  };
+    const backAction = () => {
+      if (!user) return true;
+      return false;
+    };
 
-  const backHandler = BackHandler.addEventListener(
-    "hardwareBackPress",
-    backAction
-  );
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
 
-  return () => backHandler.remove();
-}, [user]);
+    return () => backHandler.remove();
+  }, [user]);
 
   const handleLogout = async () => {
     setMenuVisible(false);
     setLogoutVisible(false);
-
     await logout();
   };
-
-  const initial = user?.username?.charAt(0)?.toUpperCase() || "U";
 
   return (
     <Tabs
@@ -77,6 +72,7 @@ export default function TabLayout() {
         headerShown: true,
         headerTitle: "",
         headerStyle: { backgroundColor: "#0f0f0f", paddingTop: insets.top },
+
         tabBarActiveTintColor: "#e11d1d",
         tabBarStyle: {
           backgroundColor: "#0f0f0f",
@@ -84,53 +80,29 @@ export default function TabLayout() {
         },
 
         headerLeft: () => (
-          <View style={{ paddingLeft: 16 }}>
+          <View className="pl-4">
             <Image
               source={require("../../assets/images/logo_dark.png")}
-              style={{ width: 80, height: 44 }}
+              className="w-20 h-11"
               resizeMode="contain"
             />
           </View>
         ),
 
         headerRight: () => (
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              paddingRight: 16,
-            }}
-          >
+          <View className="flex-row items-center pr-4">
+
             {/* CART */}
             <TouchableOpacity
               onPress={() => router.push("/cart")}
-              style={{ marginRight: 16 }}
+              className="mr-4"
             >
               <View>
                 <Ionicons name="cart-outline" size={22} color="white" />
 
                 {cartCount > 0 && (
-                  <View
-                    style={{
-                      position: "absolute",
-                      top: -6,
-                      right: -8,
-                      backgroundColor: "#e11d1d",
-                      borderRadius: 10,
-                      minWidth: 16,
-                      height: 16,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      paddingHorizontal: 4,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "white",
-                        fontSize: 10,
-                        fontWeight: "bold",
-                      }}
-                    >
+                  <View className="absolute -top-1.5 -right-2 bg-red-600 rounded-full min-w-[16px] h-4 items-center justify-center px-1">
+                    <Text className="text-white text-[10px] font-bold">
                       {cartCount}
                     </Text>
                   </View>
@@ -138,38 +110,31 @@ export default function TabLayout() {
               </View>
             </TouchableOpacity>
 
+            {/* ORDERS */}
             <TouchableOpacity
               onPress={() => router.push("/Orders")}
-              style={{ marginRight: 16 }}
+              className="mr-4"
             >
               <Ionicons name="cube-outline" size={22} color="white" />
             </TouchableOpacity>
 
             {/* NOTIFICATION */}
-            <TouchableOpacity style={{ marginRight: 16 }}>
+            <TouchableOpacity className="mr-4">
               <Ionicons name="notifications-outline" size={22} color="white" />
             </TouchableOpacity>
 
-            {/* AVATAR / LOGIN ICON */}
+            {/* AVATAR */}
             <TouchableOpacity
               onPress={() => {
-                if (!user) {
-                  router.push("/(auth)/login");
-                } else {
-                  setMenuVisible(true);
-                }
+                if (!user) router.push("/(auth)/login");
+                else setMenuVisible(true);
               }}
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 18,
-                backgroundColor: user ? "#e11d1d" : "#333",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              className={`w-9 h-9 rounded-full items-center justify-center ${
+                user ? "bg-red-600" : "bg-gray-700"
+              }`}
             >
               {user ? (
-                <Text style={{ color: "white", fontWeight: "bold" }}>
+                <Text className="text-white font-bold">
                   {user.username?.charAt(0)?.toUpperCase()}
                 </Text>
               ) : (
@@ -185,49 +150,26 @@ export default function TabLayout() {
               onRequestClose={() => setMenuVisible(false)}
             >
               <Pressable
-                style={{ flex: 1 }}
+                className="flex-1"
                 onPress={() => setMenuVisible(false)}
               >
-                <View
-                  style={{
-                    position: "absolute",
-                    top: 80,
-                    right: 20,
-                    backgroundColor: "#1a1a1a",
-                    borderRadius: 20,
-                    padding: 16,
-                    width: 210,
-                    borderWidth: 1,
-                    borderColor: "#333",
-                  }}
-                >
+                <View className="absolute top-20 right-5 bg-[#1a1a1a] rounded-2xl p-4 w-[210px] border border-[#333]">
+
                   {/* USER INFO */}
-                  <View style={{ marginBottom: 12 }}>
+                  <View className="mb-3">
                     {user && (
                       <>
-                        <Text
-                          style={{
-                            color: "white",
-                            fontWeight: "bold",
-                            fontSize: 16,
-                          }}
-                        >
+                        <Text className="text-white font-bold text-base">
                           {user.username}
                         </Text>
-                        <Text style={{ color: "#aaa", fontSize: 13 }}>
+                        <Text className="text-gray-400 text-xs">
                           {user.role}
                         </Text>
                       </>
                     )}
                   </View>
 
-                  <View
-                    style={{
-                      height: 1,
-                      backgroundColor: "#333",
-                      marginVertical: 8,
-                    }}
-                  />
+                  <View className="h-[1px] bg-[#333] my-2" />
 
                   {/* PROFILE */}
                   <TouchableOpacity
@@ -235,47 +177,42 @@ export default function TabLayout() {
                       setMenuVisible(false);
                       router.push("/profile");
                     }}
-                    style={{ paddingVertical: 8 }}
+                    className="py-2"
                   >
-                    <Text style={{ color: "white" }}>My Profile</Text>
+                    <Text className="text-white">My Profile</Text>
                   </TouchableOpacity>
 
-                  {/* ROLE BASED */}
+                  {/* ADMIN */}
                   {user?.role === "admin" && (
                     <TouchableOpacity
                       onPress={() => {
                         setMenuVisible(false);
                         router.push("/(admin)");
                       }}
-                      style={{ paddingVertical: 8 }}
+                      className="py-2"
                     >
-                      <Text style={{ color: "#ef4444", fontWeight: "600" }}>
+                      <Text className="text-red-500 font-semibold">
                         Admin Panel
                       </Text>
                     </TouchableOpacity>
                   )}
 
+                  {/* TRAINER */}
                   {user?.role === "trainer" && (
                     <TouchableOpacity
                       onPress={() => {
                         setMenuVisible(false);
                         router.push("/(trainers)/dashboard");
                       }}
-                      style={{ paddingVertical: 8 }}
+                      className="py-2"
                     >
-                      <Text style={{ color: "#facc15", fontWeight: "600" }}>
+                      <Text className="text-yellow-400 font-semibold">
                         Trainer Panel
                       </Text>
                     </TouchableOpacity>
                   )}
 
-                  <View
-                    style={{
-                      height: 1,
-                      backgroundColor: "#333",
-                      marginVertical: 8,
-                    }}
-                  />
+                  <View className="h-[1px] bg-[#333] my-2" />
 
                   {/* LOGOUT */}
                   <TouchableOpacity
@@ -283,96 +220,52 @@ export default function TabLayout() {
                       setMenuVisible(false);
                       setLogoutVisible(true);
                     }}
-                    style={{ paddingVertical: 8 }}
+                    className="py-2"
                   >
-                    <Text style={{ color: "#dc2626", fontWeight: "bold" }}>
-                      Logout
-                    </Text>
+                    <Text className="text-red-600 font-bold">Logout</Text>
                   </TouchableOpacity>
                 </View>
               </Pressable>
             </Modal>
 
-            {/* CONFIRM LOGOUT MODAL */}
+            {/* LOGOUT CONFIRM */}
             <Modal
               transparent
               visible={logoutVisible}
               animationType="fade"
               onRequestClose={() => setLogoutVisible(false)}
             >
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: "rgba(0,0,0,0.7)",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  paddingHorizontal: 20,
-                }}
-              >
-                <View
-                  style={{
-                    width: "100%",
-                    backgroundColor: "#1a1a1a",
-                    borderRadius: 24,
-                    padding: 24,
-                    borderWidth: 1,
-                    borderColor: "#333",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "white",
-                      fontSize: 18,
-                      fontWeight: "bold",
-                      textAlign: "center",
-                    }}
-                  >
+              <View className="flex-1 bg-black/70 justify-center items-center px-5">
+                <View className="w-full bg-[#1a1a1a] rounded-3xl p-6 border border-[#333]">
+
+                  <Text className="text-white text-lg font-bold text-center">
                     Confirm Logout
                   </Text>
 
-                  <Text
-                    style={{
-                      color: "#aaa",
-                      textAlign: "center",
-                      marginTop: 10,
-                    }}
-                  >
+                  <Text className="text-gray-400 text-center mt-2">
                     Are you sure you want to logout?
                   </Text>
 
-                  <View style={{ flexDirection: "row", marginTop: 20 }}>
+                  <View className="flex-row mt-5">
                     <TouchableOpacity
                       onPress={() => setLogoutVisible(false)}
-                      style={{
-                        flex: 1,
-                        backgroundColor: "#333",
-                        padding: 12,
-                        borderRadius: 20,
-                        marginRight: 10,
-                        alignItems: "center",
-                      }}
+                      className="flex-1 bg-[#333] p-3 rounded-2xl mr-2.5 items-center"
                     >
-                      <Text style={{ color: "white" }}>Cancel</Text>
+                      <Text className="text-white">Cancel</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                       onPress={handleLogout}
-                      style={{
-                        flex: 1,
-                        backgroundColor: "#e11d1d",
-                        padding: 12,
-                        borderRadius: 20,
-                        alignItems: "center",
-                      }}
+                      className="flex-1 bg-red-600 p-3 rounded-2xl items-center"
                     >
-                      <Text style={{ color: "white", fontWeight: "bold" }}>
-                        Logout
-                      </Text>
+                      <Text className="text-white font-bold">Logout</Text>
                     </TouchableOpacity>
                   </View>
+
                 </View>
               </View>
             </Modal>
+
           </View>
         ),
       }}

@@ -164,7 +164,7 @@ export default function Home() {
           animated: true,
         });
       }
-    }, 3000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [reviews]);
@@ -185,7 +185,7 @@ export default function Home() {
           animated: true,
         });
       }
-    }, 2500);
+    }, 7000);
 
     return () => clearInterval(interval);
   }, [products]);
