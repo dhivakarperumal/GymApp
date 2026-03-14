@@ -97,41 +97,38 @@ export default function DietPlan() {
 
         {/* ACTION BUTTONS */}
 
-        <View className="flex-row space-x-2">
+        <View className="flex-row items-center space-x-2 gap-2">
 
-          {/* VIEW */}
+  {/* VIEW */}
+  <TouchableOpacity
+    onPress={() => openPlan(item)}
+    className="bg-yellow-500 w-10 h-10 items-center justify-center rounded-full"
+  >
+    <Ionicons name="eye" size={16} color="white" />
+  </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => openPlan(item)}
-            className="bg-yellow-500 p-2 rounded-full"
-          >
-            <Ionicons name="eye" size={18} color="white" />
-          </TouchableOpacity>
+  {/* EDIT */}
+  <TouchableOpacity
+    onPress={() =>
+      router.push({
+        pathname: "/diet-plans",
+        params: { id: item.id },
+      })
+    }
+    className="bg-green-500 w-10 h-10 items-center justify-center rounded-full"
+  >
+    <Ionicons name="create" size={16} color="white" />
+  </TouchableOpacity>
 
-          {/* EDIT */}
+  {/* DELETE */}
+  <TouchableOpacity
+    onPress={() => deletePlan(item.id)}
+    className="bg-red-500 w-10 h-10 items-center justify-center rounded-full"
+  >
+    <Ionicons name="trash" size={16} color="white" />
+  </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() =>
-              router.push({
-                pathname: "/diet-plans",
-                params: { id: item.id },
-              })
-            }
-            className="bg-green-500 p-2 rounded-full"
-          >
-            <Ionicons name="create" size={18} color="white" />
-          </TouchableOpacity>
-
-          {/* DELETE */}
-
-          <TouchableOpacity
-            onPress={() => deletePlan(item.id)}
-            className="bg-red-500 p-2 rounded-full"
-          >
-            <Ionicons name="trash" size={18} color="white" />
-          </TouchableOpacity>
-
-        </View>
+</View>
 
       </View>
 
@@ -156,14 +153,14 @@ export default function DietPlan() {
           {/* ADD NEW */}
 
           <TouchableOpacity
-  onPress={() => router.push("/diet-plans")}
-  className="bg-orange-500 px-4 py-2 rounded-lg flex-row items-center"
->
-  <Ionicons name="add" size={18} color="white" />
-  <Text className="text-white ml-1 font-semibold">
-    Add New
-  </Text>
-</TouchableOpacity>
+            onPress={() => router.push("/diet-plans")}
+            className="bg-orange-500 px-4 py-2 rounded-lg flex-row items-center"
+          >
+            <Ionicons name="add" size={18} color="white" />
+            <Text className="text-white ml-1 font-semibold">
+              Add New
+            </Text>
+          </TouchableOpacity>
 
         </View>
 

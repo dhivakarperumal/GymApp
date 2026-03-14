@@ -334,7 +334,7 @@ export default function AddDietPlan() {
 
           <TouchableOpacity
             onPress={handleAddDay}
-            className="bg-green-600 px-4 py-2 rounded-lg"
+            className="bg-green-600 px-4 py-2 mr-2 rounded-lg"
           >
             <Text className="text-white font-semibold">
               + Add Day
@@ -372,7 +372,7 @@ export default function AddDietPlan() {
               }
               className="flex-row justify-between items-center p-4"
             >
-              <Text className="text-green-400 font-bold text-lg">
+              <Text className="text-white font-bold text-lg">
                 {day}
               </Text>
 
@@ -383,7 +383,7 @@ export default function AddDietPlan() {
                     : "chevron-down-outline"
                 }
                 size={22}
-                color="#22c55e"
+                color="white"
               />
             </TouchableOpacity>
 

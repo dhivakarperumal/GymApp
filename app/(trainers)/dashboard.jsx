@@ -35,7 +35,7 @@ export default function TrainerDashboard() {
 
   const StatCard = ({ title, value, icon }) => (
     <View
-      className="bg-[#141414] rounded-2xl p-5 mb-4 border border-[#262626]"
+      className="flex-1 bg-[#141414] rounded-2xl p-5 border border-[#262626] m-1"
       style={{
         shadowColor: "#ff3c00",
         shadowOpacity: 0.25,
@@ -43,18 +43,30 @@ export default function TrainerDashboard() {
         elevation: 6,
       }}
     >
-      <View className="flex-row justify-between items-center">
+      <View className="flex-row items-center">
+
+        {/* ICON */}
+        <View className="w-10 h-10 rounded-full bg-red-500/20 items-center justify-center mr-3">
+          <Ionicons name={icon} size={22} color="#ff3c00" />
+        </View>
+
+        {/* TEXT */}
         <View>
           <Text className="text-gray-400 text-xs uppercase">{title}</Text>
           <Text className="text-white text-2xl font-bold mt-1">{value}</Text>
         </View>
 
-        <Ionicons name={icon} size={26} color="#ff3c00" />
       </View>
     </View>
   );
 
+  const displayNameRaw = user?.name || user?.username || "Trainer";
+
+  const displayName =
+    displayNameRaw.charAt(0).toUpperCase() + displayNameRaw.slice(1);
+
   return (
+
     <View className="flex-1 bg-black pt-12 px-5">
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -102,7 +114,7 @@ export default function TrainerDashboard() {
 
         {/* MEMBERS */}
 
-        <Text className="text-white text-lg font-bold mt-6 mb-4">
+        <Text className="text-red-600 text-3xl font-bold mt-6 mb-4">
           Assigned Members
         </Text>
 
@@ -143,18 +155,16 @@ export default function TrainerDashboard() {
 
                 {/* Status */}
                 <View
-                  className={`px-3 py-1 rounded-2xl ${
-                    (m.status || "").toLowerCase() === "active"
-                      ? "bg-green-500/20"
-                      : "bg-gray-500/20"
-                  }`}
+                  className={`px-3 py-1 rounded-2xl ${(m.status || "").toLowerCase() === "active"
+                    ? "bg-green-500/20"
+                    : "bg-gray-500/20"
+                    }`}
                 >
                   <Text
-                    className={`text-xs font-bold ${
-                      (m.status || "").toLowerCase() === "active"
-                        ? "text-green-400"
-                        : "text-gray-400"
-                    }`}
+                    className={`text-xs font-bold ${(m.status || "").toLowerCase() === "active"
+                      ? "text-green-400"
+                      : "text-gray-400"
+                      }`}
                   >
                     {m.status || "Unknown"}
                   </Text>
