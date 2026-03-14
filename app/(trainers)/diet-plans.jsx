@@ -334,7 +334,7 @@ export default function AddDietPlan() {
 
           <TouchableOpacity
             onPress={handleAddDay}
-            className="bg-green-600 px-4 py-2 rounded-lg"
+            className="bg-green-600 px-4 py-2 mr-2 rounded-lg"
           >
             <Text className="text-white font-semibold">
               + Add Day
