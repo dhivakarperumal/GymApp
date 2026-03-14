@@ -25,7 +25,6 @@ export default function TrainerDashboard() {
 
         setMembers(data.members);
         setStats(data.stats);
-
       } catch (err) {
         console.log("Dashboard error:", err);
       }
@@ -57,37 +56,49 @@ export default function TrainerDashboard() {
 
   return (
     <View className="flex-1 bg-black pt-12 px-5">
-      <ScrollView showsVerticalScrollIndicator={false}>
-
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 120 }}
+      >
         <Text className="text-white text-3xl font-bold mb-6">
           Trainer Dashboard
         </Text>
 
         {/* STATS */}
 
-        <StatCard
-          title="Assigned Members"
-          value={stats.members}
-          icon="people-outline"
-        />
+        <View className="flex-row flex-wrap justify-between">
+          <View style={{ width: "48%" }}>
+            <StatCard
+              title="Assigned Members"
+              value={stats.members}
+              icon="people-outline"
+            />
+          </View>
 
-        <StatCard
-          title="Today's Check-ins"
-          value={stats.todayCheckins}
-          icon="calendar-outline"
-        />
+          <View style={{ width: "48%" }}>
+            <StatCard
+              title="Today's Check-ins"
+              value={stats.todayCheckins}
+              icon="calendar-outline"
+            />
+          </View>
 
-        <StatCard
-          title="Workout Plans"
-          value={stats.workoutPlans}
-          icon="barbell-outline"
-        />
+          <View style={{ width: "48%" }}>
+            <StatCard
+              title="Workout Plans"
+              value={stats.workoutPlans}
+              icon="barbell-outline"
+            />
+          </View>
 
-        <StatCard
-          title="Diet Plans"
-          value={stats.dietPlans}
-          icon="restaurant-outline"
-        />
+          <View style={{ width: "48%" }}>
+            <StatCard
+              title="Diet Plans"
+              value={stats.dietPlans}
+              icon="restaurant-outline"
+            />
+          </View>
+        </View>
 
         {/* MEMBERS */}
 
@@ -110,7 +121,6 @@ export default function TrainerDashboard() {
               }}
             >
               <View className="flex-row items-center">
-
                 {/* Avatar */}
                 <View className="w-12 h-12 rounded-full bg-red-500 items-center justify-center mr-3">
                   <Ionicons name="person" size={22} color="white" />
@@ -149,15 +159,12 @@ export default function TrainerDashboard() {
                     {m.status || "Unknown"}
                   </Text>
                 </View>
-
               </View>
 
               <View className="h-[1px] bg-[#262626] my-3" />
 
               <View className="flex-row justify-between items-center">
-                <Text className="text-gray-400 text-md">
-                  Membership Plan
-                </Text>
+                <Text className="text-gray-400 text-md">Membership Plan</Text>
 
                 <View className="bg-red-500/20 px-3 py-1 rounded-2xl">
                   <Text className="text-red-400 text-sm font-semibold">
@@ -165,11 +172,9 @@ export default function TrainerDashboard() {
                   </Text>
                 </View>
               </View>
-
             </View>
           ))
         )}
-
       </ScrollView>
     </View>
   );
