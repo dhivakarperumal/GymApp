@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import { Picker } from "@react-native-picker/picker";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import { getTrainerMembers } from "../../services/api";
 import { useRouter } from "expo-router";
@@ -24,8 +31,13 @@ export default function AddDietPlan() {
   const router = useRouter();
 
   const [members, setMembers] = useState([]);
+  const [expandedDay, setExpandedDay] = useState("Day1");
 
   const [form, setForm] = useState({
+    memberId: "",
+    memberName: "",
+    memberEmail: "",
+    memberMobile: "",
     title: "",
     totalCalories: "",
     duration: 7,
@@ -39,6 +51,60 @@ export default function AddDietPlan() {
       Day7: generateSingleDay(),
     },
   });
+
+  /* ---------------- FETCH MEMBERS ---------------- */
+
+  useEffect(() => {
+    if (!user) return;
+
+    const loadMembers = async () => {
+      try {
+        const data = await getTrainerMembers(user.id, user);
+        setMembers(data);
+      } catch (err) {
+        console.log("Fetch members error:", err);
+      }
+    };
+
+    loadMembers();
+  }, [user]);
+
+  /* ---------------- AUTO CALCULATE CALORIES ---------------- */
+
+  useEffect(() => {
+    let total = 0;
+
+    Object.values(form.days).forEach((day) => {
+      Object.values(day).forEach((meal) => {
+        total += Number(meal.calories || 0);
+      });
+    });
+
+    setForm((prev) => ({
+      ...prev,
+      totalCalories: total,
+    }));
+  }, [form.days]);
+
+  /* ---------------- HANDLE MEAL CHANGE ---------------- */
+
+  const handleMealChange = (day, meal, field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      days: {
+        ...prev.days,
+        [day]: {
+          ...prev.days[day],
+          [meal]: {
+            ...prev.days[day][meal],
+            [field]: value,
+          },
+        },
+      },
+    }));
+  };
+
+  /* ---------------- ADD DAY ---------------- */
 
   const handleAddDay = () => {
     const count = Object.keys(form.days).length;
@@ -60,6 +126,8 @@ export default function AddDietPlan() {
     }));
   };
 
+  /* ---------------- REMOVE DAY ---------------- */
+
   const handleRemoveDay = () => {
     const count = Object.keys(form.days).length;
 
@@ -80,97 +148,25 @@ export default function AddDietPlan() {
     }));
   };
 
-  /* -------- FETCH MEMBERS -------- */
-
-  useEffect(() => {
-    if (!user) return;
-
-    const loadMembers = async () => {
-      try {
-        const data = await getTrainerMembers(user.id, user);
-        setMembers(data);
-      } catch (err) {
-        console.log("Fetch members error:", err);
-      }
-    };
-
-    loadMembers();
-  }, [user]);
-
-  /* -------- AUTO CALCULATE CALORIES -------- */
-
-  useEffect(() => {
-    let total = 0;
-
-    Object.values(form.days).forEach((day) => {
-      Object.values(day).forEach((meal) => {
-        total += Number(meal.calories || 0);
-      });
-    });
-
-    setForm((prev) => ({
-      ...prev,
-      totalCalories: total,
-    }));
-  }, [form.days]);
-
-  /* -------- HANDLE MEAL CHANGE -------- */
-
-  const handleMealChange = (day, meal, field, value) => {
-    setForm((prev) => ({
-      ...prev,
-      days: {
-        ...prev.days,
-        [day]: {
-          ...prev.days[day],
-          [meal]: {
-            ...prev.days[day][meal],
-            [field]: value,
-          },
-        },
-      },
-    }));
-  };
-
   return (
     <ScrollView className="flex-1 bg-black p-4">
 
+      {/* HEADER */}
 
-
-      <View className="flex-1 bg-[#0f0f0f] p-4 pt-12">
-
-        {/* HEADER */}
-        <View className="flex-row justify-between items-center mb-6">
-
-          <Text className="text-white text-2xl font-bold">
-            Diet Plans
-          </Text>
-
-          <TouchableOpacity
-            onPress={() => router.push("/trainerdiet/dietplan")}
-            className="bg-red-600 px-4 py-3 rounded-xl"
-          >
-            <Text className="text-white font-semibold">
-              All Diet Plans
-            </Text>
-          </TouchableOpacity>
-
-        </View>
-
-        {/* ADD DIET PLAN BUTTON */}
+      <View className="flex-row justify-between items-center mb-6">
+        <Text className="text-white text-2xl font-bold">
+          Create Diet Plan
+        </Text>
 
         <TouchableOpacity
-          onPress={() => router.push("/trainerdiet/adddiet")}
-          className="bg-green-600 p-5 rounded-xl items-center"
+          onPress={() => router.push("/trainerdiet/dietplan")}
+          className="bg-red-600 px-4 py-2 rounded-lg"
         >
-          <Text className="text-white text-lg font-bold">
-            Create Diet Plan
+          <Text className="text-white font-semibold">
+            All Diet Plans
           </Text>
         </TouchableOpacity>
-
       </View>
-
-
 
       {/* MEMBER SELECT */}
 
@@ -213,7 +209,7 @@ export default function AddDietPlan() {
         className="bg-[#141414] text-white rounded-xl px-4 py-3 mb-4"
       />
 
-      {/* CALORIES */}
+      {/* TOTAL CALORIES */}
 
       <TextInput
         placeholder="Total Calories"
@@ -222,7 +218,7 @@ export default function AddDietPlan() {
         className="bg-[#141414] text-white rounded-xl px-4 py-3 mb-4"
       />
 
-      {/* DAYS */}
+      {/* DAY CONTROLS */}
 
       <View className="flex-row justify-between items-center mb-4">
 
@@ -236,64 +232,106 @@ export default function AddDietPlan() {
             onPress={handleAddDay}
             className="bg-green-600 px-4 py-2 rounded-lg"
           >
-            <Text className="text-white font-semibold">+ Add Day</Text>
+            <Text className="text-white font-semibold">
+              + Add Day
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={handleRemoveDay}
             className="bg-red-600 px-4 py-2 rounded-lg"
           >
-            <Text className="text-white font-semibold">Remove Day</Text>
+            <Text className="text-white font-semibold">
+              Remove Day
+            </Text>
           </TouchableOpacity>
 
         </View>
 
       </View>
 
-      {Object.keys(form.days).map((day) => (
-        <View key={day} className="bg-[#141414] p-4 rounded-xl mb-4">
+      {/* DAYS */}
 
-          <Text className="text-green-400 font-bold mb-3">{day}</Text>
+      {Object.keys(form.days)
+        .sort((a, b) => parseInt(a.slice(3)) - parseInt(b.slice(3)))
+        .map((day) => (
+          <View
+            key={day}
+            className="bg-[#141414] border border-[#262626] rounded-xl mb-4"
+          >
 
-          {meals.map((meal) => (
-            <View key={meal} className="mb-3">
+            {/* DAY HEADER */}
 
-              <TextInput
-                placeholder={`${meal} Food`}
-                placeholderTextColor="#aaa"
-                value={form.days[day][meal].food}
-                onChangeText={(text) =>
-                  handleMealChange(day, meal, "food", text)
+            <TouchableOpacity
+              onPress={() =>
+                setExpandedDay(expandedDay === day ? null : day)
+              }
+              className="flex-row justify-between items-center p-4"
+            >
+              <Text className="text-green-400 font-bold text-lg">
+                {day}
+              </Text>
+
+              <Ionicons
+                name={
+                  expandedDay === day
+                    ? "chevron-up-outline"
+                    : "chevron-down-outline"
                 }
-                className="bg-black text-white px-3 py-2 rounded-lg mb-2"
+                size={22}
+                color="#22c55e"
               />
+            </TouchableOpacity>
 
-              <TextInput
-                placeholder="Quantity"
-                placeholderTextColor="#aaa"
-                value={form.days[day][meal].quantity}
-                onChangeText={(text) =>
-                  handleMealChange(day, meal, "quantity", text)
-                }
-                className="bg-black text-white px-3 py-2 rounded-lg mb-2"
-              />
+            {/* DAY CONTENT */}
 
-              <TextInput
-                placeholder="Calories"
-                placeholderTextColor="#aaa"
-                keyboardType="numeric"
-                value={form.days[day][meal].calories}
-                onChangeText={(text) =>
-                  handleMealChange(day, meal, "calories", text)
-                }
-                className="bg-black text-white px-3 py-2 rounded-lg"
-              />
+            {expandedDay === day && (
+              <View className="px-4 pb-4">
 
-            </View>
-          ))}
+                {meals.map((meal) => (
+                  <View key={meal} className="mb-3">
 
-        </View>
-      ))}
+                    <TextInput
+                      placeholder={`${meal} Food`}
+                      placeholderTextColor="#aaa"
+                      value={form.days[day][meal].food}
+                      onChangeText={(text) =>
+                        handleMealChange(day, meal, "food", text)
+                      }
+                      className="bg-black text-white px-3 py-2 rounded-lg mb-2"
+                    />
+
+                    <TextInput
+                      placeholder="Quantity"
+                      placeholderTextColor="#aaa"
+                      value={form.days[day][meal].quantity}
+                      onChangeText={(text) =>
+                        handleMealChange(day, meal, "quantity", text)
+                      }
+                      className="bg-black text-white px-3 py-2 rounded-lg mb-2"
+                    />
+
+                    <TextInput
+                      placeholder="Calories"
+                      placeholderTextColor="#aaa"
+                      keyboardType="numeric"
+                      value={form.days[day][meal].calories}
+                      onChangeText={(text) =>
+                        handleMealChange(day, meal, "calories", text)
+                      }
+                      className="bg-black text-white px-3 py-2 rounded-lg"
+                    />
+
+                  </View>
+                ))}
+
+              </View>
+            )}
+
+          </View>
+        ))}
+
+      {/* SAVE BUTTON */}
 
       <TouchableOpacity className="bg-red-600 p-4 rounded-xl mb-10">
         <Text className="text-white text-center font-bold">
