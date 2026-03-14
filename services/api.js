@@ -500,6 +500,35 @@ export const getTrainerDietPlans = async (trainerId) => {
   }
 };
 
+/* ---------------- SINGLE DIET PLAN ---------------- */
+
+export const getDietPlan = async (id) => {
+  try {
+    const res = await fetch(`${BASE_URL}/diet-plans/${id}`);
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || "Failed to fetch diet plan");
+    }
+
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.log("GET DIET PLAN ERROR 👉", err.message);
+    throw err;
+  }
+};
+
+/* ---------------- DELETE DIET PLAN ---------------- */
+
+export const deleteDietPlanApi = async (id) => {
+  const res = await fetch(`${BASE_URL}/diet-plans/${id}`, {
+    method: "DELETE",
+  });
+
+  return res.json();
+};
+
 /* ---------------- WORKOUTS ---------------- */
 
 // GET ASSIGNED MEMBERS
