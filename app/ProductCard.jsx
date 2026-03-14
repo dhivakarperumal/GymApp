@@ -63,7 +63,7 @@ export default function ProductCard({ item, grid }) {
         {/* CONTENT */}
         <View className="p-4 bg-[#141414] rounded-b-3xl">
           <Text
-            numberOfLines={2}
+            numberOfLines={1}
             ellipsizeMode="tail"
             className="text-white text-md font-bold leading-5 mb-3"
           >

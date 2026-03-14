@@ -1,33 +1,48 @@
-import { Tabs } from "expo-router";
-import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
-import { View, Text, TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router";
-
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Tabs, useRouter } from "expo-router";
+import { Image, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function TrainerHeader() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View className="bg-slate-900 pt-12 pb-4 px-4 flex-row justify-between items-center">
-      
-      {/* Left Logo */}
-      <Text className="text-white text-lg font-bold">
-        TRAINER PANEL
-      </Text>
+    <View
+      style={{ paddingTop: insets.top }}
+      className="bg-[#0f0f0f] px-4 pb-3 flex-row items-center justify-between"
+    >
+      <TouchableOpacity
+        onPress={() => router.push("/(trainers)/dashboard")}
+      >
+        <Image
+          source={require("../../assets/images/logo_dark.png")}
+          className="w-20 h-11"
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
 
-      {/* Right Icons */}
-      <View className="flex-row items-center space-x-4">
-        
-        <TouchableOpacity onPress={() => router.push("/(trainers)/clients")}>
+      {/* HEADER ICONS */}
+      <View className="flex-row items-center">
+
+        <TouchableOpacity
+          className="mr-5"
+          onPress={() => router.push("/(trainers)/clients")}
+        >
           <Ionicons name="people-outline" size={22} color="white" />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push("/(trainers)/earnings")}>
+        <TouchableOpacity
+          className="mr-5"
+          onPress={() => router.push("/(trainers)/earnings")}
+        >
           <Ionicons name="wallet-outline" size={22} color="white" />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push("/(trainers)/profile")}>
-          <View className="w-8 h-8 rounded-full bg-green-500 items-center justify-center">
+        <TouchableOpacity
+          onPress={() => router.push("/(trainers)/profile")}
+        >
+          <View className="w-9 h-9 rounded-full bg-red-600 items-center justify-center">
             <Text className="text-white font-bold">T</Text>
           </View>
         </TouchableOpacity>
@@ -38,16 +53,25 @@ function TrainerHeader() {
 }
 
 export default function TrainersLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
-        header: () => <TrainerHeader />,   // 🔥 CUSTOM HEADER
-        tabBarActiveTintColor: "#22C55E",
+        header: () => <TrainerHeader />,
+
+        tabBarActiveTintColor: "#e11d1d",   // 🔴 RED
         tabBarInactiveTintColor: "#94A3B8",
+
         tabBarStyle: {
-          backgroundColor: "#fff",
-          height: 60,
-          paddingBottom: 8,
+          backgroundColor: "#0f0f0f",
+          borderTopColor: "#222",
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom,
+        },
+
+        sceneContainerStyle: {
+          backgroundColor: "#0f0f0f",
         },
       }}
     >
@@ -62,11 +86,11 @@ export default function TrainersLayout() {
       />
 
       <Tabs.Screen
-        name="clients"
+        name="diet-plans"
         options={{
-          title: "Clients",
+          title: "Diet",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
+            <Ionicons name="nutrition-outline" size={size} color={color} />
           ),
         }}
       />
@@ -80,16 +104,6 @@ export default function TrainersLayout() {
           ),
         }}
       />
-
-      {/* <Tabs.Screen
-        name="earnings"
-        options={{
-          title: "Earnings",
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="dollar-sign" size={size} color={color} />
-          ),
-        }}
-      /> */}
 
       <Tabs.Screen
         name="profile"

@@ -45,10 +45,10 @@ export default function More() {
       }}
     >
       {/* Header */}
-      <Text className="text-white text-3xl font-extrabold mb-2">More</Text>
-      <Text className="text-gray-400 mb-8">
+      {/* <Text className="text-white text-3xl font-extrabold mb-2">More</Text> */}
+      {/* <Text className="text-gray-400 mb-8">
         Manage your account & preferences
-      </Text>
+      </Text> */}
 
       {/* Menu Items */}
       {menuItems.map((item, index) => (
