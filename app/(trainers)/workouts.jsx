@@ -12,7 +12,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
 import {
-  getAssignments,
+  getTrainerMembers,
   getWorkout,
   createWorkout,
   updateWorkout,
@@ -67,25 +67,8 @@ export default function Workouts() {
 
     const fetchMembers = async () => {
       try {
-        const data = await getAssignments();
-
-        const assignments = Array.isArray(data)
-          ? data
-          : data.data || data.assignments || [];
-
-        const assignedMembers = assignments
-          .filter(
-            (a) => Number(a.trainerId || a.trainer_id) === Number(user.id),
-          )
-          .map((a) => ({
-            id: String(a.userId || a.user_id),
-            name: a.username || a.user_name || "Member",
-            email: a.userEmail || a.user_email || "",
-            mobile: a.userMobile || a.user_mobile || "",
-            planName: a.planName || a.plan_name || "",
-          }));
-
-        setMembers(assignedMembers);
+        const membersData = await getTrainerMembers(user.id, user);
+setMembers(membersData);
       } catch (err) {
         console.log("Fetch members error:", err);
       }
