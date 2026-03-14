@@ -11,8 +11,13 @@ import { Picker } from "@react-native-picker/picker";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
+import {
+  getTrainerMembers,
+  getWorkout,
+  createWorkout,
+  updateWorkout,
+} from "../../services/api";
 
-const API_BASE = "https://mygym.qtechx.com/api";
 
 const timeOptions = [
   "06:00-08:00",
@@ -39,6 +44,7 @@ export default function Workouts() {
 
   const [members, setMembers] = useState([]);
 
+
   const [form, setForm] = useState({
     memberId: "",
     memberName: "",
@@ -61,26 +67,8 @@ export default function Workouts() {
 
     const fetchMembers = async () => {
       try {
-        const res = await fetch(`${API_BASE}/assignments`);
-        const data = await res.json();
-
-        const assignments = Array.isArray(data)
-          ? data
-          : data.data || data.assignments || [];
-
-        const assignedMembers = assignments
-          .filter(
-            (a) => Number(a.trainerId || a.trainer_id) === Number(user.id),
-          )
-          .map((a) => ({
-            id: String(a.userId || a.user_id),
-            name: a.username || a.user_name || "Member",
-            email: a.userEmail || a.user_email || "",
-            mobile: a.userMobile || a.user_mobile || "",
-            planName: a.planName || a.plan_name || "",
-          }));
-
-        setMembers(assignedMembers);
+        const membersData = await getTrainerMembers(user.id, user);
+setMembers(membersData);
       } catch (err) {
         console.log("Fetch members error:", err);
       }
@@ -94,8 +82,7 @@ export default function Workouts() {
 
     const fetchWorkout = async () => {
       try {
-        const res = await fetch(`${API_BASE}/workouts/${id}`);
-        const data = await res.json();
+        const data = await getWorkout(id);
 
         setForm({
           memberId: String(data.member_id),
@@ -178,15 +165,11 @@ export default function Workouts() {
         status: "active",
       };
 
-      const url = id ? `${API_BASE}/workouts/${id}` : `${API_BASE}/workouts`;
-
-      const method = id ? "PUT" : "POST";
-
-      await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      if (id) {
+        await updateWorkout(id, payload);
+      } else {
+        await createWorkout(payload);
+      }
 
       Alert.alert(
         "Success",

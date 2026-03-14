@@ -23,8 +23,9 @@ export default function TrainerDashboard() {
       try {
         const data = await getTrainerDashboard(user.id, user);
 
-        setStats(data.stats);
         setMembers(data.members);
+        setStats(data.stats);
+
       } catch (err) {
         console.log("Dashboard error:", err);
       }
@@ -46,7 +47,6 @@ export default function TrainerDashboard() {
       <View className="flex-row justify-between items-center">
         <View>
           <Text className="text-gray-400 text-xs uppercase">{title}</Text>
-
           <Text className="text-white text-2xl font-bold mt-1">{value}</Text>
         </View>
 
@@ -58,7 +58,6 @@ export default function TrainerDashboard() {
   return (
     <View className="flex-1 bg-black pt-12 px-5">
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* HEADER */}
 
         <Text className="text-white text-3xl font-bold mb-6">
           Trainer Dashboard
@@ -111,27 +110,28 @@ export default function TrainerDashboard() {
               }}
             >
               <View className="flex-row items-center">
+
                 {/* Avatar */}
-                <View className="w-12 h-12 rounded-full bg-primary items-center justify-center mr-3">
+                <View className="w-12 h-12 rounded-full bg-red-500 items-center justify-center mr-3">
                   <Ionicons name="person" size={22} color="white" />
                 </View>
 
                 {/* Member Info */}
                 <View className="flex-1">
                   <Text className="text-white font-bold text-base">
-                    {m.username || m.user_name || "No Name"}
+                    {m.username || "No Name"}
                   </Text>
 
                   <Text className="text-gray-400 text-xs mt-1">
-                    {m.userEmail || m.user_email || "-"}
+                    {m.userEmail || "-"}
                   </Text>
 
                   <Text className="text-gray-500 text-xs">
-                    {m.userMobile || m.user_mobile || "-"}
+                    {m.userMobile || "-"}
                   </Text>
                 </View>
 
-                {/* Status Badge */}
+                {/* Status */}
                 <View
                   className={`px-3 py-1 rounded-2xl ${
                     (m.status || "").toLowerCase() === "active"
@@ -149,24 +149,27 @@ export default function TrainerDashboard() {
                     {m.status || "Unknown"}
                   </Text>
                 </View>
+
               </View>
 
-              {/* Divider */}
               <View className="h-[1px] bg-[#262626] my-3" />
 
-              {/* Plan Row */}
               <View className="flex-row justify-between items-center">
-                <Text className="text-gray-400 text-md">Membership Plan</Text>
+                <Text className="text-gray-400 text-md">
+                  Membership Plan
+                </Text>
 
-                <View className="bg-primary/20 px-3 py-1 rounded-2xl">
-                  <Text className="text-primary text-sm font-semibold">
+                <View className="bg-red-500/20 px-3 py-1 rounded-2xl">
+                  <Text className="text-red-400 text-sm font-semibold">
                     {m.planName || "-"}
                   </Text>
                 </View>
               </View>
+
             </View>
           ))
         )}
+
       </ScrollView>
     </View>
   );

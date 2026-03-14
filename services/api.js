@@ -221,6 +221,54 @@ export const updateUserApi = async (id, data) => {
 
 /* ------------------ ASSIGNMENTS ------------------ */
 
+/* ------------------ TRAINER MEMBERS ------------------ */
+
+export const getTrainerMembers = async (trainerId, user) => {
+  try {
+    const res = await api.get("/assignments");
+
+    const raw = res.data || [];
+
+    const assignments = Array.isArray(raw)
+      ? raw
+      : raw.data || raw.assignments || [];
+
+    const filtered = assignments
+      .filter((a) => {
+        let include = false;
+
+        const assignTrainerId = Number(a.trainerId || a.trainer_id);
+
+        if (!isNaN(assignTrainerId) && assignTrainerId === Number(trainerId)) {
+          include = true;
+        }
+
+        if (!include && user?.username && (a.trainerName || a.trainer_name)) {
+          if (
+            (a.trainerName || a.trainer_name).toLowerCase() ===
+            user.username.toLowerCase()
+          ) {
+            include = true;
+          }
+        }
+
+        return include;
+      })
+      .map((a) => ({
+        id: String(a.userId || a.user_id),
+        name: a.username || a.user_name || "Member",
+        email: a.userEmail || a.user_email || "",
+        mobile: a.userMobile || a.user_mobile || "",
+        planName: a.planName || a.plan_name || "",
+      }));
+
+    return filtered;
+  } catch (err) {
+    console.log("Get trainer members error:", err);
+    throw err;
+  }
+};
+
 // Trainer assigned to user
 export const getUserAssignment = async () => {
   const res = await fetch(`${BASE_URL}/assignments`);
@@ -450,6 +498,46 @@ export const getTrainerDietPlans = async (trainerId) => {
     console.log("GET TRAINER DIET ERROR 👉", err.message);
     throw err;
   }
+};
+
+/* ---------------- WORKOUTS ---------------- */
+
+// GET ASSIGNED MEMBERS
+export const getAssignments = async () => {
+  const res = await fetch(`${BASE_URL}/assignments`);
+  return res.json();
+};
+
+// GET SINGLE WORKOUT
+export const getWorkout = async (id) => {
+  const res = await fetch(`${BASE_URL}/workouts/${id}`);
+  return res.json();
+};
+
+// CREATE WORKOUT
+export const createWorkout = async (data) => {
+  const res = await fetch(`${BASE_URL}/workouts`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  return res.json();
+};
+
+// UPDATE WORKOUT
+export const updateWorkout = async (id, data) => {
+  const res = await fetch(`${BASE_URL}/workouts/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  return res.json();
 };
 
 export default api;
