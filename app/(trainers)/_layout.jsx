@@ -1,6 +1,6 @@
-import { Tabs, useRouter } from "expo-router";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { Tabs, useRouter } from "expo-router";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function TrainerHeader() {
@@ -86,11 +86,11 @@ export default function TrainersLayout() {
       />
 
       <Tabs.Screen
-        name="clients"
+        name="diet-plans"
         options={{
-          title: "Clients",
+          title: "Diet",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
+            <Ionicons name="nutrition-outline" size={size} color={color} />
           ),
         }}
       />
