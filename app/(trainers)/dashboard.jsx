@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
+import { getTrainerDashboard } from "../../services/api";
 
 export default function TrainerDashboard() {
   const { user } = useAuth();
@@ -16,30 +17,14 @@ export default function TrainerDashboard() {
   const [members, setMembers] = useState([]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
 
     const loadDashboard = async () => {
       try {
-        const res = await fetch("https://mygym.qtechx.com/api/assignments");
-        const data = await res.json();
+        const data = await getTrainerDashboard(user.id, user);
 
-        console.log("Logged User:", user);
-        console.log("API Data:", data);
-
-        const trainerMembers = data.filter(
-          (m) =>
-            m.trainerName &&
-            m.trainerName.toLowerCase() === user.username.toLowerCase()
-        );
-
-        setMembers(trainerMembers);
-
-        setStats({
-          members: trainerMembers.length,
-          todayCheckins: 0,
-          workoutPlans: trainerMembers.length,
-          dietPlans: trainerMembers.length,
-        });
+        setMembers(data.members);
+        setStats(data.stats);
 
       } catch (err) {
         console.log("Dashboard error:", err);
@@ -48,6 +33,7 @@ export default function TrainerDashboard() {
 
     loadDashboard();
   }, [user]);
+
   const StatCard = ({ title, value, icon }) => (
     <View
       className="bg-[#141414] rounded-2xl p-5 mb-4 border border-[#262626]"
@@ -72,7 +58,6 @@ export default function TrainerDashboard() {
   return (
     <View className="flex-1 bg-black pt-12 px-5">
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* HEADER */}
 
         <Text className="text-white text-3xl font-bold mb-6">
           Trainer Dashboard
@@ -125,6 +110,7 @@ export default function TrainerDashboard() {
               }}
             >
               <View className="flex-row items-center">
+
                 {/* Avatar */}
                 <View className="w-12 h-12 rounded-full bg-red-500 items-center justify-center mr-3">
                   <Ionicons name="person" size={22} color="white" />
@@ -147,26 +133,27 @@ export default function TrainerDashboard() {
 
                 {/* Status */}
                 <View
-                  className={`px-3 py-1 rounded-2xl ${(m.status || "").toLowerCase() === "active"
+                  className={`px-3 py-1 rounded-2xl ${
+                    (m.status || "").toLowerCase() === "active"
                       ? "bg-green-500/20"
                       : "bg-gray-500/20"
-                    }`}
+                  }`}
                 >
                   <Text
-                    className={`text-xs font-bold ${(m.status || "").toLowerCase() === "active"
+                    className={`text-xs font-bold ${
+                      (m.status || "").toLowerCase() === "active"
                         ? "text-green-400"
                         : "text-gray-400"
-                      }`}
+                    }`}
                   >
                     {m.status || "Unknown"}
                   </Text>
                 </View>
+
               </View>
 
-              {/* Divider */}
               <View className="h-[1px] bg-[#262626] my-3" />
 
-              {/* Plan */}
               <View className="flex-row justify-between items-center">
                 <Text className="text-gray-400 text-md">
                   Membership Plan
@@ -178,9 +165,11 @@ export default function TrainerDashboard() {
                   </Text>
                 </View>
               </View>
+
             </View>
           ))
         )}
+
       </ScrollView>
     </View>
   );
