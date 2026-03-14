@@ -5,10 +5,12 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
+import { useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 
 const API_BASE = "https://mygym.qtechx.com/api";
 
@@ -32,6 +34,8 @@ const categories = [
 
 export default function Workouts() {
   const { user } = useAuth();
+  const router = useRouter();
+  const { id } = useLocalSearchParams();
 
   const [members, setMembers] = useState([]);
 
@@ -53,7 +57,7 @@ export default function Workouts() {
   /* ---------------- FETCH MEMBERS ---------------- */
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
 
     const fetchMembers = async () => {
       try {
@@ -64,56 +68,17 @@ export default function Workouts() {
           ? data
           : data.data || data.assignments || [];
 
-        const assignedMembers = [];
-
-        assignments.forEach((a) => {
-          let include = false;
-
-          /* match trainer by ID */
-          if (user?.id) {
-            const assignTrainerId = Number(a.trainerId || a.trainer_id);
-            const currentTrainerId = Number(user.id);
-
-            if (
-              !isNaN(assignTrainerId) &&
-              assignTrainerId === currentTrainerId
-            ) {
-              include = true;
-            }
-          }
-
-          /* match trainer by name */
-          if (!include && user?.username && (a.trainerName || a.trainer_name)) {
-            if (
-              (a.trainerName || a.trainer_name).toLowerCase() ===
-              user.username.toLowerCase()
-            ) {
-              include = true;
-            }
-          }
-
-          /* match trainer by email */
-          if (!include && user?.email && (a.trainerEmail || a.trainer_email)) {
-            if (
-              (a.trainerEmail || a.trainer_email).toLowerCase() ===
-              user.email.toLowerCase()
-            ) {
-              include = true;
-            }
-          }
-
-          if (!include) return;
-
-          assignedMembers.push({
+        const assignedMembers = assignments
+          .filter(
+            (a) => Number(a.trainerId || a.trainer_id) === Number(user.id),
+          )
+          .map((a) => ({
             id: String(a.userId || a.user_id),
             name: a.username || a.user_name || "Member",
             email: a.userEmail || a.user_email || "",
             mobile: a.userMobile || a.user_mobile || "",
             planName: a.planName || a.plan_name || "",
-          });
-        });
-
-        console.log("Assigned Members:", assignedMembers);
+          }));
 
         setMembers(assignedMembers);
       } catch (err) {
@@ -124,15 +89,39 @@ export default function Workouts() {
     fetchMembers();
   }, [user]);
 
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchWorkout = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/workouts/${id}`);
+        const data = await res.json();
+
+        setForm({
+          memberId: String(data.member_id),
+          memberName: data.member_name,
+          memberEmail: data.member_email,
+          memberMobile: data.member_mobile,
+          category: data.category,
+          level: data.level,
+          goal: data.goal,
+          durationWeeks: String(data.duration_weeks),
+        });
+
+        setDays(data.days || { Day1: [{ time: "", name: "" }] });
+      } catch (err) {
+        console.log("Fetch workout error:", err);
+      }
+    };
+
+    fetchWorkout();
+  }, [id]);
+
   /* ---------------- ADD DAY ---------------- */
 
   const addDay = () => {
     const nextDay = `Day${Object.keys(days).length + 1}`;
-
-    setDays({
-      ...days,
-      [nextDay]: [{ time: "", name: "" }],
-    });
+    setDays({ ...days, [nextDay]: [{ time: "", name: "" }] });
   };
 
   /* ---------------- ADD EXERCISE ---------------- */
@@ -148,13 +137,9 @@ export default function Workouts() {
 
   const updateExercise = (dayKey, index, field, value) => {
     const updated = [...days[dayKey]];
-
     updated[index][field] = value;
 
-    setDays({
-      ...days,
-      [dayKey]: updated,
-    });
+    setDays({ ...days, [dayKey]: updated });
   };
 
   /* ---------------- REMOVE EXERCISE ---------------- */
@@ -165,13 +150,18 @@ export default function Workouts() {
 
     setDays({
       ...days,
-      [dayKey]: updated.length > 0 ? updated : [{ time: "", name: "" }],
+      [dayKey]: updated.length ? updated : [{ time: "", name: "" }],
     });
   };
 
   /* ---------------- SUBMIT ---------------- */
 
   const handleSubmit = async () => {
+    if (!form.memberId || !form.category || !form.goal) {
+      Alert.alert("Missing Fields", "Please fill required fields");
+      return;
+    }
+
     try {
       const payload = {
         trainerId: user.id,
@@ -188,36 +178,58 @@ export default function Workouts() {
         status: "active",
       };
 
-      await fetch(`${API_BASE}/workouts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const url = id ? `${API_BASE}/workouts/${id}` : `${API_BASE}/workouts`;
+
+      const method = id ? "PUT" : "POST";
+
+      await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      alert("Workout Created Successfully 💪");
+      Alert.alert(
+        "Success",
+        id ? "Workout Updated Successfully" : "Workout Created Successfully",
+        [
+          {
+            text: "OK",
+            onPress: () => router.replace("/(trainers)/AllWorkouts"),
+          },
+        ],
+      );
     } catch (err) {
       console.log(err);
-      alert("Failed to create workout");
+      Alert.alert("Error", "Failed to save workout");
     }
   };
 
   return (
     <ScrollView className="flex-1 bg-black px-5 pt-12">
-      <Text className="text-white text-2xl font-bold mb-6">
-        Create Workout Program
-      </Text>
+      {/* HEADER */}
+
+      <View className="flex-row justify-between items-center mb-6">
+        <Text className="text-white text-2xl font-bold">
+          Create Workout Program
+        </Text>
+
+        <TouchableOpacity
+          onPress={() => router.push("/(trainers)/AllWorkouts")}
+          className="bg-primary px-4 py-3 rounded-lg"
+        >
+          <Text className="text-white font-semibold">All Workouts</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* MEMBER SELECT */}
 
-      <View className="bg-[#141414] rounded-xl border border-[#262626] mb-4">
+      <View className="bg-[#141414] border border-[#262626] rounded-xl mb-4">
         <Picker
           selectedValue={form.memberId}
           dropdownIconColor="white"
           style={{ color: "white" }}
           onValueChange={(value) => {
-            const member = members.find((m) => String(m.id) === String(value));
+            const member = members.find((m) => m.id === value);
 
             setForm({
               ...form,
@@ -233,40 +245,71 @@ export default function Workouts() {
           {members.map((m) => (
             <Picker.Item
               key={m.id}
-              label={`${m.name} (${m.planName})`}
+              label={`${m.name}${m.email ? ` • ${m.email}` : ""}${m.mobile ? ` • ${m.mobile}` : ""}${m.planName ? ` (${m.planName})` : ""}`}
               value={m.id}
             />
           ))}
         </Picker>
       </View>
 
-      {/* BASIC DETAILS */}
+      {/* LEVEL SELECT */}
 
-      <View className="bg-[#141414] rounded-xl border border-[#262626] p-4 mb-4">
-        <TextInput
-          placeholder="Goal"
-          placeholderTextColor="#aaa"
-          value={form.goal}
-          onChangeText={(text) => setForm({ ...form, goal: text })}
-          className="text-white border-b border-[#262626] mb-3 pb-2"
-        />
-
-        <TextInput
-          placeholder="Duration Weeks"
-          placeholderTextColor="#aaa"
-          keyboardType="numeric"
-          value={form.durationWeeks}
-          onChangeText={(text) => setForm({ ...form, durationWeeks: text })}
-          className="text-white border-b border-[#262626] pb-2"
-        />
+      <View className="bg-[#141414] border border-[#262626] rounded-xl mb-4">
+        <Picker
+          selectedValue={form.level}
+          dropdownIconColor="white"
+          style={{ color: "white" }}
+          onValueChange={(value) => setForm({ ...form, level: value })}
+        >
+          <Picker.Item label="Beginner" value="Beginner" />
+          <Picker.Item label="Intermediate" value="Intermediate" />
+          <Picker.Item label="Advanced" value="Advanced" />
+        </Picker>
       </View>
+
+      {/* CATEGORY */}
+
+      <View className="bg-[#141414] border border-[#262626] rounded-xl mb-4">
+        <Picker
+          selectedValue={form.category}
+          dropdownIconColor="white"
+          style={{ color: "white" }}
+          onValueChange={(value) => setForm({ ...form, category: value })}
+        >
+          <Picker.Item label="Select Category" value="" />
+          {categories.map((c) => (
+            <Picker.Item key={c} label={c} value={c} />
+          ))}
+        </Picker>
+      </View>
+
+      {/* GOAL */}
+
+      <TextInput
+        placeholder="Goal"
+        placeholderTextColor="#aaa"
+        value={form.goal}
+        onChangeText={(text) => setForm({ ...form, goal: text })}
+        className="bg-[#141414] text-white border border-[#262626] rounded-xl px-4 py-3 mb-4"
+      />
+
+      {/* DURATION */}
+
+      <TextInput
+        placeholder="Duration Weeks"
+        placeholderTextColor="#aaa"
+        keyboardType="numeric"
+        value={form.durationWeeks}
+        onChangeText={(text) => setForm({ ...form, durationWeeks: text })}
+        className="bg-[#141414] text-white border border-[#262626] rounded-xl px-4 py-3 mb-4"
+      />
 
       {/* DAYS */}
 
       {Object.keys(days).map((dayKey) => (
         <View
           key={dayKey}
-          className="bg-[#141414] rounded-xl border border-[#262626] p-4 mb-4"
+          className="bg-[#141414] border border-[#262626] rounded-xl p-4 mb-4"
         >
           <Text className="text-primary text-lg font-bold mb-3">{dayKey}</Text>
 
@@ -300,9 +343,7 @@ export default function Workouts() {
                 onPress={() => removeExercise(dayKey, index)}
                 className="bg-red-500/20 rounded-full p-2 mt-2"
               >
-                <Text className="text-red-400 bg-white p-2 rounded-full text-center">
-                  Remove
-                </Text>
+                <Text className="text-red-400 text-center">Remove</Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -311,9 +352,7 @@ export default function Workouts() {
             onPress={() => addExercise(dayKey)}
             className="bg-primary/20 rounded-full p-2 mt-2"
           >
-            <Text className="text-primary bg-white p-2 rounded-full text-center">
-              + Add Exercise
-            </Text>
+            <Text className="text-primary text-center">+ Add Exercise</Text>
           </TouchableOpacity>
         </View>
       ))}
