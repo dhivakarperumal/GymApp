@@ -3,38 +3,51 @@ import { Tabs, useRouter } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 function TrainerHeader() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [newMembers, setNewMembers] = useState([]);
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  useEffect(() => {
-    const fetchMembers = async () => {
-      try {
-        const res = await fetch("https://mygym.qtechx.com/api/assignments");
-        const data = await res.json();
+useEffect(() => {
+  if (!user?.id) return;
 
-        const now = new Date();
+  const fetchMembers = async () => {
+    try {
+      const res = await fetch("https://mygym.qtechx.com/api/assignments");
+      const data = await res.json();
 
-        const last24HoursMembers = data.filter((m) => {
-          const created = new Date(m.created_at);
-          const diff = (now - created) / (1000 * 60 * 60);
-          return diff <= 24;
-        });
+      const now = new Date();
 
-        setNewMembers(last24HoursMembers);
-      } catch (err) {
-        console.log("Notification error", err);
-      }
-    };
+      const last24HoursMembers = data.filter((m) => {
+        const created = new Date(m.created_at);
+        const diff = (now - created) / (1000 * 60 * 60);
 
-    fetchMembers();
-  }, []);
+        return (
+          diff <= 24 &&
+          String(m.trainer_id) === String(user.id)
+        );
+      });
+
+      setNewMembers(last24HoursMembers);
+    } catch (err) {
+      console.log("Notification error", err);
+    }
+  };
+
+  fetchMembers();
+
+  // auto refresh every 10 seconds
+  const interval = setInterval(fetchMembers, 10000);
+
+  return () => clearInterval(interval);
+}, [user]);
 
   return (
     <View
