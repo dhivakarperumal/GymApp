@@ -15,39 +15,43 @@ function TrainerHeader() {
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-useEffect(() => {
-  if (!user?.id) return;
+  useEffect(() => {
+    if (!user?.id) return;
 
-  const fetchMembers = async () => {
-    try {
-      const res = await fetch("https://mygym.qtechx.com/api/assignments");
-      const data = await res.json();
+    const fetchMembers = async () => {
+      try {
+        const res = await fetch("https://mygym.qtechx.com/api/assignments");
+        const data = await res.json();
 
-      const now = new Date();
+        const now = new Date();
 
-      const last24HoursMembers = data.filter((m) => {
-        const created = new Date(m.created_at);
-        const diff = (now - created) / (1000 * 60 * 60);
+        const last24HoursMembers = data.filter((m) => {
+          const created = new Date(m.created_at);
+          const diff = (now - created) / (1000 * 60 * 60);
 
-        return (
-          diff <= 24 &&
-          String(m.trainer_id) === String(user.id)
-        );
-      });
+          return (
+            diff <= 24 &&
+            String(m.trainer_id) === String(user.id)
+          );
+        });
 
-      setNewMembers(last24HoursMembers);
-    } catch (err) {
-      console.log("Notification error", err);
-    }
-  };
+        setNewMembers(last24HoursMembers);
+      } catch (err) {
+        console.log("Notification error", err);
+      }
+    };
 
-  fetchMembers();
+    fetchMembers();
 
-  // auto refresh every 10 seconds
-  const interval = setInterval(fetchMembers, 10000);
+    // auto refresh every 10 seconds
+    const interval = setInterval(fetchMembers, 10000);
 
-  return () => clearInterval(interval);
-}, [user]);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const profilePhoto = user?.photo
+    ? `${BASE_URL}/staff/${user.photo}`
+    : null;
 
   return (
     <View
@@ -84,9 +88,18 @@ useEffect(() => {
 
         {/* PROFILE */}
         <TouchableOpacity onPress={() => setShowProfileMenu(!showProfileMenu)}>
-          <View className="w-9 h-9 rounded-full bg-red-600 items-center justify-center">
-            <Text className="text-white font-bold">T</Text>
-          </View>
+          {user?.photo ? (
+            <Image
+              source={{ uri: `${BASE_URL}/staff/${user.photo}` }}
+              className="w-9 h-9 rounded-full"
+            />
+          ) : (
+            <View className="w-9 h-9 rounded-full bg-red-600 items-center justify-center">
+              <Text className="text-white font-bold">
+                {(user?.name || user?.username || "U").charAt(0).toUpperCase()}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
