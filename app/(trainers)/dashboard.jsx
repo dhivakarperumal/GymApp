@@ -51,7 +51,7 @@ export default function TrainerDashboard() {
         </View>
 
         {/* TEXT */}
-        <View>
+        <View className="">
           <Text className="text-gray-400 text-xs uppercase">{title}</Text>
           <Text className="text-white text-2xl font-bold mt-1">{value}</Text>
         </View>
