@@ -3,35 +3,56 @@ import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 
-
 function TrainerHeader() {
   const router = useRouter();
 
   return (
-    <View className="bg-slate-900 pt-12 pb-4 px-4 flex-row justify-between items-center">
-      
+    <View
+      style={{
+        backgroundColor: "#0f0f0f",
+        paddingTop: 50,
+        paddingBottom: 12,
+        paddingHorizontal: 16,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}
+    >
       {/* Left Logo */}
-      <Text className="text-white text-lg font-bold">
+      <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>
         TRAINER PANEL
       </Text>
 
       {/* Right Icons */}
-      <View className="flex-row items-center space-x-4">
-        
-        <TouchableOpacity onPress={() => router.push("/(trainers)/clients")}>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <TouchableOpacity
+          onPress={() => router.push("/(trainers)/clients")}
+          style={{ marginRight: 18 }}
+        >
           <Ionicons name="people-outline" size={22} color="white" />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push("/(trainers)/earnings")}>
+        <TouchableOpacity
+          onPress={() => router.push("/(trainers)/earnings")}
+          style={{ marginRight: 18 }}
+        >
           <Ionicons name="wallet-outline" size={22} color="white" />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => router.push("/(trainers)/profile")}>
-          <View className="w-8 h-8 rounded-full bg-green-500 items-center justify-center">
-            <Text className="text-white font-bold">T</Text>
+          <View
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor: "#e11d1d",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={{ color: "white", fontWeight: "bold" }}>T</Text>
           </View>
         </TouchableOpacity>
-
       </View>
     </View>
   );
@@ -41,13 +62,20 @@ export default function TrainersLayout() {
   return (
     <Tabs
       screenOptions={{
-        header: () => <TrainerHeader />,   // 🔥 CUSTOM HEADER
-        tabBarActiveTintColor: "#22C55E",
-        tabBarInactiveTintColor: "#94A3B8",
+        header: () => <TrainerHeader />,
+        tabBarActiveTintColor: "#e11d1d",
+        tabBarInactiveTintColor: "#888",
         tabBarStyle: {
-          backgroundColor: "#fff",
-          height: 60,
+          backgroundColor: "#0f0f0f",
+          borderTopColor: "#222",
+          borderTopWidth: 1,
+          height: 64,
           paddingBottom: 8,
+          paddingTop: 6,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          marginBottom: 2,
         },
       }}
     >
@@ -56,7 +84,7 @@ export default function TrainersLayout() {
         options={{
           title: "Dashboard",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="grid-outline" size={size} color={color} />
+            <Ionicons name="grid-outline" size={22} color={color} />
           ),
         }}
       />
@@ -66,7 +94,7 @@ export default function TrainersLayout() {
         options={{
           title: "Clients",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
+            <Ionicons name="people-outline" size={22} color={color} />
           ),
         }}
       />
@@ -76,7 +104,7 @@ export default function TrainersLayout() {
         options={{
           title: "Workouts",
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="fitness-center" size={size} color={color} />
+            <MaterialIcons name="fitness-center" size={22} color={color} />
           ),
         }}
       />
@@ -96,7 +124,7 @@ export default function TrainersLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
+            <Ionicons name="person-outline" size={22} color={color} />
           ),
         }}
       />
