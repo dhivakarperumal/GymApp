@@ -156,7 +156,7 @@ function TrainerHeader() {
           {/* POPUP MENU */}
           <View
             style={{ zIndex: 1000, elevation: 1000 }}
-            className="absolute top-20 right-2 w-80 bg-[#141414] border border-[#262626] rounded-xl p-2"
+            className="absolute top-20 right-2 w-60 bg-[#141414] border border-[#262626] rounded-xl p-2"
           >
             <TouchableOpacity
               onPress={() => {
