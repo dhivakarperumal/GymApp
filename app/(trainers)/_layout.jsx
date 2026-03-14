@@ -242,12 +242,20 @@ export default function TrainersLayout() {
       />
 
       <Tabs.Screen
+        name="Attendance"
+        options={{
+          title: "Attendance",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="calendar-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      {/* Hide profile from tabs */}
+      <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
-          ),
+          href: null,
         }}
       />
     </Tabs>
