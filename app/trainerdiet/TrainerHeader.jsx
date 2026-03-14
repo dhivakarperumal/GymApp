@@ -9,6 +9,7 @@ export default function TrainerHeader() {
   const insets = useSafeAreaInsets();
 
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [newMembers, setNewMembers] = useState([]);
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export default function TrainerHeader() {
 
   return (
     <View style={{ zIndex: 100 }}>
+      {/* HEADER */}
       <View
         style={{ paddingTop: insets.top }}
         className="bg-[#0f0f0f] px-4 pb-3 flex-row items-center justify-between"
@@ -49,13 +51,16 @@ export default function TrainerHeader() {
           />
         </TouchableOpacity>
 
-        {/* HEADER ICONS */}
+        {/* ICONS */}
         <View className="flex-row items-center">
           
           {/* NOTIFICATION */}
           <TouchableOpacity
             className="mr-5"
-            onPress={() => setShowDropdown(!showDropdown)}
+            onPress={() => {
+              setShowDropdown(!showDropdown);
+              setShowProfileMenu(false);
+            }}
           >
             <View>
               <Ionicons name="notifications-outline" size={22} color="white" />
@@ -72,7 +77,10 @@ export default function TrainerHeader() {
 
           {/* PROFILE */}
           <TouchableOpacity
-            onPress={() => router.push("/(trainers)/profile")}
+            onPress={() => {
+              setShowProfileMenu(!showProfileMenu);
+              setShowDropdown(false);
+            }}
           >
             <View className="w-9 h-9 rounded-full bg-red-600 items-center justify-center">
               <Text className="text-white font-bold">T</Text>
@@ -81,11 +89,14 @@ export default function TrainerHeader() {
         </View>
       </View>
 
-      {/* OUTSIDE CLICK AREA */}
-      {showDropdown && (
+      {/* OUTSIDE CLICK */}
+      {(showDropdown || showProfileMenu) && (
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => setShowDropdown(false)}
+          onPress={() => {
+            setShowDropdown(false);
+            setShowProfileMenu(false);
+          }}
           style={{
             position: "absolute",
             top: 0,
@@ -96,20 +107,13 @@ export default function TrainerHeader() {
         />
       )}
 
-      {/* DROPDOWN */}
+      {/* NOTIFICATION DROPDOWN */}
       {showDropdown && (
-        <TouchableOpacity
-          activeOpacity={1}
-          className="absolute top-20 right-4 w-64 bg-[#141414] border border-[#262626] rounded-xl p-3"
-        >
-          <Text className="text-white font-bold mb-2">
-            New Members
-          </Text>
+        <View className="absolute top-20 right-4 w-64 bg-[#141414] border border-[#262626] rounded-xl p-3">
+          <Text className="text-white font-bold mb-2">New Members</Text>
 
           {newMembers.length === 0 ? (
-            <Text className="text-gray-400 text-sm">
-              No new members
-            </Text>
+            <Text className="text-gray-400 text-sm">No new members</Text>
           ) : (
             newMembers.map((m, i) => (
               <View key={i} className="border-b border-[#262626] py-2">
@@ -123,7 +127,36 @@ export default function TrainerHeader() {
               </View>
             ))
           )}
-        </TouchableOpacity>
+        </View>
+      )}
+
+      {/* PROFILE MENU */}
+      {showProfileMenu && (
+        <View className="absolute top-20 right-2 w-72 bg-[#141414] border border-[#262626] rounded-xl p-2">
+          <TouchableOpacity
+            onPress={() => {
+              setShowProfileMenu(false);
+              router.push("/(trainers)/profile");
+            }}
+            className="flex-row items-center p-2"
+          >
+            <Ionicons name="person-outline" size={18} color="white" />
+            <Text className="text-white ml-2">Profile</Text>
+          </TouchableOpacity>
+
+          <View className="h-[1px] bg-[#262626] my-1" />
+
+          <TouchableOpacity
+            onPress={() => {
+              setShowProfileMenu(false);
+              router.replace("/login");
+            }}
+            className="flex-row items-center p-2"
+          >
+            <Ionicons name="log-out-outline" size={18} color="red" />
+            <Text className="text-red-500 ml-2">Logout</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
