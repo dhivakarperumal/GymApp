@@ -27,16 +27,9 @@ function TrainerHeader() {
 
         <TouchableOpacity
           className="mr-5"
-          onPress={() => router.push("/(trainers)/clients")}
-        >
-          <Ionicons name="people-outline" size={22} color="white" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          className="mr-5"
           onPress={() => router.push("/(trainers)/earnings")}
         >
-          <Ionicons name="wallet-outline" size={22} color="white" />
+          <Ionicons name="notifications-outline" size={22} color="white" />
         </TouchableOpacity>
 
         <TouchableOpacity
