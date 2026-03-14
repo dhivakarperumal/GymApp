@@ -11,6 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
+import TrainerHeader from "./TrainerHeader";
 
 const API_BASE = "https://mygym.qtechx.com/api";
 
@@ -93,6 +94,9 @@ export default function AllWorkouts() {
   }
 
   return (
+    <View className="flex-1 bg-black">
+
+    <TrainerHeader />
     <ScrollView className="flex-1 bg-black px-5 pt-12">
       {/* HEADER */}
 
@@ -212,5 +216,6 @@ export default function AllWorkouts() {
         </ScrollView>
       </Modal>
     </ScrollView>
+    </View>
   );
 }
