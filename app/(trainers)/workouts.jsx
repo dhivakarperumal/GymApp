@@ -6,6 +6,8 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useAuth } from "../../context/AuthContext";
@@ -17,7 +19,7 @@ import {
   createWorkout,
   updateWorkout,
 } from "../../services/api";
-
+import * as DocumentPicker from "expo-document-picker";
 
 const timeOptions = [
   "06:00-08:00",
@@ -37,13 +39,23 @@ const categories = [
   "Yoga",
 ];
 
+const workoutTypes = [
+  "Weight Training",
+  "Cardio",
+  "Yoga / Stretching",
+  "HIIT",
+  "Bodyweight",
+  "Warm Up",
+  "Cool Down",
+  "Rest Day",
+];
+
 export default function Workouts() {
   const { user } = useAuth();
   const router = useRouter();
   const { id } = useLocalSearchParams();
 
   const [members, setMembers] = useState([]);
-
 
   const [form, setForm] = useState({
     memberId: "",
@@ -57,7 +69,17 @@ export default function Workouts() {
   });
 
   const [days, setDays] = useState({
-    Day1: [{ time: "", name: "" }],
+    Day1: [
+      {
+        time: "",
+        type: "Weight Training",
+        name: "",
+        sets: "",
+        count: "",
+        media: "",
+        mediaType: "url",
+      },
+    ],
   });
 
   /* ---------------- FETCH MEMBERS ---------------- */
@@ -68,7 +90,7 @@ export default function Workouts() {
     const fetchMembers = async () => {
       try {
         const membersData = await getTrainerMembers(user.id, user);
-setMembers(membersData);
+        setMembers(membersData);
       } catch (err) {
         console.log("Fetch members error:", err);
       }
@@ -116,7 +138,18 @@ setMembers(membersData);
   const addExercise = (dayKey) => {
     setDays({
       ...days,
-      [dayKey]: [...days[dayKey], { time: "", name: "" }],
+      [dayKey]: [
+        ...days[dayKey],
+        {
+          time: "",
+          type: "Weight Training",
+          name: "",
+          sets: "",
+          count: "",
+          media: "",
+          mediaType: "url",
+        },
+      ],
     });
   };
 
@@ -139,6 +172,25 @@ setMembers(membersData);
       ...days,
       [dayKey]: updated.length ? updated : [{ time: "", name: "" }],
     });
+  };
+
+  const pickFile = async (dayKey, index) => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["image/*", "video/*", "application/pdf"],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled) {
+        const file = result.assets[0];
+
+        updateExercise(dayKey, index, "media", file.uri);
+        updateExercise(dayKey, index, "mediaType", file.mimeType || "file");
+      }
+    } catch (error) {
+      console.log("File pick error:", error);
+      Alert.alert("Error", "Failed to pick file");
+    }
   };
 
   /* ---------------- SUBMIT ---------------- */
@@ -188,7 +240,16 @@ setMembers(membersData);
   };
 
   return (
-    <ScrollView className="flex-1 bg-black px-5 pt-12">
+  <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+  >
+    <ScrollView
+      className="flex-1 bg-black px-5 pt-12"
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 120 }}
+    >
       {/* HEADER */}
 
       <View className="flex-row justify-between items-center mb-6">
@@ -292,50 +353,146 @@ setMembers(membersData);
       {Object.keys(days).map((dayKey) => (
         <View
           key={dayKey}
-          className="bg-[#141414] border border-[#262626] rounded-xl p-4 mb-4"
+          className="bg-[#111111] border border-[#262626] rounded-2xl p-5 mb-5"
         >
-          <Text className="text-primary text-lg font-bold mb-3">{dayKey}</Text>
+          {/* DAY TITLE */}
+          <Text className="text-primary text-xl font-bold mb-4">{dayKey}</Text>
 
           {days[dayKey].map((item, index) => (
-            <View key={index} className="mb-3">
+            <View
+              key={index}
+              className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4 mb-4"
+            >
+              {/* EXERCISE HEADER */}
+              <View className="flex-row justify-between items-center mb-3">
+                <Text className="text-white font-semibold text-sm">
+                  Exercise {index + 1}
+                </Text>
+
+                <TouchableOpacity
+                  onPress={() => removeExercise(dayKey, index)}
+                  className="bg-red-500/20 px-3 py-1 rounded-full"
+                >
+                  <Text className="text-red-400 text-xs font-semibold">
+                    Remove
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* EXERCISE NAME */}
+              <Text className="text-gray-400 text-xs mb-1">Exercise Name</Text>
               <TextInput
-                placeholder="Exercise Name"
-                placeholderTextColor="#aaa"
+                placeholder="Example: Bench Press"
+                placeholderTextColor="#777"
                 value={item.name}
                 onChangeText={(text) =>
                   updateExercise(dayKey, index, "name", text)
                 }
-                className="text-white border-b border-[#262626] pb-2 mb-2"
+                className="bg-[#111111] text-white border border-[#333] rounded-lg px-3 py-3 mb-3"
               />
 
-              <Picker
-                selectedValue={item.time}
-                dropdownIconColor="white"
-                style={{ color: "white" }}
-                onValueChange={(value) =>
-                  updateExercise(dayKey, index, "time", value)
-                }
-              >
-                <Picker.Item label="Select Time" value="" />
-                {timeOptions.map((t) => (
-                  <Picker.Item key={t} label={t} value={t} />
-                ))}
-              </Picker>
+              {/* TIME */}
+              <Text className="text-gray-400 text-xs mb-1">Time Slot</Text>
+              <View className="bg-[#111111] border border-[#333] rounded-lg mb-3">
+                <Picker
+                  selectedValue={item.time}
+                  dropdownIconColor="white"
+                  style={{ color: "white" }}
+                  onValueChange={(value) =>
+                    updateExercise(dayKey, index, "time", value)
+                  }
+                >
+                  <Picker.Item label="Select Time" value="" />
+                  {timeOptions.map((t) => (
+                    <Picker.Item key={t} label={t} value={t} />
+                  ))}
+                </Picker>
+              </View>
 
+              {/* WORKOUT TYPE */}
+              <Text className="text-gray-400 text-xs mb-1">Workout Type</Text>
+              <View className="bg-[#111111] border border-[#333] rounded-lg mb-3">
+                <Picker
+                  selectedValue={item.type}
+                  dropdownIconColor="white"
+                  style={{ color: "white" }}
+                  onValueChange={(value) =>
+                    updateExercise(dayKey, index, "type", value)
+                  }
+                >
+                  {workoutTypes.map((t) => (
+                    <Picker.Item key={t} label={t} value={t} />
+                  ))}
+                </Picker>
+              </View>
+
+              {/* SETS */}
+              <Text className="text-gray-400 text-xs mb-1">Sets</Text>
+              <TextInput
+                placeholder="Example: 4"
+                placeholderTextColor="#777"
+                keyboardType="numeric"
+                value={item.sets}
+                onChangeText={(text) =>
+                  updateExercise(dayKey, index, "sets", text)
+                }
+                className="bg-[#111111] text-white border border-[#333] rounded-lg px-3 py-3 mb-3"
+              />
+
+              {/* REPS */}
+              <Text className="text-gray-400 text-xs mb-1">Reps / Count</Text>
+              <TextInput
+                placeholder="Example: 12 reps"
+                placeholderTextColor="#777"
+                value={item.count}
+                onChangeText={(text) =>
+                  updateExercise(dayKey, index, "count", text)
+                }
+                className="bg-[#111111] text-white border border-[#333] rounded-lg px-3 py-3 mb-3"
+              />
+
+              {/* MEDIA */}
+              <Text className="text-gray-400 text-xs mb-1">Media URL</Text>
+              {/* MEDIA URL */}
+              <TextInput
+                placeholder="Paste image/video URL"
+                placeholderTextColor="#777"
+                value={item.media}
+                onChangeText={(text) =>
+                  updateExercise(dayKey, index, "media", text)
+                }
+                className="bg-[#111111] text-white border border-[#333] rounded-lg px-3 py-3 mb-2"
+              />
+
+              {/* FILE UPLOAD BUTTON */}
               <TouchableOpacity
-                onPress={() => removeExercise(dayKey, index)}
-                className="bg-red-500/20 rounded-full p-2 mt-2"
+                onPress={() => pickFile(dayKey, index)}
+                className="bg-[#222] border border-[#444] rounded-lg py-3"
               >
-                <Text className="text-red-400 text-center">Remove</Text>
+                <Text className="text-center text-white">
+                  Upload Image / Video / Document
+                </Text>
               </TouchableOpacity>
+
+              {item.media ? (
+                <View className="mt-2">
+                  <Text className="text-green-400 text-xs">File Attached</Text>
+                  <Text className="text-gray-400 text-xs mt-1">
+                    {item.media}
+                  </Text>
+                </View>
+              ) : null}
             </View>
           ))}
 
+          {/* ADD EXERCISE BUTTON */}
           <TouchableOpacity
             onPress={() => addExercise(dayKey)}
-            className="bg-primary/20 rounded-full p-2 mt-2"
+            className="bg-primary rounded-xl py-3 mt-2"
           >
-            <Text className="text-primary text-center">+ Add Exercise</Text>
+            <Text className="text-white text-center font-semibold">
+              + Add Exercise
+            </Text>
           </TouchableOpacity>
         </View>
       ))}
@@ -354,5 +511,6 @@ setMembers(membersData);
         <Text className="text-white text-center font-bold">Save Program</Text>
       </TouchableOpacity>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
