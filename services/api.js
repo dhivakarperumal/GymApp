@@ -290,15 +290,150 @@ export const getUserOrders = async (userId) => {
   return res.json();
 };
 
-export const getUserMemberships = async (userId) => {
+/* ------------------ TRAINER DASHBOARD ------------------ */
+
+export const getTrainerDashboard = async (trainerId, user) => {
   try {
-    const res = await api.get(`/memberships/user/${userId}`);
-    return res.data;
-  } catch (error) {
-    console.log("Membership API error:", error);
-    return [];
+    /* ---------------- ASSIGNMENTS ---------------- */
+
+    const assignmentRes = await api.get("/assignments");
+
+    const rawAssignments = assignmentRes.data || [];
+
+    const assignments = Array.isArray(rawAssignments)
+      ? rawAssignments
+      : rawAssignments.data || rawAssignments.assignments || [];
+
+    /* Match trainer like Web Dashboard */
+
+    const filteredByTrainer = assignments.filter((a) => {
+      let include = false;
+
+      const assignTrainerId = Number(a.trainerId || a.trainer_id);
+
+      if (!isNaN(assignTrainerId) && assignTrainerId === Number(trainerId)) {
+        include = true;
+      }
+
+      if (!include && user?.username && (a.trainerName || a.trainer_name)) {
+        if (
+          (a.trainerName || a.trainer_name).toLowerCase() ===
+          user.username.toLowerCase()
+        ) {
+          include = true;
+        }
+      }
+
+      if (!include && user?.email && (a.trainerEmail || a.trainer_email)) {
+        if (
+          (a.trainerEmail || a.trainer_email).toLowerCase() ===
+          user.email.toLowerCase()
+        ) {
+          include = true;
+        }
+      }
+
+      return include;
+    });
+
+    /* ACTIVE MEMBERS */
+
+    const activeMembers = filteredByTrainer.filter(
+      (m) => (m.status || "").toLowerCase() === "active"
+    );
+
+    /* REMOVE DUPLICATES */
+
+    const uniqueMembers = Array.from(
+      new Map(
+        activeMembers.map((m) => [m.userId || m.user_id, m])
+      ).values()
+    );
+
+    const memberIds = uniqueMembers.map((m) =>
+      String(m.userId || m.user_id)
+    );
+
+    /* ---------------- WORKOUT PLANS ---------------- */
+
+    let workoutCount = 0;
+
+    try {
+      const workoutRes = await api.get("/workouts");
+
+      const workoutRaw = workoutRes.data || [];
+
+      const workouts = Array.isArray(workoutRaw)
+        ? workoutRaw
+        : workoutRaw.data || [];
+
+      const userWorkouts = workouts.filter((w) =>
+        memberIds.includes(String(w.member_id || w.memberId))
+      );
+
+      workoutCount = userWorkouts.length;
+    } catch (err) {
+      console.log("Workout fetch error:", err);
+    }
+
+    /* ---------------- DIET PLANS ---------------- */
+
+    let dietCount = 0;
+
+    try {
+      const dietRes = await api.get("/diet-plans");
+
+      const dietRaw = dietRes.data || [];
+
+      const diets = Array.isArray(dietRaw)
+        ? dietRaw
+        : dietRaw.data || [];
+
+      const userDiets = diets.filter((d) =>
+        memberIds.includes(String(d.member_id || d.memberId))
+      );
+
+      dietCount = userDiets.length;
+    } catch (err) {
+      console.log("Diet fetch error:", err);
+    }
+
+    /* ---------------- CHECKINS ---------------- */
+
+    let checkins = 0;
+
+    try {
+      const checkinRes = await api.get(
+        `/checkins/today?trainerId=${trainerId}`
+      );
+
+      const checkinData = checkinRes.data;
+
+      checkins =
+        checkinData?.count ||
+        checkinData?.length ||
+        0;
+    } catch (err) {
+      console.log("Checkin fetch error:", err);
+    }
+
+    /* ---------------- RETURN DASHBOARD DATA ---------------- */
+
+    return {
+      members: uniqueMembers,
+      stats: {
+        members: uniqueMembers.length,
+        todayCheckins: checkins,
+        workoutPlans: workoutCount,
+        dietPlans: dietCount,
+      },
+    };
+  } catch (err) {
+    console.log("Dashboard API error:", err);
+    throw err;
   }
 };
+
 
 
 export default api;
