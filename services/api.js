@@ -434,7 +434,23 @@ export const getTrainerDashboard = async (trainerId, user) => {
   }
 };
 
+// GET DIET PLANS BY TRAINER
+export const getTrainerDietPlans = async (trainerId) => {
+  try {
+    const res = await fetch(`${BASE_URL}/diet-plans?trainerId=${trainerId}`);
 
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || "Failed to fetch diet plans");
+    }
+
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.log("GET TRAINER DIET ERROR 👉", err.message);
+    throw err;
+  }
+};
 
 export default api;
 
