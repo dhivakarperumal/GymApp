@@ -11,6 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import { getTrainerMembers } from "../../services/api";
 import { useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 
 const meals = ["Morning", "Breakfast", "Lunch", "Evening", "Dinner"];
 
@@ -29,6 +30,7 @@ const generateSingleDay = () => {
 export default function AddDietPlan() {
   const { user } = useAuth();
   const router = useRouter();
+  const { id } = useLocalSearchParams();
 
   const [members, setMembers] = useState([]);
   const [expandedDay, setExpandedDay] = useState("Day1");
@@ -85,6 +87,31 @@ export default function AddDietPlan() {
       totalCalories: total,
     }));
   }, [form.days]);
+
+  useEffect(() => {
+  if (!id) return;
+
+  const loadDiet = async () => {
+    const res = await fetch(
+      `https://mygym.qtechx.com/api/diet-plans/${id}`
+    );
+
+    const data = await res.json();
+
+    setForm({
+      memberId: String(data.member_id),
+      memberName: data.member_name,
+      memberEmail: data.member_email || "",
+      memberMobile: data.member_mobile || "",
+      title: data.title,
+      totalCalories: data.total_calories,
+      duration: data.duration,
+      days: data.days,
+    });
+  };
+
+  loadDiet();
+}, [id]);
 
   /* ---------------- HANDLE MEAL CHANGE ---------------- */
 
