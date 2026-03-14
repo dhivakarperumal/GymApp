@@ -2,10 +2,38 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Tabs, useRouter } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useEffect, useState } from "react";
 
 function TrainerHeader() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [newMembers, setNewMembers] = useState([]);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const res = await fetch("https://mygym.qtechx.com/api/assignments");
+        const data = await res.json();
+
+        const now = new Date();
+
+        const last24HoursMembers = data.filter((m) => {
+          const created = new Date(m.created_at);
+          const diff = (now - created) / (1000 * 60 * 60);
+          return diff <= 24;
+        });
+
+        setNewMembers(last24HoursMembers);
+
+      } catch (err) {
+        console.log("Notification error", err);
+      }
+    };
+
+    fetchMembers();
+  }, []);
 
   return (
     <View
@@ -25,13 +53,25 @@ function TrainerHeader() {
       {/* HEADER ICONS */}
       <View className="flex-row items-center">
 
+        {/* NOTIFICATION */}
         <TouchableOpacity
           className="mr-5"
-          onPress={() => router.push("/(trainers)/earnings")}
+          onPress={() => setShowDropdown(!showDropdown)}
         >
-          <Ionicons name="notifications-outline" size={22} color="white" />
+          <View>
+            <Ionicons name="notifications-outline" size={22} color="white" />
+
+            {newMembers.length > 0 && (
+              <View className="absolute top-20 right-4 bg-red-600 w-4 h-4 rounded-full items-center justify-center">
+                <Text className="text-[10px] text-white font-bold">
+                  {newMembers.length}
+                </Text>
+              </View>
+            )}
+          </View>
         </TouchableOpacity>
 
+        {/* PROFILE */}
         <TouchableOpacity
           onPress={() => router.push("/(trainers)/profile")}
         >
@@ -41,6 +81,39 @@ function TrainerHeader() {
         </TouchableOpacity>
 
       </View>
+
+      {/* DROPDOWN */}
+
+      {showDropdown && (
+        <View className="absolute top-16 right-4 w-64 bg-[#141414] border border-[#262626] rounded-xl p-3">
+
+          <Text className="text-white font-bold mb-2">
+            New Members
+          </Text>
+
+          {newMembers.length === 0 ? (
+            <Text className="text-gray-400 text-sm">
+              No new members
+            </Text>
+          ) : (
+            newMembers.map((m, i) => (
+              <View
+                key={i}
+                className="border-b border-[#262626] py-2"
+              >
+                <Text className="text-white text-sm font-semibold">
+                  {m.username || m.user_name}
+                </Text>
+
+                <Text className="text-gray-400 text-xs">
+                  {m.user_email}
+                </Text>
+              </View>
+            ))
+          )}
+
+        </View>
+      )}
     </View>
   );
 }
