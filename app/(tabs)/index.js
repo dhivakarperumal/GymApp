@@ -50,13 +50,16 @@ export default function Home() {
       if (!user?.id) return;
 
       const res = await getUserMemberships(user.id);
+      const memberships = res.memberships || res;
 
-      console.log("ALL MEMBERSHIPS:", plans);
+      if (!Array.isArray(memberships)) return;
 
-      if (!Array.isArray(plans)) return;
+      console.log("Membership API Response:", memberships);
 
-      // FILTER BY USER ID
-      const myPlans = plans.filter(
+      if (!Array.isArray(memberships)) return;
+
+      // filter only current user's plans
+      const myPlans = memberships.filter(
         (p) => Number(p.userId || p.user_id) === Number(user.id)
       );
 
@@ -65,12 +68,14 @@ export default function Home() {
         return;
       }
 
-      const activePlan =
-        myPlans.find((p) => new Date(p.endDate) > new Date()) || myPlans[0];
+      // find active plan
+      const activePlan = myPlans.find(
+        (plan) => new Date(plan.endDate) > new Date()
+      );
 
-      setUserPlan(activePlan);
-    } catch (err) {
-      console.log("Plan fetch error:", err);
+      setUserPlan(activePlan || myPlans[0]);
+    } catch (error) {
+      console.log("Plan Fetch Error:", error);
     }
   };
 
