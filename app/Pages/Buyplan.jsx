@@ -11,8 +11,9 @@ import RazorpayCheckout from "react-native-razorpay";
 import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../Header";
-import AsyncStorage from "@react-native-async-storage/async-storage"; 
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import BackButton from "../BackButton";
+import api from "../../services/api";
 
 export default function BuyPlan() {
   const { plan } = useLocalSearchParams();
@@ -32,27 +33,6 @@ export default function BuyPlan() {
 
   const [user, setUser] = useState(null); // Assuming user data is stored locally
 
-  /* ================= PAGE PROTECTION ================= */
-  useEffect(() => {
-    const checkUser = async () => {
-      const storedUser = await AsyncStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      } else {
-        Toast.show({
-          type: "error",
-          text1: "Login Required",
-          text2: "Please login to purchase a plan",
-        });
-        router.push("/login");
-      }
-    };
-    checkUser();
-
-    if (!selectedPlan) {
-      router.push("/pricing");
-    }
-  }, [selectedPlan]);
 
   /* ================= FETCH USER PROFILE ================= */
   useEffect(() => {
@@ -82,20 +62,68 @@ export default function BuyPlan() {
     const number = parseInt(duration);
     return number * 30; // Assuming duration is in months
   };
-
   useEffect(() => {
     if (!selectedPlan) return;
 
     const days = getDaysFromDuration(selectedPlan.duration);
     const start = new Date(form.startDate);
     const end = new Date(start);
+
     end.setDate(start.getDate() + days);
 
     setForm((prev) => ({
       ...prev,
       endDate: end.toISOString().split("T")[0],
     }));
-  }, [form.startDate, selectedPlan]);
+  }, [form.startDate]);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const storedUser = await AsyncStorage.getItem("user");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Login Required",
+          text2: "Please login to purchase a plan",
+        });
+        router.push("/login");
+      }
+    };
+
+    checkUser();
+
+    if (!plan) {
+      router.push("/pricing");
+    }
+  }, []);
+
+  /* ================= FETCH USER PROFILE ================= */
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchUserProfile = async () => {
+      try {
+        const res = await api.get(`/users/${user.id}`);
+
+        console.log("PROFILE API:", res); // debug
+
+        if (res?.data) {
+          setForm((prev) => ({
+            ...prev,
+            phone: res.data.mobile || "",
+            name: res.data.username || prev.name,
+            email: res.data.email || user.email || "",
+          }));
+        }
+      } catch (err) {
+        console.log("Failed to fetch profile:", err);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
 
   const validateForm = () => {
     if (!form.name.trim()) {
@@ -145,7 +173,7 @@ export default function BuyPlan() {
       image: "https://yourgymlogo.com/logo.png",
       currency: "INR",
       key: "rzp_test_SGj8n5SyKSE10b",
-      amount: Number(selectedPlan.price) * 100,
+      amount: Number(selectedPlan.final_price ?? selectedPlan.price ?? 0) * 100,
       name: "Arnold Gym",
       prefill: {
         email: form.email,
@@ -170,7 +198,7 @@ export default function BuyPlan() {
             userId: user.id,
             planId: selectedPlan.id,
             planName: selectedPlan.name,
-            pricePaid: Number(selectedPlan.price),
+            pricePaid: Number(selectedPlan.final_price ?? selectedPlan.price ?? 0),
             duration: selectedPlan.duration,
             startDate: form.startDate,
             endDate: form.endDate,
@@ -421,7 +449,7 @@ export default function BuyPlan() {
               className="bg-primary py-5 rounded-2xl items-center shadow-2xl active:opacity-80"
             >
               <Text className="text-white font-extrabold text-xl tracking-widest">
-                PAY ₹{Number(selectedPlan.price).toLocaleString()}
+                PAY ₹{Number(selectedPlan.final_price ?? selectedPlan.price ?? 0).toLocaleString()}
               </Text>
             </TouchableOpacity>
           </View>
@@ -440,13 +468,30 @@ export default function BuyPlan() {
               {selectedPlan.description}
             </Text>
 
-            <Text className="text-primary text-4xl font-extrabold">
-              ₹{Number(selectedPlan.price).toLocaleString()}
-            </Text>
+            {/* PRICE SECTION */}
+            <View className="mb-6 flex-col">
 
-            <Text className="text-gray-400 mt-1 mb-6">
-              / {selectedPlan.duration}
-            </Text>
+              <View className="flex-row items-end gap-2">
+                <Text
+                  className="text-primary text-5xl font-extrabold"
+                  style={{ textShadowColor: "#ff3c00", textShadowRadius: 10 }}
+                >
+                  ₹{Number(selectedPlan.final_price ?? selectedPlan.price ?? 0).toLocaleString()}
+                </Text>
+
+                <Text className="text-gray-400 text-base mb-1">
+                  / {selectedPlan.duration || "month"}
+                </Text>
+              </View>
+
+              {selectedPlan.price &&
+                selectedPlan.final_price &&
+                Number(selectedPlan.price) !== Number(selectedPlan.final_price) && (
+                  <Text className="text-gray-400 text-sm line-through mt-1">
+                    ₹{Number(selectedPlan.price).toLocaleString()}
+                  </Text>
+                )}
+            </View>
 
             {/* Trainer Status */}
             {selectedPlan.trainer_included === 1 ? (

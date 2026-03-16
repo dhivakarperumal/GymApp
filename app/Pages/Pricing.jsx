@@ -116,22 +116,28 @@ export default function Pricing() {
                 {plan?.description}
               </Text>
 
-              {/* Price Section */}
-              <View className="mb-6">
-                <Text className="text-primary text-5xl font-extrabold">
-                  ₹{Number(plan?.price || 0).toLocaleString()}
-                </Text>
+              {/* PRICE SECTION */}
+              <View className="mb-6 flex-col">
 
-                <Text className="text-gray-400 mt-1 text-base">
-                  / {plan?.duration}
-                </Text>
-
-                {/* Discount */}
-                {plan?.discount && Number(plan.discount) > 0 && (
-                  <Text className="text-green-400 text-sm mt-2">
-                    {plan.discount}% OFF
+                {/* Final Price + Duration */}
+                <View className="flex-row items-end gap-2">
+                  <Text className="text-primary text-5xl font-extrabold">
+                    ₹{Number(plan?.final_price ?? plan?.price ?? 0).toLocaleString()}
                   </Text>
-                )}
+
+                  <Text className="text-gray-400 text-base mb-1">
+                    / {plan?.duration || plan?.duration_months || "month"}
+                  </Text>
+                </View>
+
+                {/* Original Price */}
+                {plan?.price &&
+                  plan?.final_price &&
+                  Number(plan.price) !== Number(plan.final_price) && (
+                    <Text className="text-gray-400 text-sm line-through mt-1">
+                      ₹{Number(plan.price).toLocaleString()}
+                    </Text>
+                  )}
               </View>
 
               {/* Trainer Status */}
