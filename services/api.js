@@ -50,7 +50,42 @@ const api = {
 
     return { data };
   },
-  // other methods (put, delete, etc.) can be added later if needed
+
+  put: async (path, body) => {
+    const res = await fetch(`${BASE_URL}${path}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      const err = new Error(data?.message || "Request failed");
+      err.response = { data, status: res.status };
+      throw err;
+    }
+
+    return { data };
+  },
+
+  delete: async (path) => {
+    const res = await fetch(`${BASE_URL}${path}`, {
+      method: "DELETE",
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      const err = new Error(data?.message || "Request failed");
+      err.response = { data, status: res.status };
+      throw err;
+    }
+
+    return { data };
+  }
 };
 
 /* ------------------ PRODUCTS ------------------ */

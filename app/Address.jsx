@@ -4,7 +4,9 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Alert
+  Alert,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -234,149 +236,157 @@ export default function Address() {
 
       <Header />
 
-      <ScrollView className="flex-1 px-5">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "padding"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          className="flex-1 px-5"
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
+        >
 
-        <BackButton style={{ marginLeft: 20, marginTop: 20 }} />
+          <BackButton style={{ marginLeft: 20, marginTop: 20 }} />
 
-        {/* SAVED ADDRESSES */}
+          {/* SAVED ADDRESSES */}
 
-        {addresses.map((addr) => (
-
-          <View
-            key={addr.id}
-            className="bg-darkcard border border-border rounded-3xl p-5 mt-6"
-          >
-
-            <View className="flex-row justify-between">
-
-              <View className="flex-1">
-
-                <Text className="text-background text-lg font-bold">
-                  {addr.name}
-                </Text>
-
-                <Text className="text-textSecondary mt-1">
-                  {addr.address}
-                </Text>
-
-                <Text className="text-textSecondary">
-                  {addr.city}, {addr.state} - {addr.zip}
-                </Text>
-
-                <Text className="text-textSecondary">
-                  {addr.country}
-                </Text>
-
-                <Text className="text-textSecondary mt-1">
-                  {addr.phone}
-                </Text>
-
-              </View>
-
-              <View className="flex-row">
-
-                <TouchableOpacity
-                  onPress={() => startEdit(addr)}
-                  className="bg-card p-3 mb-10 rounded-xl border border-border mr-3"
-                >
-                  <Ionicons name="create-outline" size={18} color="#e11d1d" />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => deleteAddress(addr.id)}
-                  className="bg-card p-3 mb-10 rounded-xl border border-border"
-                >
-                  <Ionicons name="trash-outline" size={18} color="#e11d1d" />
-                </TouchableOpacity>
-
-              </View>
-
-            </View>
-
-          </View>
-
-        ))}
-
-        {/* ADDRESS FORM */}
-
-        <View className="bg-darkcard border border-border rounded-3xl p-6 mt-6">
-
-          <Text className="text-background text-lg font-bold mb-6">
-            {editAddress ? "Edit Address" : "Add New Address"}
-          </Text>
-
-          {["name","phone","email","address","city","zip","country"].map((key) => (
+          {addresses.map((addr) => (
 
             <View
-              key={key}
-              className="bg-card border border-border rounded-xl px-4 mb-4"
+              key={addr.id}
+              className="bg-darkcard border border-border rounded-3xl p-5 mt-6"
             >
 
-              <TextInput
-                placeholder={key.toUpperCase()}
-                placeholderTextColor="#777"
-                value={form[key]}
-                keyboardType={
-                  key === "phone"
-                    ? "number-pad"
-                    : key === "zip"
-                    ? "number-pad"
-                    : "default"
-                }
-                onChangeText={(text) =>
-                  setForm({ ...form, [key]: text })
-                }
-                className="text-background py-4"
-              />
+              <View className="flex-row justify-between">
+
+                <View className="flex-1">
+
+                  <Text className="text-background text-lg font-bold">
+                    {addr.name}
+                  </Text>
+
+                  <Text className="text-textSecondary mt-1">
+                    {addr.address}
+                  </Text>
+
+                  <Text className="text-textSecondary">
+                    {addr.city}, {addr.state} - {addr.zip}
+                  </Text>
+
+                  <Text className="text-textSecondary">
+                    {addr.country}
+                  </Text>
+
+                  <Text className="text-textSecondary mt-1">
+                    {addr.phone}
+                  </Text>
+
+                </View>
+
+                <View className="flex-row">
+
+                  <TouchableOpacity
+                    onPress={() => startEdit(addr)}
+                    className="bg-card p-3 rounded-xl border border-border mr-3 self-start"
+                  >
+                    <Ionicons name="create-outline" size={18} color="#e11d1d" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => deleteAddress(addr.id)}
+                    className="bg-card p-3 rounded-xl border border-border self-start"
+                  >
+                    <Ionicons name="trash-outline" size={18} color="#e11d1d" />
+                  </TouchableOpacity>
+
+                </View>
+
+              </View>
 
             </View>
 
           ))}
 
-          {/* STATE */}
+          {/* ADDRESS FORM */}
 
-          <View className="bg-card border border-border rounded-xl mb-6">
+          <View className="bg-darkcard border border-border rounded-3xl p-6 mt-6">
 
-            <Picker
-              selectedValue={form.state}
-              dropdownIconColor="#888"
-              style={{ color: "white" }}
-              onValueChange={(value) =>
-                setForm({ ...form, state: value })
-              }
+            <Text className="text-background text-lg font-bold mb-6">
+              {editAddress ? "Edit Address" : "Add New Address"}
+            </Text>
+
+            {["name", "phone", "email", "address", "city", "zip", "country"].map((key) => (
+
+              <View
+                key={key}
+                className="bg-card border border-border rounded-xl px-4 mb-4"
+              >
+
+                <TextInput
+                  placeholder={key.toUpperCase()}
+                  placeholderTextColor="#777"
+                  value={form[key]}
+                  keyboardType={
+                    key === "phone"
+                      ? "number-pad"
+                      : key === "zip"
+                        ? "number-pad"
+                        : "default"
+                  }
+                  onChangeText={(text) =>
+                    setForm({ ...form, [key]: text })
+                  }
+                  className="text-background py-4"
+                />
+
+              </View>
+
+            ))}
+
+            {/* STATE */}
+
+            <View className="bg-card border border-border rounded-xl mb-6">
+
+              <Picker
+                selectedValue={form.state}
+                dropdownIconColor="#888"
+                style={{ color: "white" }}
+                onValueChange={(value) =>
+                  setForm({ ...form, state: value })
+                }
+              >
+
+                <Picker.Item label="Select State" value="" />
+
+                {states.map((state) => (
+                  <Picker.Item key={state} label={state} value={state} />
+                ))}
+
+              </Picker>
+
+            </View>
+
+            {/* SAVE BUTTON */}
+
+            <TouchableOpacity
+              onPress={saveAddress}
+              className="bg-primary py-4 rounded-xl items-center"
             >
 
-              <Picker.Item label="Select State" value="" />
+              <Text className="text-white font-bold text-base">
 
-              {states.map((state) => (
-                <Picker.Item key={state} label={state} value={state} />
-              ))}
+                {editAddress ? "Update Address" : "Add Address"}
 
-            </Picker>
+              </Text>
+
+            </TouchableOpacity>
 
           </View>
 
-          {/* SAVE BUTTON */}
+          <View className="h-20" />
 
-          <TouchableOpacity
-            onPress={saveAddress}
-            className="bg-primary py-4 rounded-xl items-center"
-          >
-
-            <Text className="text-white font-bold text-base">
-
-              {editAddress ? "Update Address" : "Add Address"}
-
-            </Text>
-
-          </TouchableOpacity>
-
-        </View>
-
-        <View className="h-20" />
-
-      </ScrollView>
-
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
