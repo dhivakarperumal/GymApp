@@ -27,6 +27,14 @@ export default function DietPlan() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
+  const mealTimes = {
+    Morning: "5:00 - 6:00 AM",
+    Breakfast: "8:00 - 9:00 AM",
+    Lunch: "1:00 - 2:00 PM",
+    Evening: "4:00 - 4:30 PM",
+    Dinner: "7:00 - 8:00 PM",
+  };
+
   /* ---------------- FETCH PLANS ---------------- */
 
   useEffect(() => {
@@ -99,36 +107,36 @@ export default function DietPlan() {
 
         <View className="flex-row items-center space-x-2 gap-2">
 
-  {/* VIEW */}
-  <TouchableOpacity
-    onPress={() => openPlan(item)}
-    className="bg-yellow-500 w-10 h-10 items-center justify-center rounded-full"
-  >
-    <Ionicons name="eye" size={16} color="white" />
-  </TouchableOpacity>
+          {/* VIEW */}
+          <TouchableOpacity
+            onPress={() => openPlan(item)}
+            className="bg-yellow-500 w-10 h-10 items-center justify-center rounded-full"
+          >
+            <Ionicons name="eye" size={16} color="white" />
+          </TouchableOpacity>
 
-  {/* EDIT */}
-  <TouchableOpacity
-    onPress={() =>
-      router.push({
-        pathname: "/diet-plans",
-        params: { id: item.id },
-      })
-    }
-    className="bg-green-500 w-10 h-10 items-center justify-center rounded-full"
-  >
-    <Ionicons name="create" size={16} color="white" />
-  </TouchableOpacity>
+          {/* EDIT */}
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: "/diet-plans",
+                params: { id: item.id },
+              })
+            }
+            className="bg-green-500 w-10 h-10 items-center justify-center rounded-full"
+          >
+            <Ionicons name="create" size={16} color="white" />
+          </TouchableOpacity>
 
-  {/* DELETE */}
-  <TouchableOpacity
-    onPress={() => deletePlan(item.id)}
-    className="bg-red-500 w-10 h-10 items-center justify-center rounded-full"
-  >
-    <Ionicons name="trash" size={16} color="white" />
-  </TouchableOpacity>
+          {/* DELETE */}
+          <TouchableOpacity
+            onPress={() => deletePlan(item.id)}
+            className="bg-red-500 w-10 h-10 items-center justify-center rounded-full"
+          >
+            <Ionicons name="trash" size={16} color="white" />
+          </TouchableOpacity>
 
-</View>
+        </View>
 
       </View>
 
@@ -221,9 +229,15 @@ export default function DietPlan() {
                     {Object.entries(meals).map(([meal, data]) => (
                       <View key={meal} className="mb-2">
 
-                        <Text className="text-white font-semibold">
-                          {meal}
-                        </Text>
+                        <View className="flex-row items-center">
+                          <Text className="text-white font-semibold">
+                            {meal}
+                          </Text>
+
+                          <Text className="text-red-500 ml-2">
+                            ({mealTimes[meal]})
+                          </Text>
+                        </View>
 
                         <Text className="text-gray-400">
                           Food: {data.food}
