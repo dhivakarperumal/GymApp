@@ -34,6 +34,8 @@ export default function Checkout() {
   const router = useRouter();
   const [paymentMethod, setPaymentMethod] = useState("ONLINE");
   const { buyNow } = useLocalSearchParams();
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
 
   const { user } = useAuth();
   const userId = user?.id;
@@ -120,6 +122,21 @@ export default function Checkout() {
     fetchUserProfile();
   }, [userId]);
 
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchAddresses = async () => {
+      try {
+        const res = await api.get(`/addresses/user/${userId}`);
+        setSavedAddresses(Array.isArray(res.data) ? res.data : []);
+      } catch (err) {
+        console.log("Address fetch failed", err);
+      }
+    };
+
+    fetchAddresses();
+  }, [userId]);
+
   /* PRICE CALCULATION */
 
   const subtotal = cartItems.reduce(
@@ -174,6 +191,33 @@ export default function Checkout() {
           text2: error?.description || "Payment cancelled",
         });
       });
+  };
+
+  const saveCheckoutAddress = async () => {
+    try {
+
+      const payload = {
+        user_id: userId,
+        name: shipping.name,
+        phone: shipping.phone,
+        email: shipping.email,
+        address: shipping.address,
+        city: shipping.city,
+        state: shipping.state,
+        zip: shipping.zip,
+        country: shipping.country,
+      };
+
+      await api.post("/addresses", payload);
+
+    } catch (err) {
+
+      // ignore duplicate address error
+      if (!err?.response?.data?.message?.includes("exists")) {
+        console.log("Address save error:", err);
+      }
+
+    }
   };
 
   /* PLACE ORDER */
@@ -264,7 +308,7 @@ export default function Checkout() {
       }
 
       // console.log("STEP 1");
-
+      await saveCheckoutAddress();
       const orderRes = await generateOrderId();
       const orderId = orderRes.order_id;
 
@@ -368,6 +412,22 @@ export default function Checkout() {
     country: "Country",
   };
 
+  const selectAddress = (addr) => {
+
+    setShipping({
+      name: addr.name,
+      phone: addr.phone,
+      email: addr.email || "",
+      address: addr.address,
+      city: addr.city,
+      state: addr.state,
+      zip: addr.zip,
+      country: addr.country || "India",
+    });
+
+    setSelectedAddressId(addr.id);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-black">
       <Header />
@@ -378,6 +438,54 @@ export default function Checkout() {
       >
         <BackButton style={{ marginBottom: 20 }} />
         <Text className="text-white text-3xl font-bold mb-8">Checkout</Text>
+        {savedAddresses.length > 0 && (
+          <View className="mb-6">
+
+            <Text className="text-white text-lg mb-3">
+              Saved Addresses
+            </Text>
+
+            {savedAddresses.map((addr) => (
+
+              <TouchableOpacity
+                key={addr.id}
+                onPress={() => selectAddress(addr)}
+                className={`p-4 rounded-xl mb-3 border ${selectedAddressId === addr.id
+                  ? "border-red-500 bg-[#111]"
+                  : "border-gray-700 bg-[#111]"
+                  }`}
+              >
+
+                <Text className="text-white font-bold">
+                  {addr.name}
+                </Text>
+
+                <Text className="text-gray-400">
+                  {addr.address}
+                </Text>
+
+                <Text className="text-gray-400">
+                  {addr.city}, {addr.state} - {addr.zip}
+                </Text>
+
+                <Text className="text-gray-400">
+                  {addr.country}
+                </Text>
+
+                <Text className="text-gray-400">
+                  {addr.email}
+                </Text>
+
+                <Text className="text-gray-400">
+                  {addr.phone}
+                </Text>
+
+              </TouchableOpacity>
+
+            ))}
+
+          </View>
+        )}
 
         {/* SHIPPING */}
 

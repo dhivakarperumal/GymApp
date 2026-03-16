@@ -1,24 +1,24 @@
+import { Ionicons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
+import { useEffect, useState } from "react";
 import {
-  View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  Alert,
-  KeyboardAvoidingView,
-  Platform
+  View
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Picker } from "@react-native-picker/picker";
-import { useEffect, useState } from "react";
 import Toast from "react-native-toast-message";
 
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
-import Header from "./Header";
 import BackButton from "./BackButton";
+import Header from "./Header";
 
 export default function Address() {
 
