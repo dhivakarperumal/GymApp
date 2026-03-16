@@ -85,66 +85,66 @@ const confirmDelete = async () => {
 
   /* ---------------- RENDER CARD ---------------- */
 
-  const renderItem = ({ item, index }) => (
-    <View className="bg-[#1a1a1a] p-4 rounded-xl mb-3">
+const renderItem = ({ item }) => (
+  <View className="bg-[#1a1a1a] p-4 rounded-xl mb-3">
 
-      <View className="flex-row justify-between">
+    <View className="flex-row justify-between">
 
-        <View>
-          <Text className="text-white text-lg font-semibold">
-            {item.member_name}
-          </Text>
+      <View>
+        <Text className="text-white text-lg font-semibold">
+          {item.member_name}
+        </Text>
 
-          <Text className="text-gray-400">{item.title}</Text>
+        <Text className="text-gray-400">{item.title}</Text>
 
-          <Text className="text-gray-400">
-            {item.total_calories} Calories
-          </Text>
+        <Text className="text-gray-400">
+          {item.total_calories} Calories
+        </Text>
 
-          <Text className="text-gray-400">
-            {item.duration} days
-          </Text>
-        </View>
+        <Text className="text-gray-400">
+          {item.duration} days
+        </Text>
+      </View>
 
-        {/* ACTION BUTTONS */}
+      {/* ACTION BUTTONS */}
 
-        <View className="flex-row items-center space-x-2 gap-2">
+      <View className="flex-row items-center gap-2">
 
-          {/* VIEW */}
-          <TouchableOpacity
-            onPress={() => openPlan(item)}
-            className="bg-yellow-500 w-10 h-10 items-center justify-center rounded-full"
-          >
-            <Ionicons name="eye" size={16} color="white" />
-          </TouchableOpacity>
+        {/* VIEW */}
+        <TouchableOpacity
+          onPress={() => openPlan(item)}
+          className="bg-yellow-500 w-10 h-10 items-center justify-center rounded-full"
+        >
+          <Ionicons name="eye" size={16} color="white" />
+        </TouchableOpacity>
 
-          {/* EDIT */}
-          <TouchableOpacity
-            onPress={() =>
-              router.push({
-                pathname: "/diet-plans",
-                params: { id: item.id },
-              })
-            }
-            className="bg-green-500 w-10 h-10 items-center justify-center rounded-full"
-          >
-            <Ionicons name="create" size={16} color="white" />
-          </TouchableOpacity>
+        {/* EDIT */}
+        <TouchableOpacity
+          onPress={() =>
+            router.push({
+              pathname: "/diet-plans",
+              params: { id: item.id },
+            })
+          }
+          className="bg-green-500 w-10 h-10 items-center justify-center rounded-full"
+        >
+          <Ionicons name="create" size={16} color="white" />
+        </TouchableOpacity>
 
-          {/* DELETE */}
-          <TouchableOpacity
-            onPress={() => deletePlan(item.id)}
-            className="bg-red-500 w-10 h-10 items-center justify-center rounded-full"
-          >
-            <Ionicons name="trash" size={16} color="white" />
-          </TouchableOpacity>
-
-        </View>
+        {/* DELETE */}
+        <TouchableOpacity
+          onPress={() => deletePlan(item.id)}
+          className="bg-red-500 w-10 h-10 items-center justify-center rounded-full"
+        >
+          <Ionicons name="trash" size={16} color="white" />
+        </TouchableOpacity>
 
       </View>
 
     </View>
-  );
+
+  </View>
+);
 
   return (
     <KeyboardAvoidingView
@@ -205,7 +205,10 @@ const confirmDelete = async () => {
 
               <View className="flex-1 justify-end bg-black/50">
 
-                <View className="flex-1 bg-[#0f0f0f] rounded-t-3xl">
+                <SafeAreaView
+  edges={["top", "bottom"]}
+  className="flex-1 bg-[#0f0f0f] rounded-t-3xl"
+>
 
                   {/* MODAL HEADER */}
                   <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-800">
@@ -225,7 +228,7 @@ const confirmDelete = async () => {
                     extraScrollHeight={150}
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ padding: 16, paddingBottom: 200 }}
+                    contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
                   >
 
                     {selectedPlan && (
@@ -287,10 +290,11 @@ const confirmDelete = async () => {
                     )}
 
                   </KeyboardAwareScrollView>
+                  </SafeAreaView>
 
                 </View>
 
-              </View>
+              
 
             </KeyboardAvoidingView>
 
