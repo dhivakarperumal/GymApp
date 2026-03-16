@@ -277,6 +277,10 @@ export default function Address() {
                     {addr.country}
                   </Text>
 
+                  <Text className="text-textSecondary">
+                    {addr.email}
+                  </Text>
+
                   <Text className="text-textSecondary mt-1">
                     {addr.phone}
                   </Text>
