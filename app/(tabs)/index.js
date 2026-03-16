@@ -341,7 +341,7 @@ export default function Home() {
 
                 {/* CTA */}
                 <TouchableOpacity
-                  onPress={() => router.push("/pricing")}
+                  onPress={() => router.push("/Pages/Pricing")}
                   className="bg-primary py-4 rounded-2xl items-center mt-6"
                 >
                   <Text className="text-white font-bold text-lg">
