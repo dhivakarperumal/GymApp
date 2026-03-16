@@ -4,16 +4,14 @@ import { useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
-  Keyboard,
   KeyboardAvoidingView,
   Modal,
   Platform,
-  ScrollView,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+  View
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -21,7 +19,7 @@ import {
   getTrainerDietPlans
 } from "../../services/api";
 import TrainerHeader from "./TrainerHeader";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+
 
 export default function DietPlan() {
   const { user } = useAuth();
@@ -30,6 +28,8 @@ export default function DietPlan() {
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+const [planToDelete, setPlanToDelete] = useState(null);
 
   const mealTimes = {
     Morning: "5:00 - 6:00 AM",
@@ -65,24 +65,23 @@ export default function DietPlan() {
 
   /* ---------------- DELETE PLAN ---------------- */
 
-  const deletePlan = (id) => {
-    Alert.alert("Delete Diet Plan", "Are you sure?", [
-      { text: "Cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await deleteDietPlanApi(id);
+const deletePlan = (id) => {
+  setPlanToDelete(id);
+  setDeleteModalVisible(true);
+};
 
-            setPlans((prev) => prev.filter((p) => p.id !== id));
-          } catch (err) {
-            console.log("Delete error", err);
-          }
-        },
-      },
-    ]);
-  };
+const confirmDelete = async () => {
+  try {
+    await deleteDietPlanApi(planToDelete);
+
+    setPlans((prev) => prev.filter((p) => p.id !== planToDelete));
+
+    setDeleteModalVisible(false);
+    setPlanToDelete(null);
+  } catch (err) {
+    console.log("Delete error", err);
+  }
+};
 
   /* ---------------- RENDER CARD ---------------- */
 
@@ -154,7 +153,6 @@ export default function DietPlan() {
       keyboardVerticalOffset={80}
     >
       
-
         <View className="flex-1 bg-black">
 
           <TrainerHeader />
@@ -297,6 +295,59 @@ export default function DietPlan() {
             </KeyboardAvoidingView>
 
           </Modal>
+
+          {/* ---------------- DELETE CONFIRM MODAL ---------------- */}
+
+<Modal
+  visible={deleteModalVisible}
+  transparent
+  animationType="fade"
+  statusBarTranslucent
+>
+  <View className="flex-1 justify-center items-center bg-black/60">
+
+    <View className="bg-[#0f0f0f] w-[85%] p-6 rounded-2xl border border-gray-800">
+
+      <View className="items-center mb-4">
+        <Ionicons name="trash" size={40} color="#ef4444" />
+      </View>
+
+      <Text className="text-white text-lg font-bold text-center mb-2">
+        Delete Diet Plan
+      </Text>
+
+      <Text className="text-gray-400 text-center mb-6">
+        Are you sure you want to delete this diet plan? This action cannot be undone.
+      </Text>
+
+      <View className="flex-row justify-between">
+
+        {/* Cancel */}
+        <TouchableOpacity
+          onPress={() => setDeleteModalVisible(false)}
+          className="bg-gray-700 px-5 py-3 rounded-lg flex-1 mr-2"
+        >
+          <Text className="text-white text-center font-semibold">
+            Cancel
+          </Text>
+        </TouchableOpacity>
+
+        {/* Delete */}
+        <TouchableOpacity
+          onPress={confirmDelete}
+          className="bg-red-500 px-5 py-3 rounded-lg flex-1 ml-2"
+        >
+          <Text className="text-white text-center font-semibold">
+            Delete
+          </Text>
+        </TouchableOpacity>
+
+      </View>
+
+    </View>
+
+  </View>
+</Modal>
 
         </View>
 
