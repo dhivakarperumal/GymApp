@@ -174,39 +174,39 @@ function TrainerHeader() {
 
       {/* NOTIFICATION DROPDOWN */}
 
-<Modal
-  transparent
-  visible={showDropdown}
-  animationType="fade"
-  onRequestClose={() => setShowDropdown(false)}
->
-  <Pressable
-    className="flex-1"
-    onPress={() => setShowDropdown(false)}
-  >
-    <View className="absolute top-20 right-4 w-64 bg-[#141414] border border-[#262626] rounded-xl p-3">
+      <Modal
+        transparent
+        visible={showDropdown}
+        animationType="fade"
+        onRequestClose={() => setShowDropdown(false)}
+      >
+        <Pressable
+          className="flex-1"
+          onPress={() => setShowDropdown(false)}
+        >
+          <View className="absolute top-20 right-4 w-64 bg-[#141414] border border-[#262626] rounded-xl p-3">
 
-      <Text className="text-white font-bold mb-2">New Members</Text>
+            <Text className="text-white font-bold mb-2">New Members</Text>
 
-      {newMembers.length === 0 ? (
-        <Text className="text-gray-400 text-sm">No new members</Text>
-      ) : (
-        newMembers.map((m, i) => (
-          <View key={i} className="border-b border-[#262626] py-2">
-            <Text className="text-white text-sm font-semibold">
-              {m.username || m.user_name}
-            </Text>
+            {newMembers.length === 0 ? (
+              <Text className="text-gray-400 text-sm">No new members</Text>
+            ) : (
+              newMembers.map((m, i) => (
+                <View key={i} className="border-b border-[#262626] py-2">
+                  <Text className="text-white text-sm font-semibold">
+                    {m.username || m.user_name}
+                  </Text>
 
-            <Text className="text-gray-400 text-xs">
-              {m.user_email}
-            </Text>
+                  <Text className="text-gray-400 text-xs">
+                    {m.user_email}
+                  </Text>
+                </View>
+              ))
+            )}
+
           </View>
-        ))
-      )}
-
-    </View>
-  </Pressable>
-</Modal>
+        </Pressable>
+      </Modal>
 
       {/* PROFILE Modal */}
 
