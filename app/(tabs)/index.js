@@ -49,11 +49,13 @@ export default function Home() {
     try {
       if (!user?.id) return;
 
-      const data = await getUserMemberships(user.id);
+      const plans = await getUserMemberships(user.id);
 
-      if (Array.isArray(data) && data.length > 0) {
+      console.log("USER MEMBERSHIPS:", plans);
+
+      if (Array.isArray(plans) && plans.length > 0) {
         const activePlan =
-          data.find((p) => new Date(p.endDate) > new Date()) || data[0];
+          plans.find((p) => new Date(p.endDate) > new Date()) || plans[0];
 
         setUserPlan(activePlan);
       }
@@ -80,6 +82,7 @@ export default function Home() {
   const fetchTodayDiet = async () => {
     try {
       const data = await getDietPlans();
+
 
       if (!Array.isArray(data) || !user?.email) return;
 
