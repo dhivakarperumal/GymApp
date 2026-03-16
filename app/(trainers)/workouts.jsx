@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -56,6 +56,9 @@ export default function Workouts() {
   const { id } = useLocalSearchParams();
 
   const [members, setMembers] = useState([]);
+  const [existingWorkoutId, setExistingWorkoutId] = useState(null);
+
+  const currentMemberRef = useRef(null);
 
   const [form, setForm] = useState({
     memberId: "",
@@ -97,6 +100,72 @@ export default function Workouts() {
     fetchMembers();
   }, [user]);
 
+  const checkMemberWorkout = async (memberId) => {
+    try {
+      const res = await fetch(
+        `https://mygym.qtechx.com/api/workouts?memberId=${memberId}&trainerId=${user.id}`,
+      );
+
+      const data = await res.json();
+
+      // Ignore old responses
+      if (currentMemberRef.current !== memberId) return;
+
+      const workout = data.find(
+        (w) => String(w.member_id) === String(memberId),
+      );
+
+      if (workout) {
+        setExistingWorkoutId(workout.id);
+
+        setForm((prev) => ({
+          ...prev,
+          level: workout.level || "Beginner",
+          durationWeeks: String(workout.duration_weeks || ""),
+        }));
+
+        setDays(
+          workout.days || {
+            Day1: [
+              {
+                time: "",
+                type: "Weight Training",
+                name: "",
+                sets: "",
+                count: "",
+                media: "",
+                mediaType: "url",
+              },
+            ],
+          },
+        );
+      } else {
+        setExistingWorkoutId(null);
+
+        setForm((prev) => ({
+          ...prev,
+          level: "Beginner",
+          durationWeeks: "",
+        }));
+
+        setDays({
+          Day1: [
+            {
+              time: "",
+              type: "Weight Training",
+              name: "",
+              sets: "",
+              count: "",
+              media: "",
+              mediaType: "url",
+            },
+          ],
+        });
+      }
+    } catch (err) {
+      console.log("Workout check error:", err);
+    }
+  };
   useEffect(() => {
     if (!id) return;
 
@@ -211,8 +280,8 @@ export default function Workouts() {
         status: "active",
       };
 
-      if (id) {
-        await updateWorkout(id, payload);
+      if (id || existingWorkoutId) {
+        await updateWorkout(id || existingWorkoutId, payload);
       } else {
         await createWorkout(payload);
       }
@@ -269,13 +338,49 @@ export default function Workouts() {
             onValueChange={(value) => {
               const member = members.find((m) => m.id === value);
 
+              currentMemberRef.current = value;
+
+              // reset workout immediately when member changes
+              setExistingWorkoutId(null);
+
+              setDays({
+                Day1: [
+                  {
+                    time: "",
+                    type: "Weight Training",
+                    name: "",
+                    sets: "",
+                    count: "",
+                    media: "",
+                    mediaType: "url",
+                  },
+                ],
+              });
+
+              if (!value) {
+                setForm(() => ({
+                  memberId: value,
+                  memberName: member?.name || "",
+                  memberEmail: member?.email || "",
+                  memberMobile: member?.mobile || "",
+                  level: "Beginner",
+                  durationWeeks: "",
+                }));
+
+                return;
+              }
+
               setForm({
-                ...form,
                 memberId: value,
                 memberName: member?.name || "",
                 memberEmail: member?.email || "",
                 memberMobile: member?.mobile || "",
+                level: "Beginner",
+                durationWeeks: "",
               });
+
+              // fetch workout for this member
+              checkMemberWorkout(value);
             }}
           >
             <Picker.Item label="Select Member" value="" />
