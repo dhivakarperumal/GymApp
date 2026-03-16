@@ -13,7 +13,7 @@ import {
   getDietPlans,
   getTrainerWorkouts,
   getAllProducts,
-  getUserMemberships
+  getUserMemberships,
 } from "../../services/api";
 import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
@@ -32,11 +32,11 @@ export default function Home() {
   const scrollRef = useRef(null);
   const scrollX = useRef(0);
 
-  const [todayDiet, setTodayDiet] = useState(null);
   const [dietTitle, setDietTitle] = useState("");
   const [todayDay, setTodayDay] = useState("");
 
-  const [todayWorkout, setTodayWorkout] = useState(null);
+  const [todayDiet, setTodayDiet] = useState({});
+  const [todayWorkout, setTodayWorkout] = useState([]);
   const [todayWorkoutDay, setTodayWorkoutDay] = useState("");
 
   const [products, setProducts] = useState([]);
@@ -49,13 +49,17 @@ export default function Home() {
     try {
       if (!user?.id) return;
 
-      const data = await getUserMemberships(user.id);
+      const res = await getUserMemberships(user.id);
 
-      if (Array.isArray(data) && data.length > 0) {
+      const plans = res?.memberships || res || [];
+
+      if (Array.isArray(plans) && plans.length > 0) {
         const activePlan =
-          data.find((p) => new Date(p.endDate) > new Date()) || data[0];
+          plans.find((p) => new Date(p.endDate) > new Date()) || plans[0];
 
         setUserPlan(activePlan);
+      } else {
+        setUserPlan(null);
       }
     } catch (err) {
       console.log("Plan fetch error:", err);
@@ -70,10 +74,7 @@ export default function Home() {
     fetchProducts();
 
     if (user?.id) {
-      fetchAssignment();
-      fetchTodayDiet();
-      fetchTodayWorkout();
-      fetchUserPlan();
+      initializeUserData();
     }
   }, [user]);
 
@@ -81,11 +82,17 @@ export default function Home() {
     try {
       const data = await getDietPlans();
 
-      if (!Array.isArray(data) || !user?.email) return;
+      if (!Array.isArray(data) || !user?.email) {
+        setTodayDiet({});
+        return;
+      }
 
       const myDiet = data.find((item) => item.member_email === user.email);
 
-      if (!myDiet || !myDiet.days) return;
+      if (!myDiet || !myDiet.days) {
+        setTodayDiet({});
+        return;
+      }
 
       const createdDate = new Date(myDiet.created_at);
       const today = new Date();
@@ -95,25 +102,21 @@ export default function Home() {
 
       const totalDays = Object.keys(myDiet.days).length;
 
-      // Diet plan finished
       if (diffDays > totalDays) {
-        setTodayDiet(null);
+        setTodayDiet({});
         setTodayDay("");
         return;
       }
 
       const todayKey = `Day${diffDays}`;
-      const todayMeals = myDiet.days[todayKey];
+      const todayMeals = myDiet.days[todayKey] || {};
 
-      if (todayMeals) {
-        setTodayDiet(todayMeals);
-        setTodayDay(todayKey);
-        setDietTitle(myDiet.title);
-      } else {
-        setTodayDiet(null);
-      }
+      setTodayDiet(todayMeals);
+      setTodayDay(todayKey);
+      setDietTitle(myDiet.title);
     } catch (err) {
       console.log("Today diet error:", err);
+      setTodayDiet({});
     }
   };
 
@@ -121,11 +124,17 @@ export default function Home() {
     try {
       const data = await getTrainerWorkouts();
 
-      if (!Array.isArray(data) || !user?.email) return;
+      if (!Array.isArray(data) || !user?.email) {
+        setTodayWorkout([]);
+        return;
+      }
 
       const myWorkout = data.find((item) => item.member_email === user.email);
 
-      if (!myWorkout || !myWorkout.days) return;
+      if (!myWorkout || !myWorkout.days) {
+        setTodayWorkout([]);
+        return;
+      }
 
       const createdDate = new Date(myWorkout.created_at);
       const today = new Date();
@@ -139,14 +148,13 @@ export default function Home() {
 
       const todayKey = `Day${todayIndex}`;
 
-      const todayExercises = myWorkout.days[todayKey];
+      const todayExercises = myWorkout.days[todayKey] || [];
 
-      if (todayExercises) {
-        setTodayWorkout(todayExercises);
-        setTodayWorkoutDay(todayKey);
-      }
+      setTodayWorkout(todayExercises);
+      setTodayWorkoutDay(todayKey);
     } catch (err) {
       console.log("Workout fetch error:", err);
+      setTodayWorkout([]);
     }
   };
 
@@ -236,15 +244,39 @@ export default function Home() {
     }
   };
 
+  const initializeUserData = async () => {
+    try {
+      await fetchUserPlan(); // load plan first
+      await fetchAssignment();
+      await fetchTodayDiet();
+      await fetchTodayWorkout();
+    } catch (err) {
+      console.log("Initialization error:", err);
+    }
+  };
+
+  const hasPlan = Boolean(
+    userPlan ||
+    purchasedPlan ||
+    todayWorkout.length > 0 ||
+    Object.keys(todayDiet).length > 0,
+  );
+
+  const showWorkoutCard = hasPlan && todayWorkout && todayWorkout.length > 0;
+  const showWorkoutEmpty = hasPlan && todayWorkout && todayWorkout.length === 0;
+
+  const showDietCard =
+    hasPlan && todayDiet && Object.keys(todayDiet).length > 0;
+  const showDietEmpty =
+    hasPlan && todayDiet && Object.keys(todayDiet).length === 0;
+
   return (
     <View className="flex-1 bg-card pt-12 px-5">
       <StatusBar barStyle="light-content" />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-
         {/* PREMIUM PLAN HERO CARD */}
         <View className="relative rounded-3xl overflow-hidden mb-6">
-
           <Image
             source={{
               uri: "https://images.unsplash.com/photo-1594737625785-a6cbdabd333c",
@@ -254,7 +286,6 @@ export default function Home() {
 
           {/* Gradient Overlay */}
           <View className="absolute inset-0 bg-black/60 p-6 justify-between">
-
             {userPlan ? (
               <>
                 {/* Badge */}
@@ -284,7 +315,6 @@ export default function Home() {
 
                   {/* Dates */}
                   <View className="flex-row justify-between mt-3">
-
                     <View>
                       <Text className="text-gray-400 text-[11px] uppercase">
                         Start Date
@@ -308,7 +338,6 @@ export default function Home() {
                           : "N/A"}
                       </Text>
                     </View>
-
                   </View>
                 </View>
               </>
@@ -321,8 +350,8 @@ export default function Home() {
                   </Text>
 
                   <Text className="text-gray-300 text-sm">
-                    Join a personalized fitness program with workouts,
-                    trainers and diet plans designed for you.
+                    Join a personalized fitness program with workouts, trainers
+                    and diet plans designed for you.
                   </Text>
                 </View>
 
@@ -337,11 +366,10 @@ export default function Home() {
                 </TouchableOpacity>
               </>
             )}
-
           </View>
         </View>
 
-        {todayWorkout && (
+        {showWorkoutCard && (
           <View
             className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
             style={{
@@ -391,7 +419,7 @@ export default function Home() {
           </View>
         )}
 
-        {!todayWorkout && (
+        {showWorkoutEmpty && (
           <View
             className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
             style={{
@@ -423,7 +451,7 @@ export default function Home() {
           </View>
         )}
 
-        {todayDiet && (
+        {showDietCard && (
           <View
             className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
             style={{
@@ -474,7 +502,7 @@ export default function Home() {
           </View>
         )}
 
-        {!todayDiet && (
+        {showDietEmpty && (
           <View
             className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
             style={{
