@@ -51,16 +51,24 @@ export default function Home() {
 
       const res = await getUserMemberships(user.id);
 
-      const plans = res?.memberships || res || [];
+      console.log("ALL MEMBERSHIPS:", plans);
 
-      if (Array.isArray(plans) && plans.length > 0) {
-        const activePlan =
-          plans.find((p) => new Date(p.endDate) > new Date()) || plans[0];
+      if (!Array.isArray(plans)) return;
 
-        setUserPlan(activePlan);
-      } else {
+      // FILTER BY USER ID
+      const myPlans = plans.filter(
+        (p) => Number(p.userId || p.user_id) === Number(user.id)
+      );
+
+      if (myPlans.length === 0) {
         setUserPlan(null);
+        return;
       }
+
+      const activePlan =
+        myPlans.find((p) => new Date(p.endDate) > new Date()) || myPlans[0];
+
+      setUserPlan(activePlan);
     } catch (err) {
       console.log("Plan fetch error:", err);
     }
@@ -357,7 +365,7 @@ export default function Home() {
 
                 {/* CTA */}
                 <TouchableOpacity
-                  onPress={() => router.push("/pricing")}
+                  onPress={() => router.push("/Pages/Pricing")}
                   className="bg-primary py-4 rounded-2xl items-center mt-6"
                 >
                   <Text className="text-white font-bold text-lg">
