@@ -56,7 +56,10 @@ export default function Attendance() {
 
   const date = dayjs().format("YYYY-MM-DD");
 
-  const presentCount = Object.values(attendanceStates).filter(Boolean).length;
+  const [submittedAttendance, setSubmittedAttendance] = useState({});
+
+  const presentCount =
+    Object.values(submittedAttendance).filter(Boolean).length;
   const absentCount = members.length - presentCount;
   const totalCount = members.length;
 
@@ -102,6 +105,7 @@ export default function Attendance() {
       });
 
       setAttendanceStates(states);
+      setSubmittedAttendance(states);
     } catch (err) {
       console.log("Attendance load error:", err);
     }
@@ -204,8 +208,9 @@ export default function Attendance() {
 
         return api.post("/attendance", payload);
       });
-
       await Promise.all(promises);
+
+      setSubmittedAttendance(attendanceStates);
 
       Alert.alert("Success", "Attendance saved successfully");
     } catch (err) {
