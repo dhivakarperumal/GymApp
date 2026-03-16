@@ -12,6 +12,8 @@ import { useAuth } from "../../context/AuthContext";
 import { getTrainerMembers } from "../../services/api";
 import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 const meals = ["Morning", "Breakfast", "Lunch", "Evening", "Dinner"];
 
@@ -35,7 +37,7 @@ export default function AddDietPlan() {
   const [members, setMembers] = useState([]);
   const [expandedDay, setExpandedDay] = useState(null);
 
-  const [form, setForm] = useState({
+  const getDefaultForm = () => ({
     memberId: "",
     memberName: "",
     memberEmail: "",
@@ -53,6 +55,8 @@ export default function AddDietPlan() {
       Day7: generateSingleDay(),
     },
   });
+
+  const [form, setForm] = useState(getDefaultForm());
 
 
 
@@ -176,7 +180,11 @@ export default function AddDietPlan() {
 
       if (res.ok) {
         alert(id ? "Diet plan updated" : "Diet plan created");
-        router.push("/trainerdiet/dietplan");
+
+        setForm(getDefaultForm());
+        setExpandedDay(null);
+
+        router.replace("/trainerdiet/dietplan");
       } else {
         alert(data.message || "Something went wrong");
       }
@@ -249,6 +257,14 @@ export default function AddDietPlan() {
       days: updated,
     }));
   };
+  useFocusEffect(
+    useCallback(() => {
+      if (!id) {
+        setForm(getDefaultForm());
+        setExpandedDay(null);
+      }
+    }, [id])
+  );
 
   return (
     <ScrollView className="flex-1 bg-black p-4">
