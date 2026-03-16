@@ -1,18 +1,51 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
-import { getAllPlans } from "../../services/api";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../Header";
 import BackButton from "../BackButton";
+import { getAllPlans, getUserMemberships } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Pricing() {
   const [plans, setPlans] = useState([]);
   const router = useRouter();
 
+  const { user } = useAuth();
+
+  const [hasActivePlan, setHasActivePlan] = useState(false);
+  const [checkingPlan, setCheckingPlan] = useState(true);
+
   useEffect(() => {
     fetchPlans();
   }, []);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setHasActivePlan(false);
+      setCheckingPlan(false);
+      return;
+    }
+
+    const checkActivePlan = async () => {
+      try {
+        const plans = await getUserMemberships(user.id);
+
+        const activePlan = Array.isArray(plans)
+          ? plans.some((p) => p.status === "active")
+          : false;
+
+        setHasActivePlan(activePlan);
+      } catch (err) {
+        console.log("Active plan check error:", err);
+        setHasActivePlan(false);
+      } finally {
+        setCheckingPlan(false);
+      }
+    };
+
+    checkActivePlan();
+  }, [user]);
 
   const fetchPlans = async () => {
     try {
@@ -118,18 +151,24 @@ export default function Pricing() {
                   ))}
               </View>
 
-              {/* Button */}
               <TouchableOpacity
-                onPress={() =>
+                disabled={hasActivePlan || checkingPlan}
+                onPress={() => {
+                  if (hasActivePlan) {
+                    alert("You already have an active plan.");
+                    return;
+                  }
+
                   router.push({
                     pathname: "/Pages/Buyplan",
                     params: { plan: JSON.stringify(plan) },
-                  })
-                }
-                className="bg-primary py-4 rounded-2xl items-center shadow-xl"
+                  });
+                }}
+                className={`py-4 rounded-2xl items-center shadow-xl ${hasActivePlan ? "bg-gray-600" : "bg-primary"
+                  }`}
               >
                 <Text className="text-white font-bold text-xl tracking-wide">
-                  Buy Plan
+                  {hasActivePlan ? "PLAN ACTIVE" : "BUY PLAN"}
                 </Text>
               </TouchableOpacity>
             </View>
