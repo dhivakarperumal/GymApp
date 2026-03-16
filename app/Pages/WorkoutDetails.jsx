@@ -4,6 +4,7 @@ import {
   ImageBackground,
   TouchableOpacity,
   ScrollView,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -29,7 +30,6 @@ export default function WorkoutDetails() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        
         {/* HERO IMAGE */}
         <ImageBackground
           source={{
@@ -58,12 +58,12 @@ export default function WorkoutDetails() {
           <View className="px-5 pb-10">
             <View className="bg-primary px-4 py-1 rounded-full self-start mb-3">
               <Text className="text-white text-xs font-bold">
-                {workoutData.category.toUpperCase()} · {workoutData.goal.toUpperCase()}
+                {workoutData.level} · {workoutData.duration_weeks} Weeks
               </Text>
             </View>
 
             <Text className="text-white text-3xl font-extrabold leading-tight">
-              {workoutData.category.toUpperCase()} WORKOUT
+              {workoutData.member_name}'s Workout
             </Text>
 
             <View className="flex-row items-center mt-3 mb-12">
@@ -77,10 +77,9 @@ export default function WorkoutDetails() {
 
         {/* CONTENT */}
         <View className="bg-[#0f0f0f] h-full rounded-t-3xl -mt-6 p-5">
-
           {/* PREMIUM STATS */}
           <View className="flex-row justify-between mb-6">
-
+            {/* TRAINER */}
             <View className="bg-[#141414] border border-border rounded-2xl px-5 py-4 items-center w-[30%]">
               <Ionicons name="person-outline" size={18} color="#ff3c00" />
               <Text className="text-gray-400 text-xs mt-1">Trainer</Text>
@@ -89,6 +88,7 @@ export default function WorkoutDetails() {
               </Text>
             </View>
 
+            {/* LEVEL */}
             <View className="bg-[#141414] border border-border rounded-2xl px-5 py-4 items-center w-[30%]">
               <Ionicons name="fitness-outline" size={18} color="#ff3c00" />
               <Text className="text-gray-400 text-xs mt-1">Level</Text>
@@ -97,6 +97,7 @@ export default function WorkoutDetails() {
               </Text>
             </View>
 
+            {/* DURATION */}
             <View className="bg-[#141414] border border-border rounded-2xl px-5 py-4 items-center w-[30%]">
               <Ionicons name="time-outline" size={18} color="#ff3c00" />
               <Text className="text-gray-400 text-xs mt-1">Duration</Text>
@@ -104,7 +105,6 @@ export default function WorkoutDetails() {
                 {workoutData.duration_weeks}w
               </Text>
             </View>
-
           </View>
 
           {/* WEEKLY SCHEDULE */}
@@ -112,61 +112,74 @@ export default function WorkoutDetails() {
             Weekly Schedule
           </Text>
 
-          {Object.entries(workoutData.days || {}).map(([day, exercises], index) => (
-            <View
-              key={index}
-              className="bg-[#141414] rounded-2xl p-4 mb-4 border border-border"
-            >
+          {Object.entries(workoutData.days || {}).map(
+            ([day, exercises], index) => (
+              <View
+                key={index}
+                className="bg-[#141414] rounded-2xl p-4 mb-4 border border-border"
+              >
+                {/* DAY HEADER */}
+                <View className="flex-row justify-between items-center mb-3">
+                  <Text className="text-primary font-bold text-lg">{day}</Text>
 
-              {/* DAY HEADER */}
-              <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-primary font-bold text-lg">
-                  {day}
-                </Text>
-
-                <View className="bg-card px-3 py-1 rounded-full border border-border">
-                  <Text className="text-gray-400 text-xs">
-                    {exercises.length} Exercise
-                  </Text>
+                  <View className="bg-card px-3 py-1 rounded-full border border-border">
+                    <Text className="text-gray-400 text-sm">
+                      {exercises.length} Exercise
+                    </Text>
+                  </View>
                 </View>
+
+                {/* EXERCISES */}
+                {exercises.map((ex, i) => (
+                  <View
+                    key={i}
+                    className="bg-[#1a1a1a] rounded-xl p-3 mb-2 border border-[#222]"
+                  >
+                    <View>
+                      <View className="flex-row justify-between items-center">
+                        <View>
+                          <Text className="text-white font-semibold">
+                            {ex.name}
+                          </Text>
+
+                          <Text className="text-gray-400 text-md mt-2">
+                            {ex.type} · {ex.sets} sets · {ex.count} reps
+                          </Text>
+                        </View>
+
+                        <View className="flex-row items-center">
+                          <Ionicons
+                            name="time-outline"
+                            size={14}
+                            color="#888"
+                          />
+                          <Text className="text-gray-400 text-sm ml-1">
+                            {ex.time}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Exercise Image */}
+                      {ex.media && ex.mediaType?.includes("image") && (
+                        <Image
+                          source={{ uri: ex.media }}
+                          style={{
+                            width: "100%",
+                            height: 150,
+                            borderRadius: 12,
+                            marginTop: 10,
+                          }}
+                        />
+                      )}
+                    </View>
+                  </View>
+                ))}
               </View>
-
-              {/* EXERCISES */}
-              {exercises.map((ex, i) => (
-                <View
-                  key={i}
-                  className="flex-row justify-between items-center py-2 border-b border-[#222]"
-                >
-                  <View className="flex-row items-center">
-                    <Ionicons
-                      name="barbell-outline"
-                      size={16}
-                      color="#ff3c00"
-                    />
-                    <Text className="text-white ml-2">
-                      {ex.name}
-                    </Text>
-                  </View>
-
-                  <View className="flex-row items-center">
-                    <Ionicons
-                      name="time-outline"
-                      size={14}
-                      color="#888"
-                    />
-                    <Text className="text-gray-400 text-xs ml-1">
-                      {ex.time}
-                    </Text>
-                  </View>
-                </View>
-              ))}
-
-            </View>
-          ))}
+            ),
+          )}
 
           <View className="h-20" />
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );
