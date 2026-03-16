@@ -347,7 +347,7 @@ export default function TrainersLayout() {
         options={{
           title: "Diet",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="nutrition-outline" size={size} color={color} />
+            <Ionicons name="clipboard-outline" size={size} color={color} />
           ),
         }}
       />

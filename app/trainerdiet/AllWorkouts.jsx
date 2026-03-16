@@ -15,6 +15,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
 import TrainerHeader from "./TrainerHeader";
 import { Image } from "react-native";
+import BackButton from "../BackButton";
 
 const API_BASE = "https://mygym.qtechx.com/api";
 
@@ -102,14 +103,14 @@ export default function AllWorkouts() {
       <View className="flex-1 bg-black">
         <TrainerHeader />
         <ScrollView
-          className="flex-1 bg-black px-5 pt-12"
+          className="flex-1 bg-black px-5 pt-5"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 120 }}
         >
+          <BackButton />
           {/* HEADER */}
-
-          <View className="flex-row justify-between items-center mb-6">
+          <View className="flex-row justify-between items-center mt-5 mb-6">
             <Text className="text-white text-2xl font-bold">All Workouts</Text>
 
             <TouchableOpacity
