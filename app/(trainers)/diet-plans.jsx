@@ -393,10 +393,18 @@ export default function AddDietPlan() {
               <View className="px-4 pb-4">
 
                 {meals.map((meal) => (
-                  <View key={meal} className="mb-3">
+                  <View
+                    key={meal}
+                    className="bg-[#0f0f0f] border border-[#262626] rounded-xl p-3 mb-4"
+                  >
+
+                    {/* MEAL TITLE */}
+                    <Text className="text-red-700 font-semibold mb-2">
+                      {meal}
+                    </Text>
 
                     <TextInput
-                      placeholder={`${meal} Food`}
+                      placeholder="Food"
                       placeholderTextColor="#aaa"
                       value={form.days[day][meal].food}
                       onChangeText={(text) =>
@@ -421,7 +429,12 @@ export default function AddDietPlan() {
                       keyboardType="numeric"
                       value={form.days[day][meal].calories}
                       onChangeText={(text) =>
-                        handleMealChange(day, meal, "calories", text.replace(/[^0-9]/g, ""))
+                        handleMealChange(
+                          day,
+                          meal,
+                          "calories",
+                          text.replace(/[^0-9]/g, "")
+                        )
                       }
                       className="bg-black text-white px-3 py-2 rounded-lg"
                     />
