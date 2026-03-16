@@ -569,5 +569,24 @@ export const updateWorkout = async (id, data) => {
   return res.json();
 };
 
+
+// GET USER MEMBERSHIPS
+export const getUserMemberships = async (userId) => {
+  try {
+    const res = await fetch(`${BASE_URL}/memberships?userId=${userId}`);
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || "Failed to fetch memberships");
+    }
+
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.log("GET USER MEMBERSHIPS ERROR 👉", err.message);
+    throw err;
+  }
+};
+
 export default api;
 
