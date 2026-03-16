@@ -115,14 +115,14 @@ export default function ProductDetails() {
       return;
     }
 
-    if (!variant) {
-      Toast.show({
-        type: "error",
-        text1: "Variant Missing",
-        text2: "Please select variant",
-      });
-      return;
-    }
+if (!variantKey) {
+  Toast.show({
+    type: "error",
+    text1: "Variant Missing",
+    text2: "Please select size / weight",
+  });
+  return;
+}
 
     const buyNowItem = {
       productId: product.id,
@@ -132,7 +132,7 @@ export default function ProductDetails() {
       size: selectedSize || null,
       gender: selectedGender || null,
       weight: selectedWeight || null,
-      variant: variant,
+      variant: variantKey,
       images: product.images,
     };
 
@@ -143,11 +143,6 @@ export default function ProductDetails() {
       },
     });
   };
-
-  const variant =
-    product?.category === "Food"
-      ? selectedWeight
-      : `${selectedSize}-${selectedGender}`;
 
   if (loading) {
     return (
@@ -182,13 +177,22 @@ export default function ProductDetails() {
         return;
       }
 
+        if (quantity > remainingStock) {
+  Toast.show({
+    type: "error",
+    text1: "Stock Limit",
+    text2: `Only ${remainingStock} items available`,
+  });
+  return;
+}
+
       const userId = user.id;
 
       const cartItems = await getCart(userId);
 
-      const existing = cartItems.find(
-        (item) => item.productId === product.id && item.variant === variant,
-      );
+     const existing = cartItems.find(
+  (item) => item.productId === product.id && item.variant === variantKey,
+);
 
       if (existing) {
         await updateCartApi(existing.id, existing.quantity + quantity);
@@ -202,7 +206,7 @@ export default function ProductDetails() {
           size: selectedSize || null,
           gender: selectedGender || null,
           weight: selectedWeight || null,
-          variant: variant,
+          variant: variantKey,
           images: product.images,
         });
       }

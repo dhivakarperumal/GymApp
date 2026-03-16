@@ -47,7 +47,29 @@ export default function Cart() {
 
       // console.log("CART API RESPONSE 👉", data);
 
-      setCartItems(data);
+      const correctedCart = await Promise.all(
+  data.map(async (item) => {
+    const product = products.find(p => p.id === item.productId);
+
+    if (!product) return item;
+
+    const variantKey =
+      item.variant ||
+      item.weight ||
+      `${item.size}-${item.gender}`;
+
+    const stock = product.stock?.[variantKey]?.qty || 0;
+
+    if (item.quantity > stock && stock > 0) {
+      await updateCartApi(item.id, stock);
+      return { ...item, quantity: stock };
+    }
+
+    return item;
+  })
+);
+
+setCartItems(correctedCart);
     } catch (err) {
       // console.log("Cart fetch error:", err);
     } finally {
@@ -153,14 +175,16 @@ export default function Cart() {
 
           let stock = 0;
 
+
           if (product) {
-            if (product.category === "Food") {
-              stock = product.stock?.[item.weight]?.qty || 0;
-            } else {
-              const key = `${item.size}-${item.gender}`;
-              stock = product.stock?.[key]?.qty || 0;
-            }
+            const variantKey =
+              item.variant ||
+              item.weight ||
+              `${item.size}-${item.gender}`;
+
+            stock = product.stock?.[variantKey]?.qty || 0;
           }
+       
 
           return (
             <View
@@ -222,9 +246,15 @@ export default function Cart() {
 
                     <TouchableOpacity
                       onPress={() => {
-                        if (item.quantity < stock) {
-                          increaseQty(item);
+                        if (item.quantity >= stock) {
+                          Toast.show({
+                            type: "error",
+                            text1: "Stock Limit",
+                            text2: `Only ${stock} available`,
+                          });
+                          return;
                         }
+                        increaseQty(item);
                       }}
                     >
                       <Ionicons name="add" size={18} color="white" />

@@ -318,7 +318,30 @@ export default function Checkout() {
 
       for (const item of cartItems) {
         const product = await getProduct(item.productId);
-        // console.log("PRODUCT 👉", product);
+
+        const variantKey =
+          item.variant ||
+          item.weight ||
+          `${item.size}-${item.gender}`;
+
+        const stock = { ...(product.stock || {}) };
+
+        const currentQty = stock?.[variantKey]?.qty || 0;
+
+        const newQty = currentQty - item.quantity;
+
+        if (newQty < 0) {
+          Toast.show({
+            type: "error",
+            text1: "Stock Error",
+            text2: `${item.name} is out of stock`,
+          });
+          return;
+        }
+
+        stock[variantKey].qty = newQty;
+
+        await api.put(`/products/${product.id}`, { stock });
       }
 
       // console.log("STEP 3 - CREATE PAYLOAD");
@@ -389,13 +412,7 @@ export default function Checkout() {
         router.replace("/Orders");
       }, 1200);
 
-      if (!buyNow) {
-        const cart = await getCart(userId);
-
-        for (const item of cart) {
-          await deleteCartApi(item.id);
-        }
-      }
+    
 
     } catch (err) {
       console.log("ERROR 👉", err);
