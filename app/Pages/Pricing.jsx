@@ -29,11 +29,24 @@ export default function Pricing() {
 
     const checkActivePlan = async () => {
       try {
-        const plans = await getUserMemberships(user.id);
+        const memberships = await getUserMemberships(user.id);
 
-        const activePlan = Array.isArray(plans)
-          ? plans.some((p) => p.status === "active")
-          : false;
+        if (!Array.isArray(memberships)) {
+          setHasActivePlan(false);
+          return;
+        }
+
+        // filter only this user's memberships
+        const myMemberships = memberships.filter(
+          (m) => Number(m.userId || m.user_id) === Number(user.id)
+        );
+
+        // check active plan
+        const activePlan = myMemberships.some(
+          (m) =>
+            (m.status || "").toLowerCase() === "active" &&
+            new Date(m.endDate) > new Date()
+        );
 
         setHasActivePlan(activePlan);
       } catch (err) {
