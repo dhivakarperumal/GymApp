@@ -198,6 +198,31 @@ export default function Workouts() {
     setDays({ ...days, [nextDay]: [{ time: "", name: "" }] });
   };
 
+  /* ---------------- REMOVE DAY ---------------- */
+
+  const removeDay = (dayKey) => {
+    const updatedDays = { ...days };
+
+    delete updatedDays[dayKey];
+
+    // prevent removing the last remaining day
+    if (Object.keys(updatedDays).length === 0) {
+      updatedDays.Day1 = [
+        {
+          time: "",
+          type: "Weight Training",
+          name: "",
+          sets: "",
+          count: "",
+          media: "",
+          mediaType: "url",
+        },
+      ];
+    }
+
+    setDays(updatedDays);
+  };
+
   /* ---------------- ADD EXERCISE ---------------- */
 
   const addExercise = (dayKey) => {
@@ -428,10 +453,20 @@ export default function Workouts() {
             key={dayKey}
             className="bg-[#111111] border border-[#262626] rounded-2xl p-5 mb-5"
           >
-            {/* DAY TITLE */}
-            <Text className="text-primary text-xl font-bold mb-4">
-              {dayKey}
-            </Text>
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-primary text-xl font-bold">{dayKey}</Text>
+
+              {Object.keys(days).length > 1 && (
+                <TouchableOpacity
+                  onPress={() => removeDay(dayKey)}
+                  className="bg-red-500/20 px-3 py-1 rounded-full"
+                >
+                  <Text className="text-red-400 text-xs font-semibold">
+                    Remove Day
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
             {days[dayKey].map((item, index) => (
               <View
