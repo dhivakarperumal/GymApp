@@ -184,86 +184,87 @@ export default function DietPlan() {
 
       {/* ---------------- VIEW MODAL ---------------- */}
 
-      <Modal visible={modalVisible} animationType="slide">
+      <Modal visible={modalVisible} animationType="slide" transparent>
 
-        <SafeAreaView className="flex-1 bg-[#0f0f0f]">
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="h-[75%] bg-[#0f0f0f] rounded-t-3xl">
 
-          <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-800">
+            <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-800">
 
-            <Text className="text-white text-xl font-bold">
-              Diet Details
-            </Text>
+              <Text className="text-white text-xl font-bold">
+                Diet Details
+              </Text>
 
-            <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Text className="text-red-500 text-lg">Close</Text>
-            </TouchableOpacity>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Ionicons name="close" size={26} color="#ef4444" />
+              </TouchableOpacity>
+
+            </View>
+
+            <ScrollView className="p-4">
+
+              {selectedPlan && (
+                <>
+                  <Text className="text-white text-2xl font-bold mb-2">
+                    {selectedPlan.member_name}
+                  </Text>
+
+                  <Text className="text-gray-300 mb-1">
+                    Plan: {selectedPlan.title}
+                  </Text>
+
+                  <Text className="text-gray-300 mb-4">
+                    Calories: {selectedPlan.total_calories}
+                  </Text>
+
+                  {Object.entries(selectedPlan.days).map(([day, meals]) => (
+                    <View
+                      key={day}
+                      className="bg-[#1a1a1a] p-4 rounded-xl mb-4"
+                    >
+
+                      <Text className="text-red-500 text-lg font-bold mb-3">
+                        {day}
+                      </Text>
+
+                      {Object.entries(meals).map(([meal, data]) => (
+                        <View key={meal} className="mb-2">
+
+                          <View className="flex-row items-center">
+                            <Text className="text-white font-semibold">
+                              {meal}
+                            </Text>
+
+                            <Text className="text-red-500 ml-2">
+                              ({mealTimes[meal]})
+                            </Text>
+                          </View>
+
+                          <Text className="text-gray-400">
+                            Food: {data.food}
+                          </Text>
+
+                          <Text className="text-gray-400">
+                            Quantity: {data.quantity}
+                          </Text>
+
+                          <Text className="text-gray-400">
+                            Calories: {data.calories}
+                          </Text>
+
+                        </View>
+                      ))}
+
+                    </View>
+                  ))}
+
+                </>
+              )}
+
+            </ScrollView>
 
           </View>
-
-          <ScrollView className="p-4">
-
-            {selectedPlan && (
-              <>
-                <Text className="text-white text-2xl font-bold mb-2">
-                  {selectedPlan.member_name}
-                </Text>
-
-                <Text className="text-gray-300 mb-1">
-                  Plan: {selectedPlan.title}
-                </Text>
-
-                <Text className="text-gray-300 mb-4">
-                  Calories: {selectedPlan.total_calories}
-                </Text>
-
-                {Object.entries(selectedPlan.days).map(([day, meals]) => (
-                  <View
-                    key={day}
-                    className="bg-[#1a1a1a] p-4 rounded-xl mb-4"
-                  >
-
-                    <Text className="text-red-500 text-lg font-bold mb-3">
-                      {day}
-                    </Text>
-
-                    {Object.entries(meals).map(([meal, data]) => (
-                      <View key={meal} className="mb-2">
-
-                        <View className="flex-row items-center">
-                          <Text className="text-white font-semibold">
-                            {meal}
-                          </Text>
-
-                          <Text className="text-red-500 ml-2">
-                            ({mealTimes[meal]})
-                          </Text>
-                        </View>
-
-                        <Text className="text-gray-400">
-                          Food: {data.food}
-                        </Text>
-
-                        <Text className="text-gray-400">
-                          Quantity: {data.quantity}
-                        </Text>
-
-                        <Text className="text-gray-400">
-                          Calories: {data.calories}
-                        </Text>
-
-                      </View>
-                    ))}
-
-                  </View>
-                ))}
-
-              </>
-            )}
-
-          </ScrollView>
-
-        </SafeAreaView>
-
+        </View>
       </Modal>
 
     </View>
