@@ -6,6 +6,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -53,6 +56,8 @@ export default function Attendance() {
   const [trainerCoords, setTrainerCoords] = useState(null);
   const [locationName, setLocationName] = useState("");
   const [locationVerified, setLocationVerified] = useState(false);
+
+  const [search, setSearch] = useState("");
 
   const date = dayjs().format("YYYY-MM-DD");
 
@@ -221,6 +226,10 @@ export default function Attendance() {
     }
   };
 
+  const filteredMembers = members.filter((m) =>
+    (m.name || "").toLowerCase().includes(search.toLowerCase()),
+  );
+
   if (loading) {
     return (
       <View className="flex-1 bg-black justify-center items-center">
@@ -230,144 +239,173 @@ export default function Attendance() {
   }
 
   return (
-    <View className="flex-1 bg-black px-5 pt-12">
-      {/* HEADER */}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1 bg-black"
+    >
+      <View className="flex-1 px-5 pt-12">
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 250 }}
+        >
+          {/* HEADER */}
 
-      <Text className="text-white text-3xl font-bold mb-2">
-        Trainer Attendance
-      </Text>
-
-      <Text className="text-gray-400 mb-6">
-        {dayjs(date).format("DD MMM YYYY")}
-      </Text>
-
-      {/* PRESENT / ABSENT STATS */}
-
-      {/* STATS CARDS */}
-
-      <View className="flex-row justify-between mb-6">
-        {/* TOTAL */}
-
-        <View className="bg-[#141414] border border-[#262626] rounded-2xl p-4 flex-1 mr-2">
-          <View className="flex-row items-center">
-            <Ionicons name="people" size={18} color="#3b82f6" />
-            <Text className="text-gray-400 ml-2 text-xs">All</Text>
-          </View>
-
-          <Text className="text-white text-2xl font-bold mt-2">
-            {totalCount}
+          <Text className="text-white text-3xl font-bold mb-2">
+            Member's Attendance
           </Text>
-        </View>
 
-        {/* PRESENT */}
-
-        <View className="bg-[#141414] border border-[#262626] rounded-2xl p-4 flex-1 mx-1">
-          <View className="flex-row items-center">
-            <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
-            <Text className="text-gray-400 ml-2 text-xs">Present</Text>
-          </View>
-
-          <Text className="text-white text-2xl font-bold mt-2">
-            {presentCount}
+          <Text className="text-gray-400 mb-6">
+            {dayjs(date).format("DD MMM YYYY")}
           </Text>
-        </View>
 
-        {/* ABSENT */}
+          {/* STATS CARDS */}
 
-        <View className="bg-[#141414] border border-[#262626] rounded-2xl p-4 flex-1 ml-2">
-          <View className="flex-row items-center">
-            <Ionicons name="close-circle" size={18} color="#ef4444" />
-            <Text className="text-gray-400 ml-2 text-xs">Absent</Text>
+          <View className="flex-row justify-between mb-6">
+            {/* TOTAL */}
+
+            <View className="bg-[#141414] border border-[#262626] rounded-2xl p-4 flex-1 mr-2">
+              <View className="flex-row items-center">
+                <Ionicons name="people" size={18} color="#3b82f6" />
+                <Text className="text-gray-400 ml-2 text-xs">All</Text>
+              </View>
+
+              <Text className="text-white text-2xl font-bold mt-2">
+                {totalCount}
+              </Text>
+            </View>
+
+            {/* PRESENT */}
+
+            <View className="bg-[#141414] border border-[#262626] rounded-2xl p-4 flex-1 mx-1">
+              <View className="flex-row items-center">
+                <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
+                <Text className="text-gray-400 ml-2 text-xs">Present</Text>
+              </View>
+
+              <Text className="text-white text-2xl font-bold mt-2">
+                {presentCount}
+              </Text>
+            </View>
+
+            {/* ABSENT */}
+
+            <View className="bg-[#141414] border border-[#262626] rounded-2xl p-4 flex-1 ml-2">
+              <View className="flex-row items-center">
+                <Ionicons name="close-circle" size={18} color="#ef4444" />
+                <Text className="text-gray-400 ml-2 text-xs">Absent</Text>
+              </View>
+
+              <Text className="text-white text-2xl font-bold mt-2">
+                {absentCount}
+              </Text>
+            </View>
           </View>
 
-          <Text className="text-white text-2xl font-bold mt-2">
-            {absentCount}
-          </Text>
-        </View>
-      </View>
+          {/* LOCATION CARD */}
 
-      {/* LOCATION CARD */}
+          <View className="bg-[#141414] border border-[#262626] rounded-2xl p-5 mb-5">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center">
+                <Ionicons name="location" size={20} color="#ff3c00" />
+                <Text className="text-white ml-2 font-semibold">
+                  Gym Location
+                </Text>
+              </View>
 
-      <View className="bg-[#141414] border border-[#262626] rounded-2xl p-5 mb-5">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center">
-            <Ionicons name="location" size={20} color="#ff3c00" />
-            <Text className="text-white ml-2 font-semibold">Gym Location</Text>
+              <TouchableOpacity
+                onPress={verifyLocation}
+                className="bg-primary px-4 py-2 rounded-xl"
+              >
+                <Text className="text-white font-semibold">Verify</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text className="text-gray-400 text-xs mt-3">
+              {locationVerified ? locationName : "Location not verified"}
+            </Text>
           </View>
+
+          {/* SELECT ALL */}
 
           <TouchableOpacity
-            onPress={verifyLocation}
-            className="bg-primary px-4 py-2 rounded-xl"
+            onPress={() => selectAll(true)}
+            className="mb-5 flex-row items-center"
           >
-            <Text className="text-white font-semibold">Verify</Text>
+            <Ionicons name="checkmark-circle" size={18} color="#ff3c00" />
+            <Text className="text-primary ml-2 font-semibold">
+              Select All Present
+            </Text>
           </TouchableOpacity>
-        </View>
 
-        <Text className="text-gray-400 text-xs mt-3">
-          {locationVerified ? locationName : "Location not verified"}
-        </Text>
-      </View>
+          {/* SEARCH BAR */}
 
-      {/* SELECT ALL */}
+          <View className="bg-[#141414] border border-[#262626] rounded-2xl px-4 py-3 mb-5 flex-row items-center">
+            <Ionicons name="search" size={18} color="#9ca3af" />
 
-      <TouchableOpacity
-        onPress={() => selectAll(true)}
-        className="mb-5 flex-row items-center"
-      >
-        <Ionicons name="checkmark-circle" size={18} color="#ff3c00" />
-        <Text className="text-primary ml-2 font-semibold">
-          Select All Present
-        </Text>
-      </TouchableOpacity>
+            <TextInput
+              placeholder="Search members..."
+              placeholderTextColor="#6b7280"
+              value={search}
+              onChangeText={setSearch}
+              className="flex-1 text-white ml-3"
+            />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {members.map((m, i) => {
-          const id = m.id;
-          const checked = attendanceStates[id];
+            {search !== "" && (
+              <TouchableOpacity onPress={() => setSearch("")}>
+                <Ionicons name="close-circle" size={18} color="#9ca3af" />
+              </TouchableOpacity>
+            )}
+          </View>
 
-          return (
-            <View
-              key={i}
-              className="bg-[#141414] rounded-2xl p-4 mb-4 border border-[#262626]"
-            >
-              <View className="flex-row items-center">
-                <View className="w-12 h-12 rounded-full bg-primary items-center justify-center mr-3">
-                  <Ionicons name="person" size={22} color="white" />
+          {filteredMembers.map((m, i) => {
+            const id = m.id;
+            const checked = attendanceStates[id];
+
+            return (
+              <View
+                key={i}
+                className="bg-[#141414] rounded-2xl p-4 mb-4 border border-[#262626]"
+              >
+                <View className="flex-row items-center">
+                  <View className="w-12 h-12 rounded-full bg-primary items-center justify-center mr-3">
+                    <Ionicons name="person" size={22} color="white" />
+                  </View>
+
+                  <View className="flex-1">
+                    <Text className="text-white font-bold">{m.name}</Text>
+
+                    <Text className="text-gray-400 text-xs">{m.email}</Text>
+                  </View>
+
+                  <TouchableOpacity
+                    onPress={() => toggleMember(id)}
+                    className={`w-8 h-8 rounded-lg items-center justify-center ${
+                      checked ? "bg-green-500" : "bg-[#262626]"
+                    }`}
+                  >
+                    {checked && (
+                      <Ionicons name="checkmark" size={18} color="white" />
+                    )}
+                  </TouchableOpacity>
                 </View>
-
-                <View className="flex-1">
-                  <Text className="text-white font-bold">{m.name}</Text>
-
-                  <Text className="text-gray-400 text-xs">{m.email}</Text>
-                </View>
-
-                <TouchableOpacity
-                  onPress={() => toggleMember(id)}
-                  className={`w-8 h-8 rounded-lg items-center justify-center ${
-                    checked ? "bg-green-500" : "bg-[#262626]"
-                  }`}
-                >
-                  {checked && (
-                    <Ionicons name="checkmark" size={18} color="white" />
-                  )}
-                </TouchableOpacity>
               </View>
-            </View>
-          );
-        })}
+            );
+          })}
 
-        {/* SUBMIT BUTTON */}
+          {/* SUBMIT BUTTON */}
 
-        <TouchableOpacity
-          onPress={handleSubmit}
-          disabled={saving}
-          className="bg-primary rounded-2xl p-5 mt-6 mb-12 items-center"
-        >
-          <Text className="text-white text-lg font-bold">
-            {saving ? "Saving Attendance..." : "Submit Attendance"}
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </View>
+          <TouchableOpacity
+            onPress={handleSubmit}
+            disabled={saving}
+            className="bg-primary rounded-2xl p-5 mt-6 mb-12 items-center"
+          >
+            <Text className="text-white text-lg font-bold">
+              {saving ? "Saving Attendance..." : "Submit Attendance"}
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
