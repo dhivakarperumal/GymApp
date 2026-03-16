@@ -1,23 +1,27 @@
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  Modal,
-  ScrollView,
-  Alert,
-} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import {
+  Alert,
+  FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 import {
-  getTrainerDietPlans,
   deleteDietPlanApi,
-  getDietPlan,
+  getTrainerDietPlans
 } from "../../services/api";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import TrainerHeader from "./TrainerHeader";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 export default function DietPlan() {
   const { user } = useAuth();
@@ -144,129 +148,159 @@ export default function DietPlan() {
   );
 
   return (
-    <View className="flex-1 bg-[#0f0f0f]">
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={80}
+    >
+      
 
-      <TrainerHeader />
+        <View className="flex-1 bg-black">
 
-      <SafeAreaView className="flex-1 p-4">
+          <TrainerHeader />
 
-        {/* HEADER */}
+          <SafeAreaView className="flex-1 p-4">
 
-        <View className="flex-row justify-between items-center mb-4">
+            {/* HEADER */}
+            <View className="flex-row justify-between items-center mb-4">
 
-          <Text className="text-white text-2xl font-bold">
-            All Diet Plans
-          </Text>
-
-          {/* ADD NEW */}
-
-          <TouchableOpacity
-            onPress={() => router.push("/diet-plans")}
-            className="bg-orange-500 px-4 py-2 rounded-lg flex-row items-center"
-          >
-            <Ionicons name="add" size={18} color="white" />
-            <Text className="text-white ml-1 font-semibold">
-              Add New
-            </Text>
-          </TouchableOpacity>
-
-        </View>
-
-        {/* LIST */}
-
-        <FlatList
-          data={plans}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-        />
-
-      </SafeAreaView>
-
-      {/* ---------------- VIEW MODAL ---------------- */}
-
-      <Modal visible={modalVisible} animationType="slide" transparent>
-
-        <View className="flex-1 justify-end bg-black/50">
-          <View className="h-[75%] bg-[#0f0f0f] rounded-t-3xl">
-
-            <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-800">
-
-              <Text className="text-white text-xl font-bold">
-                Diet Details
+              <Text className="text-white text-2xl font-bold">
+                All Diet Plans
               </Text>
 
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Ionicons name="close" size={26} color="#ef4444" />
+              <TouchableOpacity
+                onPress={() => router.push("/diet-plans")}
+                className="bg-orange-500 px-4 py-2 rounded-lg flex-row items-center"
+              >
+                <Ionicons name="add" size={18} color="white" />
+                <Text className="text-white ml-1 font-semibold">
+                  Add New
+                </Text>
               </TouchableOpacity>
 
             </View>
 
-            <ScrollView className="p-4">
+            {/* LIST */}
+            <FlatList
+              data={plans}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderItem}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            />
 
-              {selectedPlan && (
-                <>
-                  <Text className="text-white text-2xl font-bold mb-2">
-                    {selectedPlan.member_name}
-                  </Text>
+          </SafeAreaView>
 
-                  <Text className="text-gray-300 mb-1">
-                    Plan: {selectedPlan.title}
-                  </Text>
+          {/* ---------------- VIEW MODAL ---------------- */}
 
-                  <Text className="text-gray-300 mb-4">
-                    Calories: {selectedPlan.total_calories}
-                  </Text>
+          <Modal
+            visible={modalVisible}
+            animationType="slide"
+            transparent
+            statusBarTranslucent
+          >
 
-                  {Object.entries(selectedPlan.days).map(([day, meals]) => (
-                    <View
-                      key={day}
-                      className="bg-[#1a1a1a] p-4 rounded-xl mb-4"
-                    >
+            <KeyboardAvoidingView
+              style={{ flex: 1, justifyContent: "flex-end" }}
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
 
-                      <Text className="text-red-500 text-lg font-bold mb-3">
-                        {day}
-                      </Text>
+              <View className="flex-1 justify-end bg-black/50">
 
-                      {Object.entries(meals).map(([meal, data]) => (
-                        <View key={meal} className="mb-2">
+                <View className="flex-1 bg-[#0f0f0f] rounded-t-3xl">
 
-                          <View className="flex-row items-center">
-                            <Text className="text-white font-semibold">
-                              {meal}
+                  {/* MODAL HEADER */}
+                  <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-800">
+
+                    <Text className="text-white text-xl font-bold">
+                      Diet Details
+                    </Text>
+
+                    <TouchableOpacity onPress={() => setModalVisible(false)}>
+                      <Ionicons name="close" size={26} color="#ef4444" />
+                    </TouchableOpacity>
+
+                  </View>
+
+                  <KeyboardAwareScrollView
+                    enableOnAndroid
+                    extraScrollHeight={150}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ padding: 16, paddingBottom: 200 }}
+                  >
+
+                    {selectedPlan && (
+                      <>
+                        <Text className="text-white text-2xl font-bold mb-2">
+                          {selectedPlan.member_name}
+                        </Text>
+
+                        <Text className="text-gray-300 mb-1">
+                          Plan: {selectedPlan.title}
+                        </Text>
+
+                        <Text className="text-gray-300 mb-4">
+                          Calories: {selectedPlan.total_calories}
+                        </Text>
+
+                        {Object.entries(selectedPlan.days).map(([day, meals]) => (
+                          <View
+                            key={day}
+                            className="bg-[#1a1a1a] p-4 rounded-xl mb-4"
+                          >
+
+                            <Text className="text-red-500 text-lg font-bold mb-3">
+                              {day}
                             </Text>
 
-                            <Text className="text-red-500 ml-2">
-                              ({mealTimes[meal]})
-                            </Text>
+                            {Object.entries(meals).map(([meal, data]) => (
+                              <View key={meal} className="mb-2">
+
+                                <View className="flex-row items-center">
+                                  <Text className="text-white font-semibold">
+                                    {meal}
+                                  </Text>
+
+                                  <Text className="text-red-500 ml-2">
+                                    ({mealTimes[meal]})
+                                  </Text>
+                                </View>
+
+                                <Text className="text-gray-400">
+                                  Food: {data.food}
+                                </Text>
+
+                                <Text className="text-gray-400">
+                                  Quantity: {data.quantity}
+                                </Text>
+
+                                <Text className="text-gray-400">
+                                  Calories: {data.calories}
+                                </Text>
+
+                              </View>
+                            ))}
+
                           </View>
+                        ))}
 
-                          <Text className="text-gray-400">
-                            Food: {data.food}
-                          </Text>
+                      </>
+                    )}
 
-                          <Text className="text-gray-400">
-                            Quantity: {data.quantity}
-                          </Text>
+                  </KeyboardAwareScrollView>
 
-                          <Text className="text-gray-400">
-                            Calories: {data.calories}
-                          </Text>
+                </View>
 
-                        </View>
-                      ))}
+              </View>
 
-                    </View>
-                  ))}
+            </KeyboardAvoidingView>
 
-                </>
-              )}
+          </Modal>
 
-            </ScrollView>
-
-          </View>
         </View>
-      </Modal>
 
-    </View>
+      
+    </KeyboardAvoidingView>
   );
 }

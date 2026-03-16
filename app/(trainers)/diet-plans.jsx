@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
+import { useFocusEffect } from "@react-navigation/native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
-  View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   Text,
   TextInput,
-  ScrollView,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
-import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import { getTrainerMembers } from "../../services/api";
-import { useRouter } from "expo-router";
-import { useLocalSearchParams } from "expo-router";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
 
 const meals = ["Morning", "Breakfast", "Lunch", "Evening", "Dinner"];
 
@@ -267,7 +267,17 @@ export default function AddDietPlan() {
   );
 
   return (
-    <ScrollView className="flex-1 bg-black p-4">
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+    >
+      <ScrollView
+        className="flex-1 bg-black p-4"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
 
       {/* HEADER */}
 
@@ -473,5 +483,6 @@ export default function AddDietPlan() {
       </TouchableOpacity>
 
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
