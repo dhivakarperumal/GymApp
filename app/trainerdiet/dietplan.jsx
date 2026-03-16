@@ -19,6 +19,7 @@ import {
   getTrainerDietPlans
 } from "../../services/api";
 import TrainerHeader from "./TrainerHeader";
+import BackButton from "../BackButton";
 
 
 export default function DietPlan() {
@@ -157,10 +158,12 @@ const confirmDelete = async () => {
 
           <TrainerHeader />
 
-          <SafeAreaView className="flex-1 p-4">
+          <SafeAreaView className="flex-1 p-4 -mt-5">
+
+            <BackButton />
 
             {/* HEADER */}
-            <View className="flex-row justify-between items-center mb-4">
+            <View className="flex-row justify-between items-center mt-5 mb-4">
 
               <Text className="text-white text-2xl font-bold">
                 All Diet Plans
