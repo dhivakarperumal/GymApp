@@ -3,7 +3,7 @@ import { Tabs, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { Image, Text, TouchableOpacity, View, Modal } from "react-native";
+import { Image, Text, TouchableOpacity, View, Modal, Pressable } from "react-native";
 
 function TrainerHeader() {
   const router = useRouter();
@@ -131,39 +131,18 @@ function TrainerHeader() {
 
       {/* DROPDOWN */}
 
-      {showDropdown && (
-        <View
-          style={{ zIndex: 1000, elevation: 1000 }}
-          className="absolute top-20 right-4 w-64 bg-[#141414] border border-[#262626] rounded-xl p-3"
+      <Modal
+        transparent
+        visible={showProfileMenu}
+        animationType="fade"
+        onRequestClose={() => setShowProfileMenu(false)}
+      >
+        <Pressable
+          className="flex-1"
+          onPress={() => setShowProfileMenu(false)}
         >
-          <Text className="text-white font-bold mb-2">New Members</Text>
+          <View className="absolute top-20 right-2 w-60 bg-[#141414] border border-[#262626] rounded-xl p-2">
 
-          {newMembers.length === 0 ? (
-            <Text className="text-gray-400 text-sm">No new members</Text>
-          ) : (
-            newMembers.map((m, i) => (
-              <View key={i} className="border-b border-[#262626] py-2">
-                <Text className="text-white text-sm font-semibold">
-                  {m.username || m.user_name}
-                </Text>
-
-                <Text className="text-gray-400 text-xs">{m.user_email}</Text>
-              </View>
-            ))
-          )}
-        </View>
-      )}
-
-      {/* PROFILE POPUP */}
-
-      {showProfileMenu && (
-        <>
-
-          {/* POPUP MENU */}
-          <View
-            style={{ zIndex: 1000, elevation: 1000 }}
-            className="absolute top-20 right-2 w-60 bg-[#141414] border border-[#262626] rounded-xl p-2"
-          >
             <TouchableOpacity
               onPress={() => {
                 setShowProfileMenu(false);
@@ -187,9 +166,89 @@ function TrainerHeader() {
               <Ionicons name="log-out-outline" size={18} color="red" />
               <Text className="text-red-500 ml-2">Logout</Text>
             </TouchableOpacity>
+
           </View>
-        </>
+        </Pressable>
+      </Modal>
+
+
+      {/* NOTIFICATION DROPDOWN */}
+
+<Modal
+  transparent
+  visible={showDropdown}
+  animationType="fade"
+  onRequestClose={() => setShowDropdown(false)}
+>
+  <Pressable
+    className="flex-1"
+    onPress={() => setShowDropdown(false)}
+  >
+    <View className="absolute top-20 right-4 w-64 bg-[#141414] border border-[#262626] rounded-xl p-3">
+
+      <Text className="text-white font-bold mb-2">New Members</Text>
+
+      {newMembers.length === 0 ? (
+        <Text className="text-gray-400 text-sm">No new members</Text>
+      ) : (
+        newMembers.map((m, i) => (
+          <View key={i} className="border-b border-[#262626] py-2">
+            <Text className="text-white text-sm font-semibold">
+              {m.username || m.user_name}
+            </Text>
+
+            <Text className="text-gray-400 text-xs">
+              {m.user_email}
+            </Text>
+          </View>
+        ))
       )}
+
+    </View>
+  </Pressable>
+</Modal>
+
+      {/* PROFILE Modal */}
+
+      <Modal
+        transparent
+        visible={showProfileMenu}
+        animationType="fade"
+        onRequestClose={() => setShowProfileMenu(false)}
+      >
+        <Pressable
+          className="flex-1"
+          onPress={() => setShowProfileMenu(false)}
+        >
+          <View className="absolute top-20 right-2 w-60 bg-[#141414] border border-[#262626] rounded-xl p-2">
+
+            <TouchableOpacity
+              onPress={() => {
+                setShowProfileMenu(false);
+                router.push("/(trainers)/profile");
+              }}
+              className="flex-row items-center p-2"
+            >
+              <Ionicons name="person-outline" size={18} color="white" />
+              <Text className="text-white ml-2">Profile</Text>
+            </TouchableOpacity>
+
+            <View className="h-[1px] bg-[#262626] my-1" />
+
+            <TouchableOpacity
+              onPress={() => {
+                setShowProfileMenu(false);
+                setLogoutModalVisible(true);
+              }}
+              className="flex-row items-center p-2"
+            >
+              <Ionicons name="log-out-outline" size={18} color="red" />
+              <Text className="text-red-500 ml-2">Logout</Text>
+            </TouchableOpacity>
+
+          </View>
+        </Pressable>
+      </Modal>
 
       {/* LOGOUT CONFIRM MODAL */}
 
