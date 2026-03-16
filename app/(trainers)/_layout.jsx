@@ -1,9 +1,9 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Tabs, useRouter } from "expo-router";
-import { Image, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { Image, Text, TouchableOpacity, View, Modal } from "react-native";
 
 function TrainerHeader() {
   const router = useRouter();
@@ -14,6 +14,12 @@ function TrainerHeader() {
   const [newMembers, setNewMembers] = useState([]);
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const confirmLogout = () => {
+    setLogoutModalVisible(false);
+    router.replace("/login");
+  };
 
   useEffect(() => {
     if (!user?.id) return;
@@ -174,7 +180,7 @@ function TrainerHeader() {
             <TouchableOpacity
               onPress={() => {
                 setShowProfileMenu(false);
-                router.replace("/login");
+                setLogoutModalVisible(true);
               }}
               className="flex-row items-center p-2"
             >
@@ -184,6 +190,62 @@ function TrainerHeader() {
           </View>
         </>
       )}
+
+      {/* LOGOUT CONFIRM MODAL */}
+
+      <Modal
+        visible={logoutModalVisible}
+        transparent
+        animationType="fade"
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setLogoutModalVisible(false)}
+          className="flex-1 justify-center items-center bg-black/60"
+        >
+
+          <View className="bg-[#141414] w-[85%] rounded-2xl p-6 border border-[#262626]">
+
+            <View className="items-center mb-3">
+              <Ionicons name="log-out-outline" size={40} color="#ef4444" />
+            </View>
+
+            <Text className="text-white text-lg font-bold text-center mb-2">
+              Logout
+            </Text>
+
+            <Text className="text-gray-400 text-center mb-6">
+              Are you sure you want to logout?
+            </Text>
+
+            <View className="flex-row justify-between">
+
+              {/* Cancel */}
+              <TouchableOpacity
+                onPress={() => setLogoutModalVisible(false)}
+                className="flex-1 bg-[#262626] py-3 rounded-xl mr-2"
+              >
+                <Text className="text-center text-white font-semibold">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              {/* Logout */}
+              <TouchableOpacity
+                onPress={confirmLogout}
+                className="flex-1 bg-red-600 py-3 rounded-xl ml-2"
+              >
+                <Text className="text-center text-white font-semibold">
+                  Logout
+                </Text>
+              </TouchableOpacity>
+
+            </View>
+
+          </View>
+
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }

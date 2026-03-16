@@ -6,6 +6,7 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
+  Modal
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
@@ -19,6 +20,8 @@ export default function Profile() {
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
   /* ---------------- FETCH PROFILE ---------------- */
 
@@ -216,13 +219,68 @@ export default function Profile() {
         {/* LOGOUT BUTTON */}
 
         <TouchableOpacity
-          onPress={handleLogout}
+  onPress={() => setLogoutModalVisible(true)}
           className="bg-red-500 rounded-2xl p-4 flex-row justify-center items-center shadow-lg shadow-red-500/40"
         >
           <Ionicons name="log-out-outline" size={20} color="white" />
           <Text className="text-white font-bold text-lg ml-2">Logout</Text>
         </TouchableOpacity>
       </View>
+      {/* LOGOUT CONFIRM MODAL */}
+
+<Modal
+  visible={logoutModalVisible}
+  transparent
+  animationType="fade"
+>
+  <TouchableOpacity
+    activeOpacity={1}
+    onPress={() => setLogoutModalVisible(false)}
+    className="flex-1 justify-center items-center bg-black/60"
+  >
+
+    <View className="bg-[#141414] w-[85%] rounded-2xl p-6 border border-[#262626]">
+
+      <View className="items-center mb-3">
+        <Ionicons name="log-out-outline" size={40} color="#ef4444" />
+      </View>
+
+      <Text className="text-white text-lg font-bold text-center mb-2">
+        Logout
+      </Text>
+
+      <Text className="text-gray-400 text-center mb-6">
+        Are you sure you want to logout?
+      </Text>
+
+      <View className="flex-row justify-between">
+
+        {/* Cancel */}
+        <TouchableOpacity
+          onPress={() => setLogoutModalVisible(false)}
+          className="flex-1 bg-[#262626] py-3 rounded-xl mr-2"
+        >
+          <Text className="text-center text-white font-semibold">
+            Cancel
+          </Text>
+        </TouchableOpacity>
+
+        {/* Logout */}
+        <TouchableOpacity
+          onPress={handleLogout}
+          className="flex-1 bg-red-600 py-3 rounded-xl ml-2"
+        >
+          <Text className="text-center text-white font-semibold">
+            Logout
+          </Text>
+        </TouchableOpacity>
+
+      </View>
+
+    </View>
+
+  </TouchableOpacity>
+</Modal>
     </ScrollView>
   );
 }
