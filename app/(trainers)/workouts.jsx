@@ -454,7 +454,9 @@ export default function Workouts() {
             className="bg-[#111111] border border-[#262626] rounded-2xl p-5 mb-5"
           >
             <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-primary text-xl font-bold">{dayKey}</Text>
+              <Text className="text-primary text-xl font-bold">
+                {dayKey.replace("Day", "Day ")}
+              </Text>
 
               {Object.keys(days).length > 1 && (
                 <TouchableOpacity
