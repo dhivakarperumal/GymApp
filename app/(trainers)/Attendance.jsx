@@ -461,9 +461,9 @@ export default function Attendance() {
           {submittedAttendance && Object.keys(submittedAttendance).length > 0 && !editMode && (
             <TouchableOpacity
               onPress={() => setEditMode(true)}
-              className="bg-red-500 rounded-xl p-3 mb-4 items-center"
+              className="bg-primary rounded-xl p-3 mb-4 items-center"
             >
-              <Text className="text-black font-bold">Edit Attendance</Text>
+              <Text className="text-white font-bold">Edit Attendance</Text>
             </TouchableOpacity>
           )}
 
