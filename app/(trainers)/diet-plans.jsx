@@ -639,7 +639,8 @@ export default function AddDietPlan() {
           <DateTimePicker
             value={new Date()}
             mode="time"
-            display="spinner"   // 🔥 THIS gives wheel like your image (iOS best)
+            display="default"  
+            is24Hour={false}   
             onChange={(event, selectedDate) => {
               setShowTimePicker(false);
 
