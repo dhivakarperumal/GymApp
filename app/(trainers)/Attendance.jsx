@@ -34,9 +34,9 @@ const getDistance = (lat1, lon1, lat2, lon2) => {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(lat1 * (Math.PI / 180)) *
-      Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
@@ -62,6 +62,92 @@ export default function Attendance() {
   const date = dayjs().format("YYYY-MM-DD");
 
   const [submittedAttendance, setSubmittedAttendance] = useState({});
+
+  const [markingAttendance, setMarkingAttendance] = useState(false);
+  const [trainerAttendanceMarked, setTrainerAttendanceMarked] = useState(false);
+
+  const handleTrainerCheckIn = async () => {
+    if (!trainerId) return;
+
+    try {
+      setMarkingAttendance(true);
+
+      const { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        Alert.alert("Permission denied", "Location permission required");
+        return;
+      }
+
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+
+      const latitude = loc.coords.latitude;
+      const longitude = loc.coords.longitude;
+
+      setTrainerCoords({ lat: latitude, lng: longitude });
+
+      // ✅ SAME DISTANCE CHECK
+      const distance = getDistance(
+        latitude,
+        longitude,
+        GYM_LOCATION.lat,
+        GYM_LOCATION.lng
+      );
+
+      const isAtGym = distance <= GYM_LOCATION.radius;
+
+      if (!isAtGym) {
+        Alert.alert(
+          "Not at Gym",
+          `You are ${Math.round(distance)}m away from gym`
+        );
+        return;
+      }
+
+      // ✅ OPTIONAL: Reverse Geocode (same as web)
+      let locationName = GYM_LOCATION.name;
+
+      try {
+        const geoRes = await api.get(
+          `/attendance/reverse-geocode?lat=${latitude}&lng=${longitude}`
+        );
+
+        if (geoRes.data?.display_name) {
+          locationName = geoRes.data.display_name;
+        }
+      } catch (e) {
+        console.log("Geocode fallback used");
+      }
+
+      setLocationName(locationName);
+
+      // ✅ SAME PAYLOAD AS WEB
+      const payload = {
+        memberId: trainerId,   // trainer marking self
+        trainerId: trainerId,
+        status: "Present",
+        date,
+        lat: latitude,
+        lng: longitude,
+        locationName,
+      };
+
+      await api.post("/attendance", payload);
+
+      setTrainerAttendanceMarked(true);
+      setLocationVerified(true);
+
+      Alert.alert("Success", "Trainer attendance marked successfully");
+
+    } catch (err) {
+      console.log("Check-in error:", err);
+      Alert.alert("Error", "Failed to mark attendance");
+    } finally {
+      setMarkingAttendance(false);
+    }
+  };
 
   const presentCount =
     Object.values(submittedAttendance).filter(Boolean).length;
@@ -195,6 +281,11 @@ export default function Attendance() {
       return;
     }
 
+    if (!trainerAttendanceMarked) {
+      Alert.alert("Check-in required", "Trainer must check-in first");
+      return;
+    }
+
     try {
       setSaving(true);
 
@@ -302,6 +393,46 @@ export default function Attendance() {
             </View>
           </View>
 
+          <View className="bg-[#141414] border border-[#262626] rounded-2xl p-5 mb-5">
+            <View className="flex-row items-center justify-between">
+
+              {/* LEFT */}
+              <View className="flex-row items-center">
+                <Ionicons name="person-circle" size={22} color="#ff3c00" />
+                <Text className="text-white ml-2 font-semibold">
+                  Trainer Check-in
+                </Text>
+              </View>
+
+              {/* BUTTON */}
+              <TouchableOpacity
+                onPress={handleTrainerCheckIn}
+                disabled={markingAttendance}
+                className={`px-4 py-2 rounded-xl ${markingAttendance
+                    ? "bg-gray-600"
+                    : trainerAttendanceMarked
+                      ? "bg-green-600"
+                      : "bg-primary"
+                  }`}
+              >
+                <Text className="text-white font-semibold">
+                  {markingAttendance
+                    ? "Checking..."
+                    : trainerAttendanceMarked
+                      ? "Checked In ✓"
+                      : "Check-in"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* STATUS TEXT */}
+            <Text className="text-gray-400 text-xs mt-3">
+              {trainerAttendanceMarked
+                ? `Checked in at ${locationName}`
+                : "Trainer not checked in"}
+            </Text>
+          </View>
+
           {/* LOCATION CARD */}
 
           <View className="bg-[#141414] border border-[#262626] rounded-2xl p-5 mb-5">
@@ -380,9 +511,8 @@ export default function Attendance() {
 
                   <TouchableOpacity
                     onPress={() => toggleMember(id)}
-                    className={`w-8 h-8 rounded-lg items-center justify-center ${
-                      checked ? "bg-green-500" : "bg-[#262626]"
-                    }`}
+                    className={`w-8 h-8 rounded-lg items-center justify-center ${checked ? "bg-green-500" : "bg-[#262626]"
+                      }`}
                   >
                     {checked && (
                       <Ionicons name="checkmark" size={18} color="white" />
