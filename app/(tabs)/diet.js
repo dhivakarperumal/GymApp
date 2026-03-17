@@ -15,12 +15,35 @@ export default function DietChartScreen() {
 
   const [createdAt, setCreatedAt] = useState(null);
 
+  const [filter, setFilter] = useState("TODAY");
+
   const mealTimes = {
     Morning: "06:00 AM",
     Breakfast: "09:00 AM",
     Lunch: "02:00 PM",
     Evening: "04:30 PM",
     Dinner: "08:00 PM",
+  };
+
+  const getFilteredDiet = () => {
+    if (!diet || !createdAt) return [];
+
+    const baseDate = dayjs(createdAt);
+    const today = dayjs();
+
+    return Object.entries(diet).filter(([day, meals], index) => {
+      const date = baseDate.add(index, "day");
+
+      if (filter === "TODAY") {
+        return date.isSame(today, "day");
+      }
+
+      if (filter === "WEEK") {
+        return date.isAfter(today.subtract(7, "day"));
+      }
+
+      return true; // ALL
+    });
   };
 
   const fetchDietPlan = async () => {
@@ -58,11 +81,33 @@ export default function DietChartScreen() {
 
       {title && <Text className="text-gray-400 mb-6">{title}</Text>}
 
+      <View className="flex-row mb-4">
+        {["ALL", "TODAY", "WEEK"].map((f) => (
+          <TouchableOpacity
+            key={f}
+            onPress={() => setFilter(f)}
+            className={`px-4 py-2 rounded-full mr-2 ${
+              filter === f ? "bg-primary" : "bg-[#222]"
+            }`}
+          >
+            <Text
+              className={`text-sm font-semibold ${
+                filter === f ? "text-white" : "text-gray-400"
+              }`}
+            >
+              {f === "ALL" ? "All" : f === "TODAY" ? "Today" : "This Week"}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       {diet &&
-        Object.entries(diet).map(([day, meals], index) => {
+        getFilteredDiet().map(([day, meals], index) => {
           const baseDate = dayjs(createdAt);
+          const originalIndex = Number(day.replace("Day", "")) - 1;
+
           const calculatedDate = baseDate
-            .add(index, "day")
+            .add(originalIndex, "day")
             .format("DD-MM-YYYY");
 
           return (
