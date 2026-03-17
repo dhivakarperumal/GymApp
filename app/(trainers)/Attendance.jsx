@@ -56,6 +56,7 @@ export default function Attendance() {
   const [trainerCoords, setTrainerCoords] = useState(null);
   const [locationName, setLocationName] = useState("");
   const [locationVerified, setLocationVerified] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const [search, setSearch] = useState("");
 
@@ -307,6 +308,7 @@ export default function Attendance() {
       await Promise.all(promises);
 
       setSubmittedAttendance(attendanceStates);
+      setEditMode(false);
 
       Alert.alert("Success", "Attendance saved successfully");
     } catch (err) {
@@ -409,10 +411,10 @@ export default function Attendance() {
                 onPress={handleTrainerCheckIn}
                 disabled={markingAttendance}
                 className={`px-4 py-2 rounded-xl ${markingAttendance
-                    ? "bg-gray-600"
-                    : trainerAttendanceMarked
-                      ? "bg-green-600"
-                      : "bg-primary"
+                  ? "bg-gray-600"
+                  : trainerAttendanceMarked
+                    ? "bg-green-600"
+                    : "bg-primary"
                   }`}
               >
                 <Text className="text-white font-semibold">
@@ -456,6 +458,14 @@ export default function Attendance() {
               {locationVerified ? locationName : "Location not verified"}
             </Text>
           </View>
+          {submittedAttendance && Object.keys(submittedAttendance).length > 0 && !editMode && (
+            <TouchableOpacity
+              onPress={() => setEditMode(true)}
+              className="bg-primary rounded-xl p-3 mb-4 items-center"
+            >
+              <Text className="text-white font-bold">Edit Attendance</Text>
+            </TouchableOpacity>
+          )}
 
           {/* SELECT ALL */}
 
@@ -491,7 +501,13 @@ export default function Attendance() {
 
           {filteredMembers.map((m, i) => {
             const id = m.id;
-            const checked = attendanceStates[id];
+
+            const checked =
+              editMode || !submittedAttendance[id]
+                ? attendanceStates[id]
+                : submittedAttendance[id];
+
+            const isSubmitted = submittedAttendance[id] !== undefined;
 
             return (
               <View
@@ -505,19 +521,29 @@ export default function Attendance() {
 
                   <View className="flex-1">
                     <Text className="text-white font-bold">{m.name}</Text>
-
                     <Text className="text-gray-400 text-xs">{m.email}</Text>
                   </View>
 
-                  <TouchableOpacity
-                    onPress={() => toggleMember(id)}
-                    className={`w-8 h-8 rounded-lg items-center justify-center ${checked ? "bg-green-500" : "bg-[#262626]"
-                      }`}
-                  >
-                    {checked && (
-                      <Ionicons name="checkmark" size={18} color="white" />
-                    )}
-                  </TouchableOpacity>
+                  {/* ✅ AFTER SUBMIT → SHOW TEXT */}
+                  {!editMode && isSubmitted ? (
+                    <Text
+                      className={`font-bold ${checked ? "text-green-500" : "text-red-500"
+                        }`}
+                    >
+                      {checked ? "Present" : "Absent"}
+                    </Text>
+                  ) : (
+                    /* ✅ EDIT MODE → SHOW CHECKBOX */
+                    <TouchableOpacity
+                      onPress={() => toggleMember(id)}
+                      className={`w-8 h-8 rounded-lg items-center justify-center ${checked ? "bg-green-500" : "bg-[#262626]"
+                        }`}
+                    >
+                      {checked && (
+                        <Ionicons name="checkmark" size={18} color="white" />
+                      )}
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
             );

@@ -80,13 +80,13 @@ export default function TabLayout() {
         },
 
         headerLeft: () => (
-          <View className="pl-4">
+          <TouchableOpacity onPress={() => router.push("/")}>
             <Image
               source={require("../../assets/images/logo_dark.png")}
               className="w-20 h-11"
               resizeMode="contain"
             />
-          </View>
+          </TouchableOpacity>
         ),
 
         headerRight: () => (
@@ -119,9 +119,9 @@ export default function TabLayout() {
             </TouchableOpacity>
 
             {/* NOTIFICATION */}
-            <TouchableOpacity className="mr-4">
+            {/* <TouchableOpacity className="mr-4">
               <Ionicons name="notifications-outline" size={22} color="white" />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* AVATAR */}
             <TouchableOpacity
@@ -129,9 +129,8 @@ export default function TabLayout() {
                 if (!user) router.push("/(auth)/login");
                 else setMenuVisible(true);
               }}
-              className={`w-9 h-9 rounded-full items-center justify-center ${
-                user ? "bg-red-600" : "bg-gray-700"
-              }`}
+              className={`w-9 h-9 rounded-full items-center justify-center ${user ? "bg-red-600" : "bg-gray-700"
+                }`}
             >
               {user ? (
                 <Text className="text-white font-bold">

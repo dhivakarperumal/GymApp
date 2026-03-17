@@ -268,7 +268,6 @@ export default function Orders() {
         </ScrollView>
 
         {/* MODAL */}
-        {/* MODAL */}
         <Modal transparent visible={!!selectedOrder} animationType="fade">
           <Pressable
             style={{
