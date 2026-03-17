@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import { getTrainerMembers, getTrainerDietPlans } from "../../services/api";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const meals = ["Morning", "Breakfast", "Lunch", "Evening", "Dinner"];
 
@@ -38,6 +39,8 @@ export default function AddDietPlan() {
   const [members, setMembers] = useState([]);
   const [expandedDay, setExpandedDay] = useState(null);
   const [memberPlans, setMemberPlans] = useState([]);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [selectedTimeField, setSelectedTimeField] = useState(null);
 
   const [existingPlanId, setExistingPlanId] = useState(null);
 
@@ -547,15 +550,17 @@ export default function AddDietPlan() {
                       </Text>
 
                       <Text className="text-gray-400 text-xs mb-2">Time</Text>
-                      <TextInput
-                        placeholder="Time (HH:mm)"
-                        placeholderTextColor="#aaa"
-                        value={form.days[day][meal].time}
-                        onChangeText={(text) =>
-                          handleMealChange(day, meal, "time", text)
-                        }
-                        className="bg-black text-white px-3 py-2 rounded-lg mb-2"
-                      />
+                      <TouchableOpacity
+                        onPress={() => {
+                          setSelectedTimeField({ day, meal });
+                          setShowTimePicker(true);
+                        }}
+                        className="bg-black px-3 py-3 rounded-lg mb-2"
+                      >
+                        <Text className="text-white">
+                          {form.days[day][meal].time || "Select Time"}
+                        </Text>
+                      </TouchableOpacity>
 
                       <Text className="text-gray-400 text-xs mb-2">Food</Text>
                       <TextInput
@@ -630,6 +635,39 @@ export default function AddDietPlan() {
             Save Diet Plan
           </Text>
         </TouchableOpacity>
+        {showTimePicker && (
+          <DateTimePicker
+            value={new Date()}
+            mode="time"
+            display="spinner"   // 🔥 THIS gives wheel like your image (iOS best)
+            onChange={(event, selectedDate) => {
+              setShowTimePicker(false);
+
+              if (selectedDate && selectedTimeField) {
+                let hours = selectedDate.getHours();
+                let minutes = selectedDate.getMinutes();
+
+                const ampm = hours >= 12 ? "PM" : "AM";
+
+                hours = hours % 12;
+                hours = hours === 0 ? 12 : hours;
+
+                const formatted = `${hours
+                  .toString()
+                  .padStart(2, "0")}:${minutes
+                    .toString()
+                    .padStart(2, "0")} ${ampm}`;
+
+                handleMealChange(
+                  selectedTimeField.day,
+                  selectedTimeField.meal,
+                  "time",
+                  formatted
+                );
+              }
+            }}
+          />
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
