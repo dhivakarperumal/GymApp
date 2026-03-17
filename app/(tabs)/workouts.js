@@ -110,7 +110,6 @@
 //   );
 // }
 
-
 import { useEffect, useState } from "react";
 import {
   View,
@@ -124,6 +123,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { getTrainerWorkouts } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { SafeAreaView } from "react-native-safe-area-context";
+import dayjs from "dayjs";
 
 export default function Workouts() {
   const { user } = useAuth();
@@ -251,7 +251,11 @@ export default function Workouts() {
                 className="bg-[#141414] rounded-2xl p-4 mb-4 border border-border"
               >
                 <View className="flex-row justify-between items-center mb-3">
-                  <Text className="text-primary font-bold text-lg">{day}</Text>
+                  <Text className="text-primary font-bold text-lg">
+                    {dayjs(workoutData.created_at)
+                      .add(index, "day")
+                      .format("DD-MM-YYYY")}
+                  </Text>
 
                   <View className="bg-card px-3 py-1 rounded-full border border-border">
                     <Text className="text-gray-400 text-sm">
