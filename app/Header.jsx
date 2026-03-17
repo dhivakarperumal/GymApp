@@ -85,9 +85,9 @@ export default function Header() {
         </TouchableOpacity>
 
         {/* NOTIFICATION */}
-        <TouchableOpacity className="mr-4">
+        {/* <TouchableOpacity className="mr-4">
           <Ionicons name="notifications-outline" size={22} color="white" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* AVATAR */}
         <TouchableOpacity
