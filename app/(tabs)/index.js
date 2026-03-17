@@ -20,8 +20,17 @@ import { useAuth } from "../../context/AuthContext";
 import { Dimensions } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import ProductCard from "../ProductCard";
+import dayjs from "dayjs";
 
 const { width } = Dimensions.get("window");
+
+const mealTimes = {
+  Morning: "06:00 AM",
+  Breakfast: "09:00 AM",
+  Lunch: "02:00 PM",
+  Evening: "04:30 PM",
+  Dinner: "08:00 PM",
+};
 
 export default function Home() {
   const [reviews, setReviews] = useState([]);
@@ -45,6 +54,8 @@ export default function Home() {
 
   const [userPlan, setUserPlan] = useState(null);
 
+  const formatDate = (date) => dayjs(date).format("DD-MM-YYYY");
+
   const fetchUserPlan = async () => {
     try {
       if (!user?.id) return;
@@ -60,7 +71,7 @@ export default function Home() {
 
       // filter only current user's plans
       const myPlans = memberships.filter(
-        (p) => Number(p.userId || p.user_id) === Number(user.id)
+        (p) => Number(p.userId || p.user_id) === Number(user.id),
       );
 
       if (myPlans.length === 0) {
@@ -70,7 +81,7 @@ export default function Home() {
 
       // find active plan
       const activePlan = myPlans.find(
-        (plan) => new Date(plan.endDate) > new Date()
+        (plan) => new Date(plan.endDate) > new Date(),
       );
 
       setUserPlan(activePlan || myPlans[0]);
@@ -102,30 +113,30 @@ export default function Home() {
 
       const myDiet = data.find((item) => item.member_email === user.email);
 
-      if (!myDiet || !myDiet.days) {
-        setTodayDiet({});
-        return;
-      }
-
-      const createdDate = new Date(myDiet.created_at);
-      const today = new Date();
-
-      const diffDays =
-        Math.floor((today - createdDate) / (1000 * 60 * 60 * 24)) + 1;
-
-      const totalDays = Object.keys(myDiet.days).length;
-
-      if (diffDays > totalDays) {
+      if (!myDiet || !myDiet.days || !myDiet.created_at) {
         setTodayDiet({});
         setTodayDay("");
         return;
       }
 
-      const todayKey = `Day${diffDays}`;
-      const todayMeals = myDiet.days[todayKey] || {};
+      const baseDate = dayjs(myDiet.created_at);
+      const today = dayjs();
 
-      setTodayDiet(todayMeals);
-      setTodayDay(todayKey);
+      let foundMeals = {};
+      let foundDate = "";
+
+      Object.entries(myDiet.days).forEach(([day, meals]) => {
+        const index = Number(day.replace("Day", "")) - 1;
+        const date = baseDate.add(index, "day");
+
+        if (date.isSame(today, "day")) {
+          foundMeals = meals;
+          foundDate = formatDate(date); // ✅ same as workout
+        }
+      });
+
+      setTodayDiet(foundMeals);
+      setTodayDay(foundDate);
       setDietTitle(myDiet.title);
     } catch (err) {
       console.log("Today diet error:", err);
@@ -144,27 +155,53 @@ export default function Home() {
 
       const myWorkout = data.find((item) => item.member_email === user.email);
 
-      if (!myWorkout || !myWorkout.days) {
+      if (!myWorkout || !myWorkout.days || !myWorkout.created_at) {
         setTodayWorkout([]);
         return;
       }
 
-      const createdDate = new Date(myWorkout.created_at);
-      const today = new Date();
+      const baseDate = dayjs(myWorkout.created_at);
+      const today = dayjs();
 
-      const diffDays =
-        Math.floor((today - createdDate) / (1000 * 60 * 60 * 24)) + 1;
+      let foundWorkout = null;
+      let foundDayKey = "";
 
-      const totalDays = Object.keys(myWorkout.days).length;
+      let closestWorkout = null;
+      let closestDayKey = "";
 
-      const todayIndex = diffDays > totalDays ? totalDays : diffDays;
+      Object.entries(myWorkout.days).forEach(([day, exercises]) => {
+        const index = Number(day.replace("Day", "")) - 1;
+        const workoutDate = baseDate.add(index, "day");
 
-      const todayKey = `Day${todayIndex}`;
+        // ✅ Exact today match
+        if (workoutDate.isSame(today, "day")) {
+          foundWorkout = exercises;
+          foundDayKey = day;
+        }
 
-      const todayExercises = myWorkout.days[todayKey] || [];
+        // ✅ Keep latest past workout (fallback)
+        if (workoutDate.isBefore(today) || workoutDate.isSame(today, "day")) {
+          closestWorkout = exercises;
+          closestDayKey = day;
+        }
+      });
 
-      setTodayWorkout(todayExercises);
-      setTodayWorkoutDay(todayKey);
+      if (foundWorkout) {
+        const index = Number(foundDayKey.replace("Day", "")) - 1;
+        const date = baseDate.add(index, "day");
+
+        setTodayWorkout(foundWorkout);
+        setTodayWorkoutDay(formatDate(date));
+      } else if (closestWorkout) {
+        const index = Number(closestDayKey.replace("Day", "")) - 1;
+        const date = baseDate.add(index, "day");
+
+        setTodayWorkout(closestWorkout);
+        setTodayWorkoutDay(formatDate(date));
+      } else {
+        setTodayWorkout([]);
+        setTodayWorkoutDay("");
+      }
     } catch (err) {
       console.log("Workout fetch error:", err);
       setTodayWorkout([]);
@@ -398,7 +435,7 @@ export default function Home() {
                   TODAY'S WORKOUT
                 </Text>
 
-                <Text className="text-gray-400 text-xs mt-1">
+                <Text className="text-gray-400 text-sm mt-1">
                   {todayWorkoutDay} Plan
                 </Text>
               </View>
@@ -481,7 +518,7 @@ export default function Home() {
                 </Text>
 
                 {todayDay && (
-                  <Text className="text-gray-400 text-xs mt-1">
+                  <Text className="text-gray-400 text-sm mt-1">
                     {todayDay} Meals
                   </Text>
                 )}
@@ -499,9 +536,13 @@ export default function Home() {
                 key={meal}
                 className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]"
               >
-                <Text className="text-primary text-xs font-semibold mb-1">
-                  {meal}
-                </Text>
+                <View className="flex-row items-center justify-between mb-1">
+                  <Text className="text-white font-semibold">{meal}</Text>
+
+                  <Text className="text-red-500 text-sm">
+                    {mealTimes[meal]}
+                  </Text>
+                </View>
 
                 <Text className="text-gray-300 text-sm">
                   {value.food} ({value.quantity})
