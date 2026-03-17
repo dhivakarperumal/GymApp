@@ -173,11 +173,11 @@ export default function AddDietPlan() {
 
       const planIdToUpdate = id || existingPlanId;
 
-const url = planIdToUpdate
-  ? `https://mygym.qtechx.com/api/diet-plans/${planIdToUpdate}`
-  : `https://mygym.qtechx.com/api/diet-plans`;
+      const url = planIdToUpdate
+        ? `https://mygym.qtechx.com/api/diet-plans/${planIdToUpdate}`
+        : `https://mygym.qtechx.com/api/diet-plans`;
 
-const method = planIdToUpdate ? "PUT" : "POST";
+      const method = planIdToUpdate ? "PUT" : "POST";
 
       console.log("API URL:", url);
       console.log("METHOD:", method);
@@ -331,20 +331,20 @@ const method = planIdToUpdate ? "PUT" : "POST";
 
               if (existingPlan) {
 
-  setExistingPlanId(existingPlan.id);
+                setExistingPlanId(existingPlan.id);
 
-  setForm({
-    memberId: String(existingPlan.member_id),
-    memberName: existingPlan.member_name,
-    memberEmail: existingPlan.member_email || "",
-    memberMobile: existingPlan.member_mobile || "",
-    title: existingPlan.title,
-    totalCalories: existingPlan.total_calories || 0,
-    duration: existingPlan.duration,
-    days: existingPlan.days || { Day1: generateSingleDay() },
-  });
+                setForm({
+                  memberId: String(existingPlan.member_id),
+                  memberName: existingPlan.member_name,
+                  memberEmail: existingPlan.member_email || "",
+                  memberMobile: existingPlan.member_mobile || "",
+                  title: existingPlan.title,
+                  totalCalories: existingPlan.total_calories || 0,
+                  duration: existingPlan.duration,
+                  days: existingPlan.days || { Day1: generateSingleDay() },
+                });
 
-} else {
+              } else {
 
                 setForm((p) => ({
                   ...p,
