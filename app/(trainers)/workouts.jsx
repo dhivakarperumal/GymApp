@@ -342,7 +342,7 @@ export default function Workouts() {
 
         <View className="flex-row justify-between items-center mb-6">
           <Text className="text-white text-2xl font-bold">
-            Create Workout Program
+            Create Workout
           </Text>
 
           <TouchableOpacity

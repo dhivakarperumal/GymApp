@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import { getTrainerMembers, getTrainerDietPlans } from "../../services/api";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const meals = ["Morning", "Breakfast", "Lunch", "Evening", "Dinner"];
 
@@ -24,6 +25,7 @@ const generateSingleDay = () => {
       food: "",
       quantity: "",
       calories: "",
+      time: "", // ✅ ADD THIS
     };
   });
   return day;
@@ -37,6 +39,8 @@ export default function AddDietPlan() {
   const [members, setMembers] = useState([]);
   const [expandedDay, setExpandedDay] = useState(null);
   const [memberPlans, setMemberPlans] = useState([]);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [selectedTimeField, setSelectedTimeField] = useState(null);
 
   const [existingPlanId, setExistingPlanId] = useState(null);
 
@@ -45,6 +49,7 @@ export default function AddDietPlan() {
     memberName: "",
     memberEmail: "",
     memberMobile: "",
+    memberWeight: "",
     title: "",
     totalCalories: "",
     duration: 7,
@@ -118,15 +123,42 @@ export default function AddDietPlan() {
 
       const data = await res.json();
 
+      const fixedDays = {};
+
+      Object.keys(data.days || {}).forEach((dayKey) => {
+        fixedDays[dayKey] = {};
+
+        meals.forEach((meal) => {
+          const mealData = data.days[dayKey][meal];
+
+          if (typeof mealData === "string") {
+            fixedDays[dayKey][meal] = {
+              food: mealData,
+              quantity: "",
+              calories: "",
+              time: "",
+            };
+          } else {
+            fixedDays[dayKey][meal] = {
+              food: mealData?.food || "",
+              quantity: mealData?.quantity || "",
+              calories: mealData?.calories || "",
+              time: mealData?.time || "",
+            };
+          }
+        });
+      });
+
       setForm({
         memberId: String(data.memberId || data.member_id),
         memberName: data.member_name,
         memberEmail: data.member_email || "",
         memberMobile: data.member_mobile || "",
+        memberWeight: data.member_weight || "",
         title: data.title,
         totalCalories: data.totalCalories || data.total_calories || 0,
         duration: data.duration || 1,
-        days: data.days || { Day1: generateSingleDay() },
+        days: fixedDays,
       });
     };
 
@@ -273,6 +305,32 @@ export default function AddDietPlan() {
       days: updated,
     }));
   };
+
+  const handleCopyDay1ToAll = () => {
+    if (Object.keys(form.days).length <= 1) {
+      alert("Add more days first");
+      return;
+    }
+
+    const day1Data = form.days["Day1"];
+
+    const deepCopy = () => JSON.parse(JSON.stringify(day1Data));
+
+    setForm((prev) => {
+      const updatedDays = { ...prev.days };
+
+      Object.keys(updatedDays).forEach((dayKey) => {
+        if (dayKey !== "Day1") {
+          updatedDays[dayKey] = deepCopy();
+        }
+      });
+
+      return { ...prev, days: updatedDays };
+    });
+
+    alert("Day 1 copied to all days");
+  };
+
   useFocusEffect(
     useCallback(() => {
       if (!id) {
@@ -325,25 +383,56 @@ export default function AddDietPlan() {
               );
 
               if (existingPlan) {
+
                 setExistingPlanId(existingPlan.id);
+
+                const fixedDays = {};
+
+                Object.keys(existingPlan.days || {}).forEach((dayKey) => {
+                  fixedDays[dayKey] = {};
+
+                  meals.forEach((meal) => {
+                    const mealData = existingPlan.days[dayKey][meal];
+
+                    if (typeof mealData === "string") {
+                      fixedDays[dayKey][meal] = {
+                        food: mealData,
+                        quantity: "",
+                        calories: "",
+                        time: "",
+                      };
+                    } else {
+                      fixedDays[dayKey][meal] = {
+                        food: mealData?.food || "",
+                        quantity: mealData?.quantity || "",
+                        calories: mealData?.calories || "",
+                        time: mealData?.time || "",
+                      };
+                    }
+                  });
+                });
 
                 setForm({
                   memberId: String(existingPlan.member_id),
                   memberName: existingPlan.member_name,
                   memberEmail: existingPlan.member_email || "",
                   memberMobile: existingPlan.member_mobile || "",
+                  memberWeight: existingPlan.member_weight || "", // ✅ ADD
                   title: existingPlan.title,
                   totalCalories: existingPlan.total_calories || 0,
                   duration: existingPlan.duration,
-                  days: existingPlan.days || { Day1: generateSingleDay() },
+                  days: fixedDays, // ✅ IMPORTANT
                 });
+
               } else {
+
                 setForm((p) => ({
                   ...p,
                   memberId: value,
                   memberName: m?.name || "",
                   memberEmail: m?.email || "",
                   memberMobile: m?.mobile || "",
+                  memberWeight: m?.weight || m?.member_weight || "",
                 }));
               }
             }}
@@ -378,6 +467,17 @@ export default function AddDietPlan() {
           placeholder="Total Calories"
           value={String(form.totalCalories)}
           editable={false}
+          className="bg-[#141414] text-white rounded-xl px-4 py-3 mb-4"
+        />
+
+        <Text className="text-gray-400 text-xs mb-1">Member Weight</Text>
+        <TextInput
+          placeholder="Weight (kg)"
+          placeholderTextColor="#aaa"
+          value={form.memberWeight}
+          onChangeText={(text) =>
+            setForm((prev) => ({ ...prev, memberWeight: text }))
+          }
           className="bg-[#141414] text-white rounded-xl px-4 py-3 mb-4"
         />
 
@@ -449,6 +549,19 @@ export default function AddDietPlan() {
                         {meal}
                       </Text>
 
+                      <Text className="text-gray-400 text-xs mb-2">Time</Text>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setSelectedTimeField({ day, meal });
+                          setShowTimePicker(true);
+                        }}
+                        className="bg-black px-3 py-3 rounded-lg mb-2"
+                      >
+                        <Text className="text-white">
+                          {form.days[day][meal].time || "Select Time"}
+                        </Text>
+                      </TouchableOpacity>
+
                       <Text className="text-gray-400 text-xs mb-2">Food</Text>
                       <TextInput
                         placeholder="Enter food name"
@@ -491,9 +604,23 @@ export default function AddDietPlan() {
                         }
                         className="bg-black text-white px-3 py-2 rounded-lg"
                       />
+
+
                     </View>
                   ))}
+
+                  {day === "Day1" && Object.keys(form.days).length > 1 && (
+                    <TouchableOpacity
+                      onPress={handleCopyDay1ToAll}
+                      className="bg-green-600 mt-2 p-3 rounded-xl items-center"
+                    >
+                      <Text className="text-white font-bold">
+                        Copy Day 1 to All Days
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
+
               )}
             </View>
           ))}
@@ -508,6 +635,40 @@ export default function AddDietPlan() {
             Save Diet Plan
           </Text>
         </TouchableOpacity>
+        {showTimePicker && (
+          <DateTimePicker
+            value={new Date()}
+            mode="time"
+            display="default"  
+            is24Hour={false}   
+            onChange={(event, selectedDate) => {
+              setShowTimePicker(false);
+
+              if (selectedDate && selectedTimeField) {
+                let hours = selectedDate.getHours();
+                let minutes = selectedDate.getMinutes();
+
+                const ampm = hours >= 12 ? "PM" : "AM";
+
+                hours = hours % 12;
+                hours = hours === 0 ? 12 : hours;
+
+                const formatted = `${hours
+                  .toString()
+                  .padStart(2, "0")}:${minutes
+                    .toString()
+                    .padStart(2, "0")} ${ampm}`;
+
+                handleMealChange(
+                  selectedTimeField.day,
+                  selectedTimeField.meal,
+                  "time",
+                  formatted
+                );
+              }
+            }}
+          />
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );

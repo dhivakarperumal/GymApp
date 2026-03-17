@@ -352,6 +352,16 @@ export default function TrainersLayout() {
       />
 
       <Tabs.Screen
+        name="update-weight"
+        options={{
+          title: "Weight",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="fitness" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="diet-plans"
         options={{
           title: "Diet",

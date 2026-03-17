@@ -17,14 +17,6 @@ export default function DietChartScreen() {
 
   const [filter, setFilter] = useState("TODAY");
 
-  const mealTimes = {
-    Morning: "06:00 AM",
-    Breakfast: "09:00 AM",
-    Lunch: "02:00 PM",
-    Evening: "04:30 PM",
-    Dinner: "08:00 PM",
-  };
-
   const getFilteredDiet = () => {
     if (!diet || !createdAt) return [];
 
@@ -86,14 +78,12 @@ export default function DietChartScreen() {
           <TouchableOpacity
             key={f}
             onPress={() => setFilter(f)}
-            className={`px-4 py-2 rounded-full mr-2 ${
-              filter === f ? "bg-primary" : "bg-[#222]"
-            }`}
+            className={`px-4 py-2 rounded-full mr-2 ${filter === f ? "bg-primary" : "bg-[#222]"
+              }`}
           >
             <Text
-              className={`text-sm font-semibold ${
-                filter === f ? "text-white" : "text-gray-400"
-              }`}
+              className={`text-sm font-semibold ${filter === f ? "text-white" : "text-gray-400"
+                }`}
             >
               {f === "ALL" ? "All" : f === "TODAY" ? "Today" : "This Week"}
             </Text>
@@ -128,11 +118,11 @@ export default function DietChartScreen() {
                   key={meal}
                   className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]"
                 >
-                  <View className="flex-row items-center justify-between">
+                  <View className="flex-row justify-between items-center">
                     <Text className="text-white font-semibold">{meal}</Text>
 
                     <Text className="text-red-500 text-sm">
-                      {mealTimes[meal]}
+                      {value.time || "No time"}
                     </Text>
                   </View>
 
