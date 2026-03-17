@@ -413,7 +413,7 @@ export default function Workouts() {
             {members.map((m) => (
               <Picker.Item
                 key={m.id}
-                label={`${m.name}${m.email ? ` • ${m.email}` : ""}${m.mobile ? ` • ${m.mobile}` : ""}${m.planName ? ` (${m.planName})` : ""}`}
+                label={`${m.name}${m.planName ? ` (${m.planName})` : ""}`}
                 value={m.id}
               />
             ))}
