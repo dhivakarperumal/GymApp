@@ -24,14 +24,6 @@ import dayjs from "dayjs";
 
 const { width } = Dimensions.get("window");
 
-const mealTimes = {
-  Morning: "06:00 AM",
-  Breakfast: "09:00 AM",
-  Lunch: "02:00 PM",
-  Evening: "04:30 PM",
-  Dinner: "08:00 PM",
-};
-
 export default function Home() {
   const [reviews, setReviews] = useState([]);
   const { user } = useAuth();
@@ -536,11 +528,11 @@ export default function Home() {
                 key={meal}
                 className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]"
               >
-                <View className="flex-row items-center justify-between mb-1">
+                <View className="flex-row justify-between items-center">
                   <Text className="text-white font-semibold">{meal}</Text>
 
                   <Text className="text-red-500 text-sm">
-                    {mealTimes[meal]}
+                    {value.time || "No time"}
                   </Text>
                 </View>
 
