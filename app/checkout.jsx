@@ -537,23 +537,23 @@ export default function Checkout() {
           Payment Method
         </Text>
 
-        <View className="bg-[#111] p-4 rounded-2xl mb-4">
+        <View className="bg-[#111] p-4 rounded-2xl mb-4 flex-row justify-between">
 
           {/* ONLINE PAYMENT */}
           <TouchableOpacity
-            className="flex-row items-center mb-3"
+            className="flex-row items-center w-[48%]"
             onPress={() => setPaymentMethod("ONLINE")}
           >
             <View
               className={`w-5 h-5 rounded-full border-2 mr-3 ${paymentMethod === "ONLINE" ? "border-red-500 bg-red-500" : "border-gray-400"
                 }`}
             />
-            <Text className="text-white">Online Payment (Razorpay)</Text>
+            <Text className="text-white">Pay Online</Text>
           </TouchableOpacity>
 
           {/* COD */}
           <TouchableOpacity
-            className="flex-row items-center"
+            className="flex-row items-center w-[48%]"
             onPress={() => setPaymentMethod("COD")}
           >
             <View
