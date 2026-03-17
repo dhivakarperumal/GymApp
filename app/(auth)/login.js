@@ -36,7 +36,7 @@ const LoginScreen = () => {
     if (role === "admin") {
       router.replace("/(admin)");
     } else if (role === "trainer") {
-      router.replace("/(trainers)/dashboard");
+      router.replace("/TrainerCheckInScreen");
     } else {
       router.replace("/(tabs)");
     }
