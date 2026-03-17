@@ -10,6 +10,8 @@ import {
   View,
 } from "react-native";
 import Toast from "react-native-toast-message";
+import { Modal } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -36,6 +38,7 @@ export default function Checkout() {
   const { buyNow } = useLocalSearchParams();
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [showAddressModal, setShowAddressModal] = useState(false);
 
   const { user } = useAuth();
   const userId = user?.id;
@@ -412,7 +415,7 @@ export default function Checkout() {
         router.replace("/Orders");
       }, 1200);
 
-    
+
 
     } catch (err) {
       console.log("ERROR 👉", err);
@@ -454,55 +457,23 @@ export default function Checkout() {
         contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
       >
         <BackButton style={{ marginBottom: 20 }} />
-        <Text className="text-white text-3xl font-bold mb-8">Checkout</Text>
-        {savedAddresses.length > 0 && (
-          <View className="mb-6">
+        <View className="flex-row items-center justify-between mb-8">
 
-            <Text className="text-white text-lg mb-3">
-              Saved Addresses
+          <Text className="text-white text-3xl font-bold">
+            Checkout
+          </Text>
+
+          <TouchableOpacity
+            onPress={() => setShowAddressModal(true)}
+            className="bg-red-600 px-4 py-2 rounded-xl"
+          >
+            <Text className="text-white text-md font-semibold">
+              Show Addresses
             </Text>
+          </TouchableOpacity>
 
-            {savedAddresses.map((addr) => (
+        </View>
 
-              <TouchableOpacity
-                key={addr.id}
-                onPress={() => selectAddress(addr)}
-                className={`p-4 rounded-xl mb-3 border ${selectedAddressId === addr.id
-                  ? "border-red-500 bg-[#111]"
-                  : "border-gray-700 bg-[#111]"
-                  }`}
-              >
-
-                <Text className="text-white font-bold">
-                  {addr.name}
-                </Text>
-
-                <Text className="text-gray-400">
-                  {addr.address}
-                </Text>
-
-                <Text className="text-gray-400">
-                  {addr.city}, {addr.state} - {addr.zip}
-                </Text>
-
-                <Text className="text-gray-400">
-                  {addr.country}
-                </Text>
-
-                <Text className="text-gray-400">
-                  {addr.email}
-                </Text>
-
-                <Text className="text-gray-400">
-                  {addr.phone}
-                </Text>
-
-              </TouchableOpacity>
-
-            ))}
-
-          </View>
-        )}
 
         {/* SHIPPING */}
 
@@ -666,6 +637,60 @@ export default function Checkout() {
           <Text className="text-white font-bold text-lg">Place Order</Text>
         </TouchableOpacity>
       </ScrollView>
+      <Modal
+        visible={showAddressModal}
+        transparent
+        animationType="slide"
+      >
+        <View className="flex-1 bg-black/80 justify-end">
+
+          <View className="bg-[#111] p-5 rounded-t-3xl max-h-[70%]">
+
+            <View className="flex-row justify-between items-center mb-4">
+
+              <Text className="text-white text-xl font-bold">
+                Select Address
+              </Text>
+
+              <TouchableOpacity onPress={() => setShowAddressModal(false)}>
+                <Ionicons name="close" size={24} color="white" />
+              </TouchableOpacity>
+
+            </View>
+
+            <ScrollView>
+              {savedAddresses.map((addr) => (
+                <TouchableOpacity
+                  key={addr.id}
+                  onPress={() => {
+                    selectAddress(addr); // ✅ already fills form
+                    setShowAddressModal(false); // close popup
+                  }}
+                  className={`p-4 rounded-xl mb-3 border ${selectedAddressId === addr.id
+                    ? "border-red-500 bg-[#1a1a1a]"
+                    : "border-gray-700 bg-[#111]"
+                    }`}
+                >
+                  <Text className="text-white font-bold">{addr.name}</Text>
+                  <Text className="text-gray-400">{addr.address}</Text>
+                  <Text className="text-gray-400">
+                    {addr.city}, {addr.state} - {addr.zip}
+                  </Text>
+                  <Text className="text-gray-400">
+                    {addr.country}
+                  </Text>
+
+                  <Text className="text-gray-400">
+                    {addr.email}
+                  </Text>
+                  <Text className="text-gray-400">{addr.phone}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
