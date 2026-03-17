@@ -20,6 +20,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Dimensions } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import ProductCard from "../ProductCard";
+import dayjs from "dayjs";
 
 const { width } = Dimensions.get("window");
 
@@ -45,6 +46,8 @@ export default function Home() {
 
   const [userPlan, setUserPlan] = useState(null);
 
+  const formatDate = (date) => dayjs(date).format("DD-MM-YYYY");
+
   const fetchUserPlan = async () => {
     try {
       if (!user?.id) return;
@@ -60,7 +63,7 @@ export default function Home() {
 
       // filter only current user's plans
       const myPlans = memberships.filter(
-        (p) => Number(p.userId || p.user_id) === Number(user.id)
+        (p) => Number(p.userId || p.user_id) === Number(user.id),
       );
 
       if (myPlans.length === 0) {
@@ -70,7 +73,7 @@ export default function Home() {
 
       // find active plan
       const activePlan = myPlans.find(
-        (plan) => new Date(plan.endDate) > new Date()
+        (plan) => new Date(plan.endDate) > new Date(),
       );
 
       setUserPlan(activePlan || myPlans[0]);
@@ -133,43 +136,72 @@ export default function Home() {
     }
   };
 
-  const fetchTodayWorkout = async () => {
-    try {
-      const data = await getTrainerWorkouts();
+const fetchTodayWorkout = async () => {
+  try {
+    const data = await getTrainerWorkouts();
 
-      if (!Array.isArray(data) || !user?.email) {
-        setTodayWorkout([]);
-        return;
-      }
-
-      const myWorkout = data.find((item) => item.member_email === user.email);
-
-      if (!myWorkout || !myWorkout.days) {
-        setTodayWorkout([]);
-        return;
-      }
-
-      const createdDate = new Date(myWorkout.created_at);
-      const today = new Date();
-
-      const diffDays =
-        Math.floor((today - createdDate) / (1000 * 60 * 60 * 24)) + 1;
-
-      const totalDays = Object.keys(myWorkout.days).length;
-
-      const todayIndex = diffDays > totalDays ? totalDays : diffDays;
-
-      const todayKey = `Day${todayIndex}`;
-
-      const todayExercises = myWorkout.days[todayKey] || [];
-
-      setTodayWorkout(todayExercises);
-      setTodayWorkoutDay(todayKey);
-    } catch (err) {
-      console.log("Workout fetch error:", err);
+    if (!Array.isArray(data) || !user?.email) {
       setTodayWorkout([]);
+      return;
     }
-  };
+
+    const myWorkout = data.find(
+      (item) => item.member_email === user.email
+    );
+
+    if (!myWorkout || !myWorkout.days || !myWorkout.created_at) {
+      setTodayWorkout([]);
+      return;
+    }
+
+    const baseDate = dayjs(myWorkout.created_at);
+    const today = dayjs();
+
+    let foundWorkout = null;
+    let foundDayKey = "";
+
+    let closestWorkout = null;
+    let closestDayKey = "";
+
+    Object.entries(myWorkout.days).forEach(([day, exercises]) => {
+      const index = Number(day.replace("Day", "")) - 1;
+      const workoutDate = baseDate.add(index, "day");
+
+      // ✅ Exact today match
+      if (workoutDate.isSame(today, "day")) {
+        foundWorkout = exercises;
+        foundDayKey = day;
+      }
+
+      // ✅ Keep latest past workout (fallback)
+      if (workoutDate.isBefore(today) || workoutDate.isSame(today, "day")) {
+        closestWorkout = exercises;
+        closestDayKey = day;
+      }
+    });
+
+    
+if (foundWorkout) {
+  const index = Number(foundDayKey.replace("Day", "")) - 1;
+  const date = baseDate.add(index, "day");
+
+  setTodayWorkout(foundWorkout);
+  setTodayWorkoutDay(formatDate(date));
+} else if (closestWorkout) {
+  const index = Number(closestDayKey.replace("Day", "")) - 1;
+  const date = baseDate.add(index, "day");
+
+  setTodayWorkout(closestWorkout);
+  setTodayWorkoutDay(formatDate(date));
+} else {
+  setTodayWorkout([]);
+  setTodayWorkoutDay("");
+}
+  } catch (err) {
+    console.log("Workout fetch error:", err);
+    setTodayWorkout([]);
+  }
+};
 
   useEffect(() => {
     const interval = setInterval(() => {
