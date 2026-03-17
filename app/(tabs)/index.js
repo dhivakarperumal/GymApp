@@ -24,6 +24,14 @@ import dayjs from "dayjs";
 
 const { width } = Dimensions.get("window");
 
+const mealTimes = {
+  Morning: "06:00 AM",
+  Breakfast: "09:00 AM",
+  Lunch: "02:00 PM",
+  Evening: "04:30 PM",
+  Dinner: "08:00 PM",
+};
+
 export default function Home() {
   const [reviews, setReviews] = useState([]);
   const { user } = useAuth();
@@ -105,30 +113,30 @@ export default function Home() {
 
       const myDiet = data.find((item) => item.member_email === user.email);
 
-      if (!myDiet || !myDiet.days) {
-        setTodayDiet({});
-        return;
-      }
-
-      const createdDate = new Date(myDiet.created_at);
-      const today = new Date();
-
-      const diffDays =
-        Math.floor((today - createdDate) / (1000 * 60 * 60 * 24)) + 1;
-
-      const totalDays = Object.keys(myDiet.days).length;
-
-      if (diffDays > totalDays) {
+      if (!myDiet || !myDiet.days || !myDiet.created_at) {
         setTodayDiet({});
         setTodayDay("");
         return;
       }
 
-      const todayKey = `Day${diffDays}`;
-      const todayMeals = myDiet.days[todayKey] || {};
+      const baseDate = dayjs(myDiet.created_at);
+      const today = dayjs();
 
-      setTodayDiet(todayMeals);
-      setTodayDay(todayKey);
+      let foundMeals = {};
+      let foundDate = "";
+
+      Object.entries(myDiet.days).forEach(([day, meals]) => {
+        const index = Number(day.replace("Day", "")) - 1;
+        const date = baseDate.add(index, "day");
+
+        if (date.isSame(today, "day")) {
+          foundMeals = meals;
+          foundDate = formatDate(date); // ✅ same as workout
+        }
+      });
+
+      setTodayDiet(foundMeals);
+      setTodayDay(foundDate);
       setDietTitle(myDiet.title);
     } catch (err) {
       console.log("Today diet error:", err);
@@ -136,72 +144,69 @@ export default function Home() {
     }
   };
 
-const fetchTodayWorkout = async () => {
-  try {
-    const data = await getTrainerWorkouts();
+  const fetchTodayWorkout = async () => {
+    try {
+      const data = await getTrainerWorkouts();
 
-    if (!Array.isArray(data) || !user?.email) {
-      setTodayWorkout([]);
-      return;
-    }
-
-    const myWorkout = data.find(
-      (item) => item.member_email === user.email
-    );
-
-    if (!myWorkout || !myWorkout.days || !myWorkout.created_at) {
-      setTodayWorkout([]);
-      return;
-    }
-
-    const baseDate = dayjs(myWorkout.created_at);
-    const today = dayjs();
-
-    let foundWorkout = null;
-    let foundDayKey = "";
-
-    let closestWorkout = null;
-    let closestDayKey = "";
-
-    Object.entries(myWorkout.days).forEach(([day, exercises]) => {
-      const index = Number(day.replace("Day", "")) - 1;
-      const workoutDate = baseDate.add(index, "day");
-
-      // ✅ Exact today match
-      if (workoutDate.isSame(today, "day")) {
-        foundWorkout = exercises;
-        foundDayKey = day;
+      if (!Array.isArray(data) || !user?.email) {
+        setTodayWorkout([]);
+        return;
       }
 
-      // ✅ Keep latest past workout (fallback)
-      if (workoutDate.isBefore(today) || workoutDate.isSame(today, "day")) {
-        closestWorkout = exercises;
-        closestDayKey = day;
+      const myWorkout = data.find((item) => item.member_email === user.email);
+
+      if (!myWorkout || !myWorkout.days || !myWorkout.created_at) {
+        setTodayWorkout([]);
+        return;
       }
-    });
 
-    
-if (foundWorkout) {
-  const index = Number(foundDayKey.replace("Day", "")) - 1;
-  const date = baseDate.add(index, "day");
+      const baseDate = dayjs(myWorkout.created_at);
+      const today = dayjs();
 
-  setTodayWorkout(foundWorkout);
-  setTodayWorkoutDay(formatDate(date));
-} else if (closestWorkout) {
-  const index = Number(closestDayKey.replace("Day", "")) - 1;
-  const date = baseDate.add(index, "day");
+      let foundWorkout = null;
+      let foundDayKey = "";
 
-  setTodayWorkout(closestWorkout);
-  setTodayWorkoutDay(formatDate(date));
-} else {
-  setTodayWorkout([]);
-  setTodayWorkoutDay("");
-}
-  } catch (err) {
-    console.log("Workout fetch error:", err);
-    setTodayWorkout([]);
-  }
-};
+      let closestWorkout = null;
+      let closestDayKey = "";
+
+      Object.entries(myWorkout.days).forEach(([day, exercises]) => {
+        const index = Number(day.replace("Day", "")) - 1;
+        const workoutDate = baseDate.add(index, "day");
+
+        // ✅ Exact today match
+        if (workoutDate.isSame(today, "day")) {
+          foundWorkout = exercises;
+          foundDayKey = day;
+        }
+
+        // ✅ Keep latest past workout (fallback)
+        if (workoutDate.isBefore(today) || workoutDate.isSame(today, "day")) {
+          closestWorkout = exercises;
+          closestDayKey = day;
+        }
+      });
+
+      if (foundWorkout) {
+        const index = Number(foundDayKey.replace("Day", "")) - 1;
+        const date = baseDate.add(index, "day");
+
+        setTodayWorkout(foundWorkout);
+        setTodayWorkoutDay(formatDate(date));
+      } else if (closestWorkout) {
+        const index = Number(closestDayKey.replace("Day", "")) - 1;
+        const date = baseDate.add(index, "day");
+
+        setTodayWorkout(closestWorkout);
+        setTodayWorkoutDay(formatDate(date));
+      } else {
+        setTodayWorkout([]);
+        setTodayWorkoutDay("");
+      }
+    } catch (err) {
+      console.log("Workout fetch error:", err);
+      setTodayWorkout([]);
+    }
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -430,7 +435,7 @@ if (foundWorkout) {
                   TODAY'S WORKOUT
                 </Text>
 
-                <Text className="text-gray-400 text-xs mt-1">
+                <Text className="text-gray-400 text-sm mt-1">
                   {todayWorkoutDay} Plan
                 </Text>
               </View>
@@ -513,7 +518,7 @@ if (foundWorkout) {
                 </Text>
 
                 {todayDay && (
-                  <Text className="text-gray-400 text-xs mt-1">
+                  <Text className="text-gray-400 text-sm mt-1">
                     {todayDay} Meals
                   </Text>
                 )}
@@ -531,9 +536,13 @@ if (foundWorkout) {
                 key={meal}
                 className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]"
               >
-                <Text className="text-primary text-xs font-semibold mb-1">
-                  {meal}
-                </Text>
+                <View className="flex-row items-center justify-between mb-1">
+                  <Text className="text-white font-semibold">{meal}</Text>
+
+                  <Text className="text-red-500 text-sm">
+                    {mealTimes[meal]}
+                  </Text>
+                </View>
 
                 <Text className="text-gray-300 text-sm">
                   {value.food} ({value.quantity})
