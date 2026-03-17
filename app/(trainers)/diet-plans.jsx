@@ -468,15 +468,15 @@ export default function AddDietPlan() {
         />
 
         <Text className="text-gray-400 text-xs mb-1">Member Weight</Text>
-                      <TextInput
-                        placeholder="Weight (kg)"
-                        placeholderTextColor="#aaa"
-                        value={form.memberWeight}
-                        onChangeText={(text) =>
-                          setForm((prev) => ({ ...prev, memberWeight: text }))
-                        }
-                        className="bg-[#141414] text-white rounded-xl px-4 py-3 mb-4"
-                      />
+        <TextInput
+          placeholder="Weight (kg)"
+          placeholderTextColor="#aaa"
+          value={form.memberWeight}
+          onChangeText={(text) =>
+            setForm((prev) => ({ ...prev, memberWeight: text }))
+          }
+          className="bg-[#141414] text-white rounded-xl px-4 py-3 mb-4"
+        />
 
         {/* DAY CONTROLS */}
 
@@ -517,31 +517,19 @@ export default function AddDietPlan() {
                 onPress={() => setExpandedDay(expandedDay === day ? null : day)}
                 className="flex-row justify-between items-center p-4"
               >
-                <View className="flex-row justify-between items-center p-4">
+                <Text className="text-white font-bold text-lg">
+                  {day.replace("Day", "Day ")}
+                </Text>
 
-                  <Text className="text-white font-bold text-lg">
-                    {day.replace("Day", "Day ")}
-                  </Text>
-
-                  {day === "Day1" && Object.keys(form.days).length > 1 && (
-                    <TouchableOpacity
-                      onPress={handleCopyDay1ToAll}
-                      className="bg-green-700 px-3 py-1 rounded-lg mr-2"
-                    >
-                      <Text className="text-white text-xs">Copy All</Text>
-                    </TouchableOpacity>
-                  )}
-
-                  <Ionicons
-                    name={
-                      expandedDay === day
-                        ? "chevron-up-outline"
-                        : "chevron-down-outline"
-                    }
-                    size={22}
-                    color="white"
-                  />
-                </View>
+                <Ionicons
+                  name={
+                    expandedDay === day
+                      ? "chevron-up-outline"
+                      : "chevron-down-outline"
+                  }
+                  size={22}
+                  color="white"
+                />
               </TouchableOpacity>
 
               {/* DAY CONTENT */}
@@ -612,10 +600,22 @@ export default function AddDietPlan() {
                         className="bg-black text-white px-3 py-2 rounded-lg"
                       />
 
-                      
+
                     </View>
                   ))}
+
+                  {day === "Day1" && Object.keys(form.days).length > 1 && (
+                    <TouchableOpacity
+                      onPress={handleCopyDay1ToAll}
+                      className="bg-green-600 mt-2 p-3 rounded-xl items-center"
+                    >
+                      <Text className="text-white font-bold">
+                        Copy Day 1 to All Days
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
+
               )}
             </View>
           ))}
