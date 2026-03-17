@@ -1,10 +1,17 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import dayjs from "dayjs";
+import { Ionicons } from "@expo/vector-icons";
 
 const GYM_LOCATION = {
   lat: 12.479724,
@@ -32,6 +39,12 @@ export default function TrainerCheckInScreen() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+
+  const name =
+    (user?.name || user?.username || "Trainer")
+      .charAt(0)
+      .toUpperCase() +
+    (user?.name || user?.username || "Trainer").slice(1);
 
   const handleCheckIn = async () => {
     try {
@@ -88,9 +101,7 @@ export default function TrainerCheckInScreen() {
 
       Alert.alert("Success", "Checked in!");
 
-      // ✅ GO TO DASHBOARD
       router.replace("/(trainers)/dashboard");
-
     } catch (err) {
       Alert.alert("Error", "Check-in failed");
     } finally {
@@ -99,24 +110,67 @@ export default function TrainerCheckInScreen() {
   };
 
   return (
-    <View className="flex-1 bg-black justify-center items-center px-5">
-      <Text className="text-white text-3xl font-bold mb-6">
-        Trainer Check-In
-      </Text>
+    <View className="flex-1 bg-black justify-center px-6">
+      
+      {/* CARD */}
+      <View className="bg-[#141414] border border-[#262626] rounded-3xl p-6">
 
-      <TouchableOpacity
-        onPress={handleCheckIn}
-        disabled={loading}
-        className="bg-primary px-6 py-4 rounded-2xl"
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text className="text-white font-bold text-lg">
-            Check In to Continue
+        {/* ICON */}
+        <View className="w-16 h-16 rounded-full bg-primary/20 items-center justify-center mb-5 self-center">
+          <Ionicons name="location" size={30} color="#ff3c00" />
+        </View>
+
+        {/* WELCOME */}
+        <Text className="text-white text-2xl font-bold text-center">
+          Welcome, {name} 👋
+        </Text>
+
+        <Text className="text-gray-400 text-center mt-2 mb-6">
+          Please check-in to start your day at the gym
+        </Text>
+
+        {/* INFO BOX */}
+        <View className="bg-black border border-[#262626] rounded-xl p-4 mb-6">
+          <Text className="text-gray-400 text-xs mb-1">Gym Location</Text>
+          <Text className="text-white font-semibold">
+            {GYM_LOCATION.name}
           </Text>
-        )}
-      </TouchableOpacity>
+        </View>
+
+        {/* BUTTON */}
+        <TouchableOpacity
+          onPress={handleCheckIn}
+          disabled={loading}
+          className={`rounded-2xl py-4 items-center border ${
+            loading
+              ? "bg-gray-700 border-gray-600"
+              : "bg-primary border-red-400"
+          }`}
+          style={{
+            shadowColor: "#ff3c00",
+            shadowOpacity: 0.4,
+            shadowRadius: 10,
+            elevation: 6,
+          }}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <View className="flex-row items-center">
+              <Ionicons name="log-in-outline" size={20} color="white" />
+              <Text className="text-white font-bold text-lg ml-2">
+                Check In to Continue
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
+      </View>
+
+      {/* FOOTER TEXT */}
+      <Text className="text-gray-500 text-xs text-center mt-6">
+        Location access is required for attendance verification
+      </Text>
     </View>
   );
 }
