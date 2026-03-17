@@ -12,13 +12,12 @@ export default function DietChartScreen() {
   const [diet, setDiet] = useState(null);
   const [title, setTitle] = useState("");
 
-
   const mealTimes = {
-    Morning: "5:00 - 6:00 AM",
-    Breakfast: "8:00 - 9:00 AM",
-    Lunch: "1:00 - 2:00 PM",
-    Evening: "4:00 - 4:30 PM",
-    Dinner: "7:00 - 8:00 PM",
+    Morning: "06:00 AM",
+    Breakfast: "09:00 AM",
+    Lunch: "02:00 PM",
+    Evening: "04:30 PM",
+    Dinner: "08:00 PM",
   };
 
   const fetchDietPlan = async () => {
@@ -72,16 +71,13 @@ export default function DietChartScreen() {
                 key={meal}
                 className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]"
               >
-                <View className="flex-row items-center">
-                  <Text className="text-white font-semibold">
-                    {meal}
-                  </Text>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-white font-semibold">{meal}</Text>
 
-                  <Text className="text-red-500 ml-2">
-                    ({mealTimes[meal]})
+                  <Text className="text-red-500 text-sm">
+                    {mealTimes[meal]}
                   </Text>
                 </View>
-
 
                 <Text className="text-gray-300 text-sm">
                   {value.food} ({value.quantity})
