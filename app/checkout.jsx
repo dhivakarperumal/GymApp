@@ -30,6 +30,7 @@ import {
 } from "../services/api";
 import BackButton from "./BackButton";
 import Header from "./Header";
+import { ActivityIndicator } from "react-native";
 
 export default function Checkout() {
   const [cartItems, setCartItems] = useState([]);
@@ -39,6 +40,7 @@ export default function Checkout() {
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showAddressModal, setShowAddressModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const { user } = useAuth();
   const userId = user?.id;
@@ -193,6 +195,9 @@ export default function Checkout() {
           text1: "Payment Failed",
           text2: error?.description || "Payment cancelled",
         });
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
@@ -226,6 +231,7 @@ export default function Checkout() {
   /* PLACE ORDER */
 
   const placeOrder = async (paymentStatus = "pending") => {
+    setLoading(true);
     try {
       if (!cartItems.length) {
         Toast.show({
@@ -419,6 +425,8 @@ export default function Checkout() {
 
     } catch (err) {
       console.log("ERROR 👉", err);
+    } finally {
+      setLoading(false); // at end (IMPORTANT)
     }
   };
 
@@ -625,6 +633,7 @@ export default function Checkout() {
         {/* PLACE ORDER */}
 
         <TouchableOpacity
+          disabled={loading}
           onPress={() => {
             if (paymentMethod === "ONLINE") {
               handleOnlinePayment();
@@ -634,7 +643,11 @@ export default function Checkout() {
           }}
           className="bg-red-600 py-5 rounded-2xl items-center mt-6"
         >
-          <Text className="text-white font-bold text-lg">Place Order</Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text className="text-white font-bold text-lg">Place Order</Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
       <Modal
