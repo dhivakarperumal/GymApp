@@ -143,6 +143,14 @@ export default function Profile() {
             <Text className="text-white">Address</Text>
             <Ionicons name="chevron-forward" size={18} color="#888" />
           </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push("/Notifications")}
+            className="flex-row justify-between items-center py-4 border-b border-[#222]"
+          >
+            <Text className="text-white">Notifications</Text>
+            <Ionicons name="notifications-outline" size={18} color="#888" />
+          </TouchableOpacity>
         </View>
 
         {/* LOGOUT */}
