@@ -41,7 +41,7 @@ export default function Contact() {
               <Ionicons name="location-outline" size={20} color="#e11d1d" />
             </View>
             <Text className="text-background flex-1">
-              785 15th Street, Office 478 Berlin
+              No.58 Vaitheeshwaran Nagar, Tirupattur - 635653
             </Text>
           </View>
 
@@ -49,14 +49,14 @@ export default function Contact() {
             <View className="bg-card p-3 rounded-xl mr-4 border border-border">
               <Ionicons name="call-outline" size={20} color="#e11d1d" />
             </View>
-            <Text className="text-background flex-1">+1 800 555 25 69</Text>
+            <Text className="text-background flex-1">+91 96591 33504</Text>
           </View>
 
           <View className="flex-row items-center bg-darkcard p-4 rounded-2xl border border-border">
             <View className="bg-card p-3 rounded-xl mr-4 border border-border">
               <Ionicons name="mail-outline" size={20} color="#e11d1d" />
             </View>
-            <Text className="text-background flex-1">info@example.com</Text>
+            <Text className="text-background flex-1">info@qtechx.com</Text>
           </View>
         </View>
 
