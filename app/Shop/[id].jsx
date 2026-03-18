@@ -1,23 +1,21 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  Dimensions,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { getAllProducts } from "../../services/api";
-import { useRef } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getCart, addToCartApi, updateCartApi } from "../../services/api";
-import Header from "../Header";
-import { useAuth } from "../../context/AuthContext";
-import BackButton from "../BackButton";
 import Toast from "react-native-toast-message";
+import { useAuth } from "../../context/AuthContext";
+import { addToCartApi, getAllProducts, getCart, updateCartApi } from "../../services/api";
+import BackButton from "../BackButton";
+import Header from "../Header";
 
 const { width } = Dimensions.get("window");
 
@@ -34,6 +32,8 @@ export default function ProductDetails() {
   const [quantity, setQuantity] = useState(1);
   const { user } = useAuth();
   const userId = user?.id;
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isBuyingNow, setIsBuyingNow] = useState(false);
 
   useEffect(() => {
     fetchProduct();
@@ -105,7 +105,6 @@ export default function ProductDetails() {
 
 
   const handleBuyNow = () => {
-
     if (!user || !user.id) {
       Toast.show({
         type: "error",
@@ -115,14 +114,14 @@ export default function ProductDetails() {
       return;
     }
 
-if (!variantKey) {
-  Toast.show({
-    type: "error",
-    text1: "Variant Missing",
-    text2: "Please select size / weight",
-  });
-  return;
-}
+    if (!variantKey) {
+      Toast.show({
+        type: "error",
+        text1: "Variant Missing",
+        text2: "Please select size / weight",
+      });
+      return;
+    }
 
     const buyNowItem = {
       productId: product.id,
@@ -167,6 +166,7 @@ if (!variantKey) {
   const oldPrice = pricing ? Number(pricing.mrp) : 0;
 
   const handleAddToCart = async () => {
+    setIsAddingToCart(true);
     try {
       if (!user || !user.id) {
         Toast.show({
@@ -214,6 +214,8 @@ if (!variantKey) {
       router.push("/cart");
     } catch (err) {
       console.log("Add to cart error:", err);
+    } finally {
+      setIsAddingToCart(false);
     }
   };
 
@@ -482,7 +484,7 @@ if (!variantKey) {
           <View className="flex-row justify-between mt-4">
             {/* ADD TO CART */}
             <TouchableOpacity
-              disabled={remainingStock === 0 || quantity > remainingStock}
+              disabled={remainingStock === 0 || quantity > remainingStock || isAddingToCart}
               onPress={handleAddToCart}
               className={`w-[48%] py-4 rounded-2xl items-center ${
                 remainingStock === 0
@@ -490,21 +492,29 @@ if (!variantKey) {
                   : "bg-[#1f1f1f] border border-primary"
               }`}
             >
-              <Text className="text-primary font-bold text-lg">
-                ADD TO CART
-              </Text>
+              {isAddingToCart ? (
+                <ActivityIndicator size="small" color="#e11d1d" />
+              ) : (
+                <Text className="text-primary font-bold text-lg">
+                  ADD TO CART
+                </Text>
+              )}
             </TouchableOpacity>
 
             {/* BUY NOW */}
             <TouchableOpacity
-              disabled={remainingStock === 0 || quantity > remainingStock}
+              disabled={remainingStock === 0 || quantity > remainingStock || isBuyingNow}
               onPress={handleBuyNow}
               className={`w-[48%] py-4 rounded-2xl items-center ${remainingStock === 0
                 ? "bg-gray-600"
                 : "bg-[#1f1f1f] border border-primary"
                 }`}
             >
-              <Text className="text-white font-bold text-lg">BUY NOW</Text>
+              {isBuyingNow ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <Text className="text-white font-bold text-lg">BUY NOW</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
