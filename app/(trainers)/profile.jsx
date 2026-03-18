@@ -216,11 +216,19 @@ export default function Profile() {
           </Text>
         </View>
 
+        <TouchableOpacity
+          onPress={() => router.push("/TrainerSendMessage")}
+          className="bg-black border border-primary rounded-2xl p-4 flex-row justify-center items-center mb-4"
+        >
+          <Ionicons name="chatbubble-ellipses-outline" size={20} color="white" />
+          <Text className="text-white font-bold text-lg ml-2">Send Message</Text>
+        </TouchableOpacity>
+
         {/* LOGOUT BUTTON */}
 
         <TouchableOpacity
-  onPress={() => setLogoutModalVisible(true)}
-          className="bg-red-500 rounded-2xl p-4 flex-row justify-center items-center shadow-lg shadow-red-500/40"
+          onPress={() => setLogoutModalVisible(true)}
+          className="bg-primary rounded-2xl p-4 flex-row justify-center items-center shadow-lg shadow-red-500/40"
         >
           <Ionicons name="log-out-outline" size={20} color="white" />
           <Text className="text-white font-bold text-lg ml-2">Logout</Text>
@@ -228,59 +236,59 @@ export default function Profile() {
       </View>
       {/* LOGOUT CONFIRM MODAL */}
 
-<Modal
-  visible={logoutModalVisible}
-  transparent
-  animationType="fade"
->
-  <TouchableOpacity
-    activeOpacity={1}
-    onPress={() => setLogoutModalVisible(false)}
-    className="flex-1 justify-center items-center bg-black/60"
-  >
-
-    <View className="bg-[#141414] w-[85%] rounded-2xl p-6 border border-[#262626]">
-
-      <View className="items-center mb-3">
-        <Ionicons name="log-out-outline" size={40} color="#ef4444" />
-      </View>
-
-      <Text className="text-white text-lg font-bold text-center mb-2">
-        Logout
-      </Text>
-
-      <Text className="text-gray-400 text-center mb-6">
-        Are you sure you want to logout?
-      </Text>
-
-      <View className="flex-row justify-between">
-
-        {/* Cancel */}
+      <Modal
+        visible={logoutModalVisible}
+        transparent
+        animationType="fade"
+      >
         <TouchableOpacity
+          activeOpacity={1}
           onPress={() => setLogoutModalVisible(false)}
-          className="flex-1 bg-[#262626] py-3 rounded-xl mr-2"
+          className="flex-1 justify-center items-center bg-black/60"
         >
-          <Text className="text-center text-white font-semibold">
-            Cancel
-          </Text>
+
+          <View className="bg-[#141414] w-[85%] rounded-2xl p-6 border border-[#262626]">
+
+            <View className="items-center mb-3">
+              <Ionicons name="log-out-outline" size={40} color="#ef4444" />
+            </View>
+
+            <Text className="text-white text-lg font-bold text-center mb-2">
+              Logout
+            </Text>
+
+            <Text className="text-gray-400 text-center mb-6">
+              Are you sure you want to logout?
+            </Text>
+
+            <View className="flex-row justify-between">
+
+              {/* Cancel */}
+              <TouchableOpacity
+                onPress={() => setLogoutModalVisible(false)}
+                className="flex-1 bg-[#262626] py-3 rounded-xl mr-2"
+              >
+                <Text className="text-center text-white font-semibold">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              {/* Logout */}
+              <TouchableOpacity
+                onPress={handleLogout}
+                className="flex-1 bg-red-600 py-3 rounded-xl ml-2"
+              >
+                <Text className="text-center text-white font-semibold">
+                  Logout
+                </Text>
+              </TouchableOpacity>
+
+            </View>
+
+          </View>
+
         </TouchableOpacity>
-
-        {/* Logout */}
-        <TouchableOpacity
-          onPress={handleLogout}
-          className="flex-1 bg-red-600 py-3 rounded-xl ml-2"
-        >
-          <Text className="text-center text-white font-semibold">
-            Logout
-          </Text>
-        </TouchableOpacity>
-
-      </View>
-
-    </View>
-
-  </TouchableOpacity>
-</Modal>
+      </Modal>
     </ScrollView>
   );
 }
