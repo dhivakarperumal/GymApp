@@ -1,21 +1,23 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Dimensions,
-  Image,
-  ScrollView,
-  Text,
-  TouchableOpacity,
   View,
+  Text,
+  ScrollView,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { getAllProducts } from "../../services/api";
+import { useRef } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
-import { useAuth } from "../../context/AuthContext";
-import { addToCartApi, getAllProducts, getCart, updateCartApi } from "../../services/api";
-import BackButton from "../BackButton";
+import { getCart, addToCartApi, updateCartApi } from "../../services/api";
 import Header from "../Header";
+import { useAuth } from "../../context/AuthContext";
+import BackButton from "../BackButton";
+import Toast from "react-native-toast-message";
 
 const { width } = Dimensions.get("window");
 
@@ -32,8 +34,6 @@ export default function ProductDetails() {
   const [quantity, setQuantity] = useState(1);
   const { user } = useAuth();
   const userId = user?.id;
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [isBuyingNow, setIsBuyingNow] = useState(false);
 
   useEffect(() => {
     fetchProduct();
@@ -105,6 +105,7 @@ export default function ProductDetails() {
 
 
   const handleBuyNow = () => {
+
     if (!user || !user.id) {
       Toast.show({
         type: "error",
@@ -114,14 +115,14 @@ export default function ProductDetails() {
       return;
     }
 
-    if (!variantKey) {
-      Toast.show({
-        type: "error",
-        text1: "Variant Missing",
-        text2: "Please select size / weight",
-      });
-      return;
-    }
+if (!variantKey) {
+  Toast.show({
+    type: "error",
+    text1: "Variant Missing",
+    text2: "Please select size / weight",
+  });
+  return;
+}
 
     const buyNowItem = {
       productId: product.id,
@@ -166,7 +167,6 @@ export default function ProductDetails() {
   const oldPrice = pricing ? Number(pricing.mrp) : 0;
 
   const handleAddToCart = async () => {
-    setIsAddingToCart(true);
     try {
       if (!user || !user.id) {
         Toast.show({
@@ -214,8 +214,6 @@ export default function ProductDetails() {
       router.push("/cart");
     } catch (err) {
       console.log("Add to cart error:", err);
-    } finally {
-      setIsAddingToCart(false);
     }
   };
 
@@ -484,7 +482,7 @@ export default function ProductDetails() {
           <View className="flex-row justify-between mt-4">
             {/* ADD TO CART */}
             <TouchableOpacity
-              disabled={remainingStock === 0 || quantity > remainingStock || isAddingToCart}
+              disabled={remainingStock === 0 || quantity > remainingStock}
               onPress={handleAddToCart}
               className={`w-[48%] py-4 rounded-2xl items-center ${
                 remainingStock === 0
@@ -492,29 +490,21 @@ export default function ProductDetails() {
                   : "bg-[#1f1f1f] border border-primary"
               }`}
             >
-              {isAddingToCart ? (
-                <ActivityIndicator size="small" color="#e11d1d" />
-              ) : (
-                <Text className="text-primary font-bold text-lg">
-                  ADD TO CART
-                </Text>
-              )}
+              <Text className="text-primary font-bold text-lg">
+                ADD TO CART
+              </Text>
             </TouchableOpacity>
 
             {/* BUY NOW */}
             <TouchableOpacity
-              disabled={remainingStock === 0 || quantity > remainingStock || isBuyingNow}
+              disabled={remainingStock === 0 || quantity > remainingStock}
               onPress={handleBuyNow}
               className={`w-[48%] py-4 rounded-2xl items-center ${remainingStock === 0
                 ? "bg-gray-600"
                 : "bg-[#1f1f1f] border border-primary"
                 }`}
             >
-              {isBuyingNow ? (
-                <ActivityIndicator size="small" color="#ffffff" />
-              ) : (
-                <Text className="text-white font-bold text-lg">BUY NOW</Text>
-              )}
+              <Text className="text-white font-bold text-lg">BUY NOW</Text>
             </TouchableOpacity>
           </View>
         </View>
