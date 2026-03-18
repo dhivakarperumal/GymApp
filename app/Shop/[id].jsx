@@ -166,33 +166,33 @@ export default function ProductDetails() {
   const oldPrice = pricing ? Number(pricing.mrp) : 0;
 
   const handleAddToCart = async () => {
-    if (!user || !user.id) {
-      Toast.show({
-        type: "error",
-        text1: "Login Required",
-        text2: "Please login to add items to cart",
-      });
-      return;
-    }
-
-    if (quantity > remainingStock) {
-      Toast.show({
-        type: "error",
-        text1: "Stock Limit",
-        text2: `Only ${remainingStock} items available`,
-      });
-      return;
-    }
-
-    router.push("/cart");
-
-    // Add to cart in background
+    setIsAddingToCart(true);
     try {
+      if (!user || !user.id) {
+        Toast.show({
+          type: "error",
+          text1: "Login Required",
+          text2: "Please login to add items to cart",
+        });
+        return;
+      }
+
+        if (quantity > remainingStock) {
+  Toast.show({
+    type: "error",
+    text1: "Stock Limit",
+    text2: `Only ${remainingStock} items available`,
+  });
+  return;
+}
+
       const userId = user.id;
+
       const cartItems = await getCart(userId);
-      const existing = cartItems.find(
-        (item) => item.productId === product.id && item.variant === variantKey,
-      );
+
+     const existing = cartItems.find(
+  (item) => item.productId === product.id && item.variant === variantKey,
+);
 
       if (existing) {
         await updateCartApi(existing.id, existing.quantity + quantity);
@@ -210,13 +210,12 @@ export default function ProductDetails() {
           images: product.images,
         });
       }
+
+      router.push("/cart");
     } catch (err) {
       console.log("Add to cart error:", err);
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Failed to add item to cart",
-      });
+    } finally {
+      setIsAddingToCart(false);
     }
   };
 
