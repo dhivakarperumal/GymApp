@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { Alert, ScrollView, Text, View } from 'react-native';
 import { useAuth } from '../../../context/AuthContext.js';
 import api from '../../../services/api';
+import FitnessScreening from './FitnessScreening';
+import FlexibilityAndMeasurements from './FlexibilityAndMeasurements';
 import HealthHistory2 from './HealthHistory2';
 import HealthHistoy from './HealthHistoy';
 import PTFormEnquiry from './PTFormEnquiry';
+import SessionTracker from './SessionTracker';
 
 const PTForm = ({ route, navigation }) => {
   const { user, role } = useAuth();
@@ -16,6 +19,9 @@ const PTForm = ({ route, navigation }) => {
     { title: 'Personal Information', component: PTFormEnquiry },
     { title: 'Health History', component: HealthHistoy },
     { title: 'Medical Information', component: HealthHistory2 },
+    { title: 'Fitness Screening', component: FitnessScreening },
+    { title: 'Flexibility & Measurements', component: FlexibilityAndMeasurements },
+    { title: 'Session Tracker', component: SessionTracker },
   ];
 
   const handleNext = (stepData) => {
