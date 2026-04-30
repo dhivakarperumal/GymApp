@@ -87,11 +87,11 @@ export default function TrainerDashboard() {
       }}
     >
       <View className="flex-row items-center">
-        <View className="w-10 h-10 rounded-full bg-red-500/20 items-center justify-center mr-3">
+        <View className="w-10 h-10 rounded-full bg-red-500/20 items-center justify-center mr-3 shrink-0">
           <Ionicons name={icon} size={22} color="#ff3c00" />
         </View>
-        <View>
-          <Text className="text-gray-400 text-xs uppercase">{title}</Text>
+        <View className="flex-1">
+          <Text className="text-gray-400 text-[10px] uppercase" numberOfLines={2}>{title}</Text>
           <Text className="text-white text-2xl font-bold mt-0.5">{value}</Text>
         </View>
       </View>

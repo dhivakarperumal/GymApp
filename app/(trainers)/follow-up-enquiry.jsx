@@ -328,16 +328,16 @@ export default function FollowupEnquiry() {
       className="bg-[#141414] border border-[#262626] rounded-2xl p-4 mb-4"
     >
       <View className="flex-row justify-between items-start mb-3">
-        <View className="flex-row items-center">
+        <View className="flex-row items-center flex-1 pr-2">
           <View
-            className="w-10 h-10 rounded-xl bg-red-600 items-center justify-center mr-3"
+            className="w-10 h-10 rounded-xl bg-red-600 items-center justify-center mr-3 shrink-0"
             style={{ backgroundColor: getStatusColor(item.status) + "20" }}
           >
             <User size={20} color={getStatusColor(item.status)} />
           </View>
-          <View>
-            <Text className="text-white font-bold text-base">{item.name}</Text>
-            <Text className="text-gray-500 text-xs">
+          <View className="flex-1">
+            <Text className="text-white font-bold text-base" numberOfLines={1}>{item.name}</Text>
+            <Text className="text-gray-500 text-xs" numberOfLines={1}>
               {item.organization || item.employer || "Direct Lead"}
             </Text>
           </View>
