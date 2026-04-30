@@ -371,70 +371,70 @@ export default function TrainersLayout() {
 
       {/* Hide all PTForm components */}
       <Tabs.Screen
-        name="FitnessScreening"
+        name="PTForm/FitnessScreening"
         options={{
           href: null,
         }}
       />
 
       <Tabs.Screen
-        name="FlexibilityAndMeasurements"
+        name="PTForm/FlexibilityAndMeasurements"
         options={{
           href: null,
         }}
       />
 
       <Tabs.Screen
-        name="HealthHistory2"
+        name="PTForm/HealthHistory2"
         options={{
           href: null,
         }}
       />
 
       <Tabs.Screen
-        name="HealthHistoy"
+        name="PTForm/HealthHistoy"
         options={{
           href: null,
         }}
       />
 
       <Tabs.Screen
-        name="InformedConsent"
+        name="PTForm/InformedConsent"
         options={{
           href: null,
         }}
       />
 
       <Tabs.Screen
-        name="PTForm"
+        name="PTForm/PTForm"
         options={{
           href: null,
         }}
       />
 
       <Tabs.Screen
-        name="PTFormEnquiry"
+        name="PTForm/PTFormEnquiry"
         options={{
           href: null,
         }}
       />
 
       <Tabs.Screen
-        name="PTFormPreviewContent"
+        name="PTForm/PTFormPreviewContent"
         options={{
           href: null,
         }}
       />
 
       <Tabs.Screen
-        name="PTFormPrint"
+        name="PTForm/PTFormPrint"
         options={{
           href: null,
         }}
       />
 
       <Tabs.Screen
-        name="SessionTracker"
+        name="PTForm/SessionTracker"
         options={{
           href: null,
         }}
