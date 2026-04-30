@@ -44,16 +44,30 @@ const PTForm = ({ route, navigation }) => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // Combine all form data
-      const completeFormData = {
-        ...formData,
-        trainer_id: user.id,
-        created_at: new Date().toISOString(),
-        status: 'pending'
+      // Validate required fields
+      if (!formData.member_id && !formData.u_id) {
+        throw new Error('Member ID is required. Please select a member first.');
+      }
+
+      // Format payload to match backend expectations
+      const payload = {
+        member_id: formData.member_id || formData.u_id,
+        user_id: formData.u_id || user?.id,
+        formData: {
+          ...formData,
+          trainer_id: user?.id,
+          trainer_name_assigned: formData.trainer_name_assigned || user?.username || '',
+          created_at: new Date().toISOString(),
+        },
+        completed: true
       };
 
+      console.log('📤 Submitting PT form payload:', JSON.stringify(payload, null, 2));
+
       // Submit to backend
-      const response = await api.post('/pt-forms', completeFormData);
+      const response = await api.post('/pt-forms', payload);
+
+      console.log('✅ PT Form submitted successfully:', response.data);
 
       Alert.alert(
         'Success',
@@ -66,10 +80,20 @@ const PTForm = ({ route, navigation }) => {
         ]
       );
     } catch (error) {
-      console.error('Error submitting PT form:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to submit PT form. Please try again.';
+      console.error('❌ Error submitting PT form');
+      console.error('Error object:', error);
+      console.error('Status:', error.response?.status);
+      console.error('Response data:', JSON.stringify(error.response?.data, null, 2));
+      console.error('Message:', error.message);
+      
+      const errorMessage = 
+        error.response?.data?.error || 
+        error.response?.data?.message || 
+        error.message || 
+        'Failed to submit PT form. Please try again.';
+      
       Alert.alert(
-        'Error',
+        'Submission Error',
         errorMessage,
         [{ text: 'OK' }]
       );
