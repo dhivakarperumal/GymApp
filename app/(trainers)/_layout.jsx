@@ -32,18 +32,27 @@ function TrainerHeader() {
       try {
         const res = await fetch("https://mygym.qtechx.com/api/assignments");
         const data = await res.json();
+        // console.log("API DATA:", data);
 
         const now = new Date();
+        const last24HoursMembers = data
+          .filter((m) => {
+            if (!m.updatedAt) return false;
 
-        const last24HoursMembers = data.filter((m) => {
-          const created = new Date(m.created_at);
-          const diff = (now - created) / (1000 * 60 * 60);
+            const diffHours =
+              (Date.now() - new Date(m.updatedAt).getTime()) /
+              (1000 * 60 * 60);
 
-          return (
-            diff <= 24 &&
-            String(m.trainer_id) === String(user.id)
-          );
-        });
+            return (
+              diffHours <= 24 &&
+              m.trainerName?.toLowerCase() === user.username?.toLowerCase()
+            );
+          })
+          .map((m) => ({
+            name: m.username || "No Name",
+            email: m.userEmail || "-",
+            phone: m.userMobile || "-",
+          }));
 
         setNewMembers(last24HoursMembers);
       } catch (err) {
@@ -87,7 +96,7 @@ function TrainerHeader() {
             <Ionicons name="notifications-outline" size={22} color="white" />
 
             {newMembers.length > 0 && (
-              <View className="absolute -top-1.5 -right-2 bg-red-600 w-4 h-4 rounded-full items-center justify-center">
+              <View className="absolute -top-1 -right-1 bg-red-600 w-4 h-4 rounded-full items-center justify-center">
                 <Text className="text-[10px] text-white font-bold">
                   {newMembers.length}
                 </Text>
@@ -198,11 +207,11 @@ function TrainerHeader() {
               newMembers.map((m, i) => (
                 <View key={i} className="border-b border-[#262626] py-2">
                   <Text className="text-white text-sm font-semibold">
-                    {m.username || m.user_name}
+                    {m.name}
                   </Text>
 
                   <Text className="text-gray-400 text-xs">
-                    {m.user_email}
+                    📧 {m.email}
                   </Text>
                 </View>
               ))
@@ -301,6 +310,16 @@ export default function TrainersLayout() {
           title: "Dashboard",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="update-weight"
+        options={{
+          title: "Weight",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="fitness" size={size} color={color} />
           ),
         }}
       />

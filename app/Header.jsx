@@ -49,12 +49,13 @@ export default function Header() {
   return (
     <View className="flex-row items-center justify-between px-4 py-2.5 bg-[#0f0f0f]">
 
-      {/* LOGO */}
-      <Image
-        source={require("../assets/images/logo_dark.png")}
-        className="w-20 h-11"
-        resizeMode="contain"
-      />
+      <TouchableOpacity onPress={() => router.push("/")}>
+        <Image
+          source={require("../assets/images/logo_dark.png")}
+          className="w-20 h-11"
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
 
       <View className="flex-row items-center">
 
@@ -85,9 +86,9 @@ export default function Header() {
         </TouchableOpacity>
 
         {/* NOTIFICATION */}
-        <TouchableOpacity className="mr-4">
+        {/* <TouchableOpacity className="mr-4">
           <Ionicons name="notifications-outline" size={22} color="white" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* AVATAR */}
         <TouchableOpacity
@@ -95,9 +96,8 @@ export default function Header() {
             if (!user) router.push("/(auth)/login");
             else setMenuVisible(true);
           }}
-          className={`w-9 h-9 rounded-full items-center justify-center ${
-            user ? "bg-red-600" : "bg-gray-700"
-          }`}
+          className={`w-9 h-9 rounded-full items-center justify-center ${user ? "bg-red-600" : "bg-gray-700"
+            }`}
         >
           {user ? (
             <Text className="text-white font-bold">

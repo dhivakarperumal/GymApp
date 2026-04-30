@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { getDietPlans } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
+import dayjs from "dayjs";
 
 export default function DietChartScreen() {
   const { user } = useAuth();
@@ -12,13 +13,29 @@ export default function DietChartScreen() {
   const [diet, setDiet] = useState(null);
   const [title, setTitle] = useState("");
 
+  const [createdAt, setCreatedAt] = useState(null);
 
-  const mealTimes = {
-    Morning: "5:00 - 6:00 AM",
-    Breakfast: "8:00 - 9:00 AM",
-    Lunch: "1:00 - 2:00 PM",
-    Evening: "4:00 - 4:30 PM",
-    Dinner: "7:00 - 8:00 PM",
+  const [filter, setFilter] = useState("TODAY");
+
+  const getFilteredDiet = () => {
+    if (!diet || !createdAt) return [];
+
+    const baseDate = dayjs(createdAt);
+    const today = dayjs();
+
+    return Object.entries(diet).filter(([day, meals], index) => {
+      const date = baseDate.add(index, "day");
+
+      if (filter === "TODAY") {
+        return date.isSame(today, "day");
+      }
+
+      if (filter === "WEEK") {
+        return date.isAfter(today.subtract(7, "day"));
+      }
+
+      return true; // ALL
+    });
   };
 
   const fetchDietPlan = async () => {
@@ -32,6 +49,7 @@ export default function DietChartScreen() {
       if (myDiet) {
         setTitle(myDiet.title);
         setDiet(myDiet.days); // store ALL days
+        setCreatedAt(myDiet.created_at);
       }
     } catch (err) {
       console.log("Diet fetch error:", err);
@@ -55,45 +73,71 @@ export default function DietChartScreen() {
 
       {title && <Text className="text-gray-400 mb-6">{title}</Text>}
 
-      {diet &&
-        Object.entries(diet).map(([day, meals]) => (
-          <View
-            key={day}
-            className="bg-[#1c1c1c] rounded-2xl p-5 border border-[#262626] mb-6"
+      <View className="flex-row mb-4">
+        {["ALL", "TODAY", "WEEK"].map((f) => (
+          <TouchableOpacity
+            key={f}
+            onPress={() => setFilter(f)}
+            className={`px-4 py-2 rounded-full mr-2 ${filter === f ? "bg-primary" : "bg-[#222]"
+              }`}
           >
-            <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-white text-lg font-bold">{day} Meals</Text>
+            <Text
+              className={`text-sm font-semibold ${filter === f ? "text-white" : "text-gray-400"
+                }`}
+            >
+              {f === "ALL" ? "All" : f === "TODAY" ? "Today" : "This Week"}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-              <Ionicons name="restaurant-outline" size={18} color="#ff3c00" />
-            </View>
+      {diet &&
+        getFilteredDiet().map(([day, meals], index) => {
+          const baseDate = dayjs(createdAt);
+          const originalIndex = Number(day.replace("Day", "")) - 1;
 
-            {Object.entries(meals).map(([meal, value]) => (
-              <View
-                key={meal}
-                className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]"
-              >
-                <View className="flex-row items-center">
-                  <Text className="text-white font-semibold">
-                    {meal}
+          const calculatedDate = baseDate
+            .add(originalIndex, "day")
+            .format("DD-MM-YYYY");
+
+          return (
+            <View
+              key={day}
+              className="bg-[#1c1c1c] rounded-2xl p-5 border border-[#262626] mb-6"
+            >
+              <View className="flex-row items-center justify-between mb-4">
+                <Text className="text-white text-lg font-bold">
+                  {calculatedDate} Meals
+                </Text>
+
+                <Ionicons name="restaurant-outline" size={18} color="#ff3c00" />
+              </View>
+
+              {Object.entries(meals).map(([meal, value]) => (
+                <View
+                  key={meal}
+                  className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]"
+                >
+                  <View className="flex-row justify-between items-center">
+                    <Text className="text-white font-semibold">{meal}</Text>
+
+                    <Text className="text-red-500 text-sm">
+                      {value.time || "No time"}
+                    </Text>
+                  </View>
+
+                  <Text className="text-gray-300 text-sm">
+                    {value.food} ({value.quantity})
                   </Text>
 
-                  <Text className="text-red-500 ml-2">
-                    ({mealTimes[meal]})
+                  <Text className="text-gray-500 text-xs mt-1">
+                    {value.calories} calories
                   </Text>
                 </View>
-
-
-                <Text className="text-gray-300 text-sm">
-                  {value.food} ({value.quantity})
-                </Text>
-
-                <Text className="text-gray-500 text-xs mt-1">
-                  {value.calories} calories
-                </Text>
-              </View>
-            ))}
-          </View>
-        ))}
+              ))}
+            </View>
+          );
+        })}
 
       {!diet && (
         <View className="items-center mt-16">

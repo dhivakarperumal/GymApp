@@ -34,9 +34,9 @@ const getDistance = (lat1, lon1, lat2, lon2) => {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(lat1 * (Math.PI / 180)) *
-      Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
@@ -56,6 +56,7 @@ export default function Attendance() {
   const [trainerCoords, setTrainerCoords] = useState(null);
   const [locationName, setLocationName] = useState("");
   const [locationVerified, setLocationVerified] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const [search, setSearch] = useState("");
 
@@ -216,6 +217,7 @@ export default function Attendance() {
       await Promise.all(promises);
 
       setSubmittedAttendance(attendanceStates);
+      setEditMode(false);
 
       Alert.alert("Success", "Attendance saved successfully");
     } catch (err) {
@@ -302,6 +304,21 @@ export default function Attendance() {
             </View>
           </View>
 
+          <View className="bg-[#141414] border border-[#262626] rounded-2xl p-5 mb-5">
+            <View className="flex-row items-center justify-between">
+
+              {/* LEFT */}
+              <View className="flex-row items-center">
+                <Ionicons name="person-circle" size={22} color="#ff3c00" />
+                <Text className="text-white ml-2 font-semibold">
+                  Trainer Check-in
+                </Text>
+              </View>
+
+            </View>
+
+          </View>
+
           {/* LOCATION CARD */}
 
           <View className="bg-[#141414] border border-[#262626] rounded-2xl p-5 mb-5">
@@ -325,6 +342,14 @@ export default function Attendance() {
               {locationVerified ? locationName : "Location not verified"}
             </Text>
           </View>
+          {submittedAttendance && Object.keys(submittedAttendance).length > 0 && !editMode && (
+            <TouchableOpacity
+              onPress={() => setEditMode(true)}
+              className="bg-primary rounded-xl p-3 mb-4 items-center"
+            >
+              <Text className="text-white font-bold">Edit Attendance</Text>
+            </TouchableOpacity>
+          )}
 
           {/* SELECT ALL */}
 
@@ -360,7 +385,13 @@ export default function Attendance() {
 
           {filteredMembers.map((m, i) => {
             const id = m.id;
-            const checked = attendanceStates[id];
+
+            const checked =
+              editMode || !submittedAttendance[id]
+                ? attendanceStates[id]
+                : submittedAttendance[id];
+
+            const isSubmitted = submittedAttendance[id] !== undefined;
 
             return (
               <View
@@ -374,20 +405,29 @@ export default function Attendance() {
 
                   <View className="flex-1">
                     <Text className="text-white font-bold">{m.name}</Text>
-
                     <Text className="text-gray-400 text-xs">{m.email}</Text>
                   </View>
 
-                  <TouchableOpacity
-                    onPress={() => toggleMember(id)}
-                    className={`w-8 h-8 rounded-lg items-center justify-center ${
-                      checked ? "bg-green-500" : "bg-[#262626]"
-                    }`}
-                  >
-                    {checked && (
-                      <Ionicons name="checkmark" size={18} color="white" />
-                    )}
-                  </TouchableOpacity>
+                  {/* ✅ AFTER SUBMIT → SHOW TEXT */}
+                  {!editMode && isSubmitted ? (
+                    <Text
+                      className={`font-bold ${checked ? "text-green-500" : "text-red-500"
+                        }`}
+                    >
+                      {checked ? "Present" : "Absent"}
+                    </Text>
+                  ) : (
+                    /* ✅ EDIT MODE → SHOW CHECKBOX */
+                    <TouchableOpacity
+                      onPress={() => toggleMember(id)}
+                      className={`w-8 h-8 rounded-lg items-center justify-center ${checked ? "bg-green-500" : "bg-[#262626]"
+                        }`}
+                    >
+                      {checked && (
+                        <Ionicons name="checkmark" size={18} color="white" />
+                      )}
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
             );

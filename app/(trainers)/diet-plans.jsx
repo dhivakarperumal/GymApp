@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import { getTrainerMembers, getTrainerDietPlans } from "../../services/api";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const meals = ["Morning", "Breakfast", "Lunch", "Evening", "Dinner"];
 
@@ -24,6 +25,7 @@ const generateSingleDay = () => {
       food: "",
       quantity: "",
       calories: "",
+      time: "", // ✅ ADD THIS
     };
   });
   return day;
@@ -37,6 +39,8 @@ export default function AddDietPlan() {
   const [members, setMembers] = useState([]);
   const [expandedDay, setExpandedDay] = useState(null);
   const [memberPlans, setMemberPlans] = useState([]);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [selectedTimeField, setSelectedTimeField] = useState(null);
 
   const [existingPlanId, setExistingPlanId] = useState(null);
 
@@ -45,6 +49,7 @@ export default function AddDietPlan() {
     memberName: "",
     memberEmail: "",
     memberMobile: "",
+    memberWeight: "",
     title: "",
     totalCalories: "",
     duration: 7,
@@ -114,21 +119,46 @@ export default function AddDietPlan() {
     if (!id) return;
 
     const loadDiet = async () => {
-      const res = await fetch(
-        `https://mygym.qtechx.com/api/diet-plans/${id}`
-      );
+      const res = await fetch(`https://mygym.qtechx.com/api/diet-plans/${id}`);
 
       const data = await res.json();
+
+      const fixedDays = {};
+
+      Object.keys(data.days || {}).forEach((dayKey) => {
+        fixedDays[dayKey] = {};
+
+        meals.forEach((meal) => {
+          const mealData = data.days[dayKey][meal];
+
+          if (typeof mealData === "string") {
+            fixedDays[dayKey][meal] = {
+              food: mealData,
+              quantity: "",
+              calories: "",
+              time: "",
+            };
+          } else {
+            fixedDays[dayKey][meal] = {
+              food: mealData?.food || "",
+              quantity: mealData?.quantity || "",
+              calories: mealData?.calories || "",
+              time: mealData?.time || "",
+            };
+          }
+        });
+      });
 
       setForm({
         memberId: String(data.memberId || data.member_id),
         memberName: data.member_name,
         memberEmail: data.member_email || "",
         memberMobile: data.member_mobile || "",
+        memberWeight: data.member_weight || "",
         title: data.title,
         totalCalories: data.totalCalories || data.total_calories || 0,
         duration: data.duration || 1,
-        days: data.days || { Day1: generateSingleDay() },
+        days: fixedDays,
       });
     };
 
@@ -166,18 +196,18 @@ export default function AddDietPlan() {
 
         days: form.days,
 
-        status: "active"
+        status: "active",
       };
 
       console.log("Payload:", JSON.stringify(payload, null, 2));
 
       const planIdToUpdate = id || existingPlanId;
 
-const url = planIdToUpdate
-  ? `https://mygym.qtechx.com/api/diet-plans/${planIdToUpdate}`
-  : `https://mygym.qtechx.com/api/diet-plans`;
+      const url = planIdToUpdate
+        ? `https://mygym.qtechx.com/api/diet-plans/${planIdToUpdate}`
+        : `https://mygym.qtechx.com/api/diet-plans`;
 
-const method = planIdToUpdate ? "PUT" : "POST";
+      const method = planIdToUpdate ? "PUT" : "POST";
 
       console.log("API URL:", url);
       console.log("METHOD:", method);
@@ -207,7 +237,6 @@ const method = planIdToUpdate ? "PUT" : "POST";
       } else {
         alert(data.message || "Something went wrong");
       }
-
     } catch (err) {
       console.log("===== SAVE DIET ERROR =====");
       console.log(err);
@@ -276,13 +305,39 @@ const method = planIdToUpdate ? "PUT" : "POST";
       days: updated,
     }));
   };
+
+  const handleCopyDay1ToAll = () => {
+    if (Object.keys(form.days).length <= 1) {
+      alert("Add more days first");
+      return;
+    }
+
+    const day1Data = form.days["Day1"];
+
+    const deepCopy = () => JSON.parse(JSON.stringify(day1Data));
+
+    setForm((prev) => {
+      const updatedDays = { ...prev.days };
+
+      Object.keys(updatedDays).forEach((dayKey) => {
+        if (dayKey !== "Day1") {
+          updatedDays[dayKey] = deepCopy();
+        }
+      });
+
+      return { ...prev, days: updatedDays };
+    });
+
+    alert("Day 1 copied to all days");
+  };
+
   useFocusEffect(
     useCallback(() => {
       if (!id) {
         setForm(getDefaultForm());
         setExpandedDay(null);
       }
-    }, [id])
+    }, [id]),
   );
 
   return (
@@ -297,7 +352,6 @@ const method = planIdToUpdate ? "PUT" : "POST";
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-
         {/* HEADER */}
 
         <View className="flex-row justify-between items-center mb-6">
@@ -309,14 +363,13 @@ const method = planIdToUpdate ? "PUT" : "POST";
             onPress={() => router.push("/trainerdiet/dietplan")}
             className="bg-red-600 px-4 py-2 rounded-lg"
           >
-            <Text className="text-white font-semibold">
-              All Diet Plans
-            </Text>
+            <Text className="text-white font-semibold">All Diet Plans</Text>
           </TouchableOpacity>
         </View>
 
         {/* MEMBER SELECT */}
 
+        <Text className="text-gray-400 text-xs mb-1">Select Member</Text>
         <View className="bg-[#141414] rounded-xl mb-4">
           <Picker
             selectedValue={form.memberId}
@@ -326,25 +379,52 @@ const method = planIdToUpdate ? "PUT" : "POST";
               const m = members.find((x) => String(x.id) === String(value));
 
               const existingPlan = memberPlans.find(
-                (p) => String(p.member_id) === String(value)
+                (p) => String(p.member_id) === String(value),
               );
 
               if (existingPlan) {
 
-  setExistingPlanId(existingPlan.id);
+                setExistingPlanId(existingPlan.id);
 
-  setForm({
-    memberId: String(existingPlan.member_id),
-    memberName: existingPlan.member_name,
-    memberEmail: existingPlan.member_email || "",
-    memberMobile: existingPlan.member_mobile || "",
-    title: existingPlan.title,
-    totalCalories: existingPlan.total_calories || 0,
-    duration: existingPlan.duration,
-    days: existingPlan.days || { Day1: generateSingleDay() },
-  });
+                const fixedDays = {};
 
-} else {
+                Object.keys(existingPlan.days || {}).forEach((dayKey) => {
+                  fixedDays[dayKey] = {};
+
+                  meals.forEach((meal) => {
+                    const mealData = existingPlan.days[dayKey][meal];
+
+                    if (typeof mealData === "string") {
+                      fixedDays[dayKey][meal] = {
+                        food: mealData,
+                        quantity: "",
+                        calories: "",
+                        time: "",
+                      };
+                    } else {
+                      fixedDays[dayKey][meal] = {
+                        food: mealData?.food || "",
+                        quantity: mealData?.quantity || "",
+                        calories: mealData?.calories || "",
+                        time: mealData?.time || "",
+                      };
+                    }
+                  });
+                });
+
+                setForm({
+                  memberId: String(existingPlan.member_id),
+                  memberName: existingPlan.member_name,
+                  memberEmail: existingPlan.member_email || "",
+                  memberMobile: existingPlan.member_mobile || "",
+                  memberWeight: existingPlan.member_weight || "", // ✅ ADD
+                  title: existingPlan.title,
+                  totalCalories: existingPlan.total_calories || 0,
+                  duration: existingPlan.duration,
+                  days: fixedDays, // ✅ IMPORTANT
+                });
+
+              } else {
 
                 setForm((p) => ({
                   ...p,
@@ -352,8 +432,8 @@ const method = planIdToUpdate ? "PUT" : "POST";
                   memberName: m?.name || "",
                   memberEmail: m?.email || "",
                   memberMobile: m?.mobile || "",
+                  memberWeight: m?.weight || m?.member_weight || "",
                 }));
-
               }
             }}
           >
@@ -371,18 +451,18 @@ const method = planIdToUpdate ? "PUT" : "POST";
 
         {/* TITLE */}
 
+        <Text className="text-gray-400 text-xs mb-1">Diet Title</Text>
         <TextInput
           placeholder="Diet Title"
           placeholderTextColor="#aaa"
           value={form.title}
-          onChangeText={(text) =>
-            setForm((prev) => ({ ...prev, title: text }))
-          }
+          onChangeText={(text) => setForm((prev) => ({ ...prev, title: text }))}
           className="bg-[#141414] text-white rounded-xl px-4 py-3 mb-4"
         />
 
         {/* TOTAL CALORIES */}
 
+        <Text className="text-gray-400 text-xs mb-1">Total Calories</Text>
         <TextInput
           placeholder="Total Calories"
           value={String(form.totalCalories)}
@@ -390,36 +470,39 @@ const method = planIdToUpdate ? "PUT" : "POST";
           className="bg-[#141414] text-white rounded-xl px-4 py-3 mb-4"
         />
 
+        <Text className="text-gray-400 text-xs mb-1">Member Weight</Text>
+        <TextInput
+          placeholder="Weight (kg)"
+          placeholderTextColor="#aaa"
+          value={form.memberWeight}
+          onChangeText={(text) =>
+            setForm((prev) => ({ ...prev, memberWeight: text }))
+          }
+          className="bg-[#141414] text-white rounded-xl px-4 py-3 mb-4"
+        />
+
         {/* DAY CONTROLS */}
 
         <View className="flex-row justify-between items-center mb-4">
-
           <Text className="text-white font-semibold">
             Total Days: {Object.keys(form.days).length}
           </Text>
 
           <View className="flex-row space-x-3">
-
             <TouchableOpacity
               onPress={handleAddDay}
               className="bg-green-600 px-4 py-2 mr-2 rounded-lg"
             >
-              <Text className="text-white font-semibold">
-                + Add Day
-              </Text>
+              <Text className="text-white font-semibold">+ Add Day</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={handleRemoveDay}
               className="bg-red-600 px-4 py-2 rounded-lg"
             >
-              <Text className="text-white font-semibold">
-                Remove Day
-              </Text>
+              <Text className="text-white font-semibold">Remove Day</Text>
             </TouchableOpacity>
-
           </View>
-
         </View>
 
         {/* DAYS */}
@@ -431,17 +514,14 @@ const method = planIdToUpdate ? "PUT" : "POST";
               key={day}
               className="bg-[#141414] border border-[#262626] rounded-xl mb-4"
             >
-
               {/* DAY HEADER */}
 
               <TouchableOpacity
-                onPress={() =>
-                  setExpandedDay(expandedDay === day ? null : day)
-                }
+                onPress={() => setExpandedDay(expandedDay === day ? null : day)}
                 className="flex-row justify-between items-center p-4"
               >
                 <Text className="text-white font-bold text-lg">
-                  {day}
+                  {day.replace("Day", "Day ")}
                 </Text>
 
                 <Ionicons
@@ -459,20 +539,32 @@ const method = planIdToUpdate ? "PUT" : "POST";
 
               {expandedDay === day && (
                 <View className="px-4 pb-4">
-
                   {meals.map((meal) => (
                     <View
                       key={meal}
                       className="bg-[#0f0f0f] border border-[#262626] rounded-xl p-3 mb-4"
                     >
-
                       {/* MEAL TITLE */}
                       <Text className="text-red-700 font-semibold mb-2">
                         {meal}
                       </Text>
 
+                      <Text className="text-gray-400 text-xs mb-2">Time</Text>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setSelectedTimeField({ day, meal });
+                          setShowTimePicker(true);
+                        }}
+                        className="bg-black px-3 py-3 rounded-lg mb-2"
+                      >
+                        <Text className="text-white">
+                          {form.days[day][meal].time || "Select Time"}
+                        </Text>
+                      </TouchableOpacity>
+
+                      <Text className="text-gray-400 text-xs mb-2">Food</Text>
                       <TextInput
-                        placeholder="Food"
+                        placeholder="Enter food name"
                         placeholderTextColor="#aaa"
                         value={form.days[day][meal].food}
                         onChangeText={(text) =>
@@ -481,8 +573,11 @@ const method = planIdToUpdate ? "PUT" : "POST";
                         className="bg-black text-white px-3 py-2 rounded-lg mb-2"
                       />
 
+                      <Text className="text-gray-400 text-xs mb-2">
+                        Quantity
+                      </Text>
                       <TextInput
-                        placeholder="Quantity"
+                        placeholder="Enter quantity"
                         placeholderTextColor="#aaa"
                         value={form.days[day][meal].quantity}
                         onChangeText={(text) =>
@@ -491,8 +586,11 @@ const method = planIdToUpdate ? "PUT" : "POST";
                         className="bg-black text-white px-3 py-2 rounded-lg mb-2"
                       />
 
+                      <Text className="text-gray-400 text-xs mb-2">
+                        Calories
+                      </Text>
                       <TextInput
-                        placeholder="Calories"
+                        placeholder="Enter calories"
                         placeholderTextColor="#aaa"
                         keyboardType="numeric"
                         value={form.days[day][meal].calories}
@@ -501,29 +599,76 @@ const method = planIdToUpdate ? "PUT" : "POST";
                             day,
                             meal,
                             "calories",
-                            text.replace(/[^0-9]/g, "")
+                            text.replace(/[^0-9]/g, ""),
                           )
                         }
                         className="bg-black text-white px-3 py-2 rounded-lg"
                       />
 
+
                     </View>
                   ))}
 
+                  {day === "Day1" && Object.keys(form.days).length > 1 && (
+                    <TouchableOpacity
+                      onPress={handleCopyDay1ToAll}
+                      className="bg-green-600 mt-2 p-3 rounded-xl items-center"
+                    >
+                      <Text className="text-white font-bold">
+                        Copy Day 1 to All Days
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
-              )}
 
+              )}
             </View>
           ))}
 
         {/* SAVE BUTTON */}
 
-        <TouchableOpacity onPress={handleSaveDiet} className="bg-red-600 p-4 rounded-xl mb-10">
+        <TouchableOpacity
+          onPress={handleSaveDiet}
+          className="bg-red-600 p-4 rounded-xl mb-10"
+        >
           <Text className="text-white text-center font-bold">
             Save Diet Plan
           </Text>
         </TouchableOpacity>
+        {showTimePicker && (
+          <DateTimePicker
+            value={new Date()}
+            mode="time"
+            display="default"  
+            is24Hour={false}   
+            onChange={(event, selectedDate) => {
+              setShowTimePicker(false);
 
+              if (selectedDate && selectedTimeField) {
+                let hours = selectedDate.getHours();
+                let minutes = selectedDate.getMinutes();
+
+                const ampm = hours >= 12 ? "PM" : "AM";
+
+                hours = hours % 12;
+                hours = hours === 0 ? 12 : hours;
+
+                const formatted = `${hours
+                  .toString()
+                  .padStart(2, "0")}:${minutes
+                    .toString()
+                    .padStart(2, "0")} ${ampm}`;
+
+                handleMealChange(
+                  selectedTimeField.day,
+                  selectedTimeField.meal,
+                  "time",
+                  formatted
+                );
+              }
+            }}
+          />
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );

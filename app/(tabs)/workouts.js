@@ -110,7 +110,6 @@
 //   );
 // }
 
-
 import { useEffect, useState } from "react";
 import {
   View,
@@ -124,10 +123,36 @@ import { Ionicons } from "@expo/vector-icons";
 import { getTrainerWorkouts } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { SafeAreaView } from "react-native-safe-area-context";
+import dayjs from "dayjs";
 
 export default function Workouts() {
   const { user } = useAuth();
   const [workouts, setWorkouts] = useState([]);
+  const [filter, setFilter] = useState("TODAY");
+
+  const workoutData = workouts[0];
+
+  const getFilteredDays = () => {
+    if (!workoutData?.days || !workoutData?.created_at) return [];
+
+    const baseDate = dayjs(workoutData.created_at);
+    const today = dayjs();
+
+    return Object.entries(workoutData.days).filter(([day, exercises]) => {
+      const originalIndex = Number(day.replace("Day", "")) - 1;
+      const date = baseDate.add(originalIndex, "day");
+
+      if (filter === "TODAY") {
+        return date.isSame(today, "day");
+      }
+
+      if (filter === "WEEK") {
+        return date.isAfter(today.subtract(7, "day"));
+      }
+
+      return true; // ALL
+    });
+  };
 
   useEffect(() => {
     if (user) {
@@ -175,8 +200,6 @@ export default function Workouts() {
       </ScrollView>
     );
   }
-
-  const workoutData = workouts[0];
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
@@ -244,14 +267,42 @@ export default function Workouts() {
             Weekly Schedule
           </Text>
 
-          {Object.entries(workoutData.days || {}).map(
-            ([day, exercises], index) => (
+          <View className="flex-row mb-4">
+            {["ALL", "TODAY", "WEEK"].map((f) => (
+              <TouchableOpacity
+                key={f}
+                onPress={() => setFilter(f)}
+                className={`px-4 py-2 rounded-full mr-2 ${
+                  filter === f ? "bg-primary" : "bg-[#222]"
+                }`}
+              >
+                <Text
+                  className={`text-sm font-semibold ${
+                    filter === f ? "text-white" : "text-gray-400"
+                  }`}
+                >
+                  {f === "ALL" ? "All" : f === "TODAY" ? "Today" : "This Week"}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {getFilteredDays().map(([day, exercises], index) => {
+            const originalIndex = Number(day.replace("Day", "")) - 1;
+
+            const formattedDate = dayjs(workoutData.created_at)
+              .add(originalIndex, "day")
+              .format("DD-MM-YYYY");
+
+            return (
               <View
                 key={index}
                 className="bg-[#141414] rounded-2xl p-4 mb-4 border border-border"
               >
                 <View className="flex-row justify-between items-center mb-3">
-                  <Text className="text-primary font-bold text-lg">{day}</Text>
+                  <Text className="text-primary font-bold text-lg">
+                    {formattedDate}
+                  </Text>
 
                   <View className="bg-card px-3 py-1 rounded-full border border-border">
                     <Text className="text-gray-400 text-sm">
@@ -298,8 +349,8 @@ export default function Workouts() {
                   </View>
                 ))}
               </View>
-            ),
-          )}
+            );
+          })}
 
           <View className="h-20" />
         </View>

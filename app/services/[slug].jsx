@@ -2,7 +2,6 @@ import {
   View,
   Text,
   ScrollView,
-  Image,
   Dimensions,
   TouchableOpacity,
   ActivityIndicator,
@@ -14,13 +13,36 @@ import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../Header";
 import BackButton from "../BackButton";
-
+import { Image } from "expo-image";
 const { width } = Dimensions.get("window");
 
 export default function ServiceDetails() {
   const { slug } = useLocalSearchParams();
   const [service, setService] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const getImageUrl = (service) => {
+    const img = service?.hero_image || service?.heroImage;
+
+    if (!img) return null;
+
+    // already base64
+    if (img.startsWith("data:image")) return img;
+
+    // raw base64
+    if (img.length > 1000 && !img.startsWith("http")) {
+      return `data:image/jpeg;base64,${img}`;
+    }
+
+    // full URL
+    if (img.startsWith("http")) return img;
+
+    // relative path
+    const base = "https://mygym.qtechx.com";
+    return `${base}/${img}`;
+  };
+
+   const imageUrl = getImageUrl(service);
 
   useEffect(() => {
     fetchService();
@@ -67,13 +89,21 @@ export default function ServiceDetails() {
         <View className="px-5 pt-6">
           <BackButton style={{ marginBottom: 20 }} />
           <Image
-            source={{ uri: service.hero_image }}
+            source={
+              imageUrl
+                ? { uri: imageUrl }
+                : require("../../assets/images/logo_dark.png")
+            }
             style={{
               width: width - 40,
               height: 300,
               borderRadius: 24,
             }}
-            resizeMode="cover"
+            contentFit="cover"
+            transition={300}
+            onError={(e) => {
+              console.log("❌ DETAIL IMAGE ERROR:", e);
+            }}
           />
         </View>
 
@@ -90,7 +120,7 @@ export default function ServiceDetails() {
           </Text>
 
           {/* Main Description */}
-          <Text className="text-gray-300 leading-6 mb-8">
+          <Text className="text-gray-300 text-justify leading-6 mb-8">
             {service.description}
           </Text>
 
