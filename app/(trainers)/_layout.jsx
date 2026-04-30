@@ -345,13 +345,6 @@ export default function TrainersLayout() {
       />
 
       <Tabs.Screen
-        name="Attendance"
-        options={{
-          href: null,
-        }}
-      />
-
-      <Tabs.Screen
         name="more"
         options={{
           title: "More",
@@ -361,19 +354,11 @@ export default function TrainersLayout() {
         }}
       />
 
-      {/* Hide profile from tabs */}
-      <Tabs.Screen
-        name="profile"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="follow-up-enquiry"
-        options={{
-          href: null,
-        }}
-      />
+      {/* Hidden screens — accessible via router but not in tab bar */}
+      <Tabs.Screen name="Attendance"       options={{ href: null }} />
+      <Tabs.Screen name="profile"          options={{ href: null }} />
+      <Tabs.Screen name="follow-up-enquiry" options={{ href: null }} />
+      <Tabs.Screen name="pricing"          options={{ href: null }} />
     </Tabs>
   );
 }
