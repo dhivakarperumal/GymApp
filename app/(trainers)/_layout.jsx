@@ -87,6 +87,14 @@ function TrainerHeader() {
 
       {/* HEADER ICONS */}
       <View className="flex-row items-center">
+        {/* MESSAGES */}
+        <TouchableOpacity
+          className="mr-5"
+          onPress={() => router.push("/(trainers)/messages")}
+        >
+          <Ionicons name="chatbubble-ellipses-outline" size={22} color="white" />
+        </TouchableOpacity>
+
         {/* NOTIFICATION */}
         <TouchableOpacity
           className="mr-5"
@@ -345,20 +353,6 @@ export default function TrainersLayout() {
       />
 
       <Tabs.Screen
-        name="Attendance"
-        options={{
-          href: null,
-        }}
-      />
-
-      <Tabs.Screen
-        name="pt-form"
-        options={{
-          href: null,
-        }}
-      />
-
-      <Tabs.Screen
         name="more"
         options={{
           title: "More",
@@ -368,13 +362,12 @@ export default function TrainersLayout() {
         }}
       />
 
-      {/* Hide profile from tabs */}
-      <Tabs.Screen
-        name="profile"
-        options={{
-          href: null,
-        }}
-      />
+      {/* Hidden screens — accessible via router but not in tab bar */}
+      <Tabs.Screen name="Attendance"       options={{ href: null }} />
+      <Tabs.Screen name="profile"          options={{ href: null }} />
+      <Tabs.Screen name="follow-up-enquiry" options={{ href: null }} />
+      <Tabs.Screen name="pricing"          options={{ href: null }} />
+      <Tabs.Screen name="messages"         options={{ href: null }} />
     </Tabs>
   );
 }

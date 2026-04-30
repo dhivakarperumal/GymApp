@@ -260,7 +260,8 @@ export const updateUserApi = async (id, data) => {
 
 export const getTrainerMembers = async (trainerId, user) => {
   try {
-    const res = await api.get("/assignments");
+    /* Use server-side filter — same as dashboard */
+    const res = await api.get(`/assignments?trainerUserId=${trainerId}`);
 
     const raw = res.data || [];
 
@@ -268,41 +269,35 @@ export const getTrainerMembers = async (trainerId, user) => {
       ? raw
       : raw.data || raw.assignments || [];
 
-    const filtered = assignments
-      .filter((a) => {
-        let include = false;
+    /* Show active OR status-less members (same logic as web + dashboard) */
+    const activeAssignments = assignments.filter(
+      (a) => !a.status || (a.status || "").toLowerCase() === "active"
+    );
 
-        const assignTrainerId = Number(a.trainerId || a.trainer_id);
+    /* Deduplicate by userId */
+    const seen = new Set();
+    const unique = [];
+    for (const a of activeAssignments) {
+      const uid = String(a.userId || a.user_id || "");
+      if (uid && !seen.has(uid)) {
+        seen.add(uid);
+        unique.push(a);
+      }
+    }
 
-        if (!isNaN(assignTrainerId) && assignTrainerId === Number(trainerId)) {
-          include = true;
-        }
-
-        if (!include && user?.username && (a.trainerName || a.trainer_name)) {
-          if (
-            (a.trainerName || a.trainer_name).toLowerCase() ===
-            user.username.toLowerCase()
-          ) {
-            include = true;
-          }
-        }
-
-        return include;
-      })
-      .map((a) => ({
-        id: String(a.userId || a.user_id),
-        name: a.username || a.user_name || "Member",
-        email: a.userEmail || a.user_email || "",
-        mobile: a.userMobile || a.user_mobile || "",
-        planName: a.planName || a.plan_name || "",
-      }));
-
-    return filtered;
+    return unique.map((a) => ({
+      id: String(a.userId || a.user_id),
+      name: a.username || a.user_name || "Member",
+      email: a.userEmail || a.user_email || "",
+      mobile: a.userMobile || a.user_mobile || "",
+      planName: a.planName || a.plan_name || "",
+    }));
   } catch (err) {
     console.log("Get trainer members error:", err);
     throw err;
   }
 };
+
 
 // Trainer assigned to user
 export const getUserAssignment = async () => {
@@ -377,65 +372,37 @@ export const getUserOrders = async (userId) => {
 
 export const getTrainerDashboard = async (trainerId, user) => {
   try {
-    /* ---------------- ASSIGNMENTS ---------------- */
+    /* ---------------- ASSIGNMENTS (server-side filter) ---------------- */
 
-    const assignmentRes = await api.get("/assignments");
+    const assignmentRes = await api.get(
+      `/assignments?trainerUserId=${trainerId}`
+    );
 
     const rawAssignments = assignmentRes.data || [];
 
-    const assignments = Array.isArray(rawAssignments)
+    const membersRaw = Array.isArray(rawAssignments)
       ? rawAssignments
       : rawAssignments.data || rawAssignments.assignments || [];
 
-    /* Match trainer like Web Dashboard */
+    console.log("📊 Assignments from server:", membersRaw.length);
 
-    const filteredByTrainer = assignments.filter((a) => {
-      let include = false;
-
-      const assignTrainerId = Number(a.trainerId || a.trainer_id);
-
-      if (!isNaN(assignTrainerId) && assignTrainerId === Number(trainerId)) {
-        include = true;
-      }
-
-      if (!include && user?.username && (a.trainerName || a.trainer_name)) {
-        if (
-          (a.trainerName || a.trainer_name).toLowerCase() ===
-          user.username.toLowerCase()
-        ) {
-          include = true;
-        }
-      }
-
-      if (!include && user?.email && (a.trainerEmail || a.trainer_email)) {
-        if (
-          (a.trainerEmail || a.trainer_email).toLowerCase() ===
-          user.email.toLowerCase()
-        ) {
-          include = true;
-        }
-      }
-
-      return include;
-    });
-
-    /* ACTIVE MEMBERS */
-
-    const activeMembers = filteredByTrainer.filter(
-      (m) => (m.status || "").toLowerCase() === "active"
+    /* Show active OR status-less members (same logic as web dashboard) */
+    const activeMembers = membersRaw.filter(
+      (m) => !m.status || (m.status || "").toLowerCase() === "active"
     );
 
-    /* REMOVE DUPLICATES */
-
+    /* Remove duplicates by userId */
     const uniqueMembers = Array.from(
       new Map(
         activeMembers.map((m) => [m.userId || m.user_id, m])
       ).values()
     );
 
-    const memberIds = uniqueMembers.map((m) =>
+    const assignedMemberIds = uniqueMembers.map((m) =>
       String(m.userId || m.user_id)
     );
+
+    console.log("👥 Assigned members:", assignedMemberIds.length);
 
     /* ---------------- WORKOUT PLANS ---------------- */
 
@@ -443,18 +410,17 @@ export const getTrainerDashboard = async (trainerId, user) => {
 
     try {
       const workoutRes = await api.get("/workouts");
-
       const workoutRaw = workoutRes.data || [];
-
       const workouts = Array.isArray(workoutRaw)
         ? workoutRaw
         : workoutRaw.data || [];
-
-      const userWorkouts = workouts.filter((w) =>
-        memberIds.includes(String(w.member_id || w.memberId))
-      );
-
+      const userWorkouts = assignedMemberIds.length > 0
+        ? workouts.filter((w) =>
+            assignedMemberIds.includes(String(w.member_id || w.memberId))
+          )
+        : workouts;
       workoutCount = userWorkouts.length;
+      console.log("💪 Workouts:", workoutCount);
     } catch (err) {
       console.log("Workout fetch error:", err);
     }
@@ -465,18 +431,15 @@ export const getTrainerDashboard = async (trainerId, user) => {
 
     try {
       const dietRes = await api.get("/diet-plans");
-
       const dietRaw = dietRes.data || [];
-
-      const diets = Array.isArray(dietRaw)
-        ? dietRaw
-        : dietRaw.data || [];
-
-      const userDiets = diets.filter((d) =>
-        memberIds.includes(String(d.member_id || d.memberId))
-      );
-
+      const diets = Array.isArray(dietRaw) ? dietRaw : dietRaw.data || [];
+      const userDiets = assignedMemberIds.length > 0
+        ? diets.filter((d) =>
+            assignedMemberIds.includes(String(d.member_id || d.memberId))
+          )
+        : diets;
       dietCount = userDiets.length;
+      console.log("🥗 Diets:", dietCount);
     } catch (err) {
       console.log("Diet fetch error:", err);
     }
@@ -489,18 +452,16 @@ export const getTrainerDashboard = async (trainerId, user) => {
       const checkinRes = await api.get(
         `/checkins/today?trainerId=${trainerId}`
       );
-
-      const checkinData = checkinRes.data;
-
       checkins =
-        checkinData?.count ||
-        checkinData?.length ||
+        checkinRes.data?.count ||
+        checkinRes.data?.length ||
         0;
+      console.log("📅 Checkins:", checkins);
     } catch (err) {
       console.log("Checkin fetch error:", err);
     }
 
-    /* ---------------- RETURN DASHBOARD DATA ---------------- */
+    /* ---------------- RETURN ---------------- */
 
     return {
       members: uniqueMembers,
@@ -621,6 +582,55 @@ export const getUserMemberships = async (userId) => {
     console.log("GET USER MEMBERSHIPS ERROR 👉", err.message);
     throw err;
   }
+};
+
+/* ---------------- FOLLOW UP ENQUIRY ---------------- */
+
+export const getFollowups = async () => {
+  const res = await fetch(`${BASE_URL}/followups`);
+  return res.json();
+};
+
+export const createFollowup = async (data) => {
+  const res = await fetch(`${BASE_URL}/followups`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+};
+
+export const updateFollowup = async (id, data) => {
+  const res = await fetch(`${BASE_URL}/followups/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+};
+
+export const getFollowupInteractions = async (id) => {
+  const res = await fetch(`${BASE_URL}/followups/${id}/interactions`);
+  return res.json();
+};
+
+export const createFollowupInteraction = async (data) => {
+  const res = await fetch(`${BASE_URL}/followups/interactions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+};
+
+export const getPlans = async () => {
+  const res = await fetch(`${BASE_URL}/plans`);
+  return res.json();
+};
+
+export const getStaff = async () => {
+  const res = await fetch(`${BASE_URL}/staff`);
+  return res.json();
 };
 
 export default api;
