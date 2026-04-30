@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, ScrollView, Text, View } from 'react-native';
 import { useAuth } from '../../../context/AuthContext.js';
@@ -10,6 +11,7 @@ import PTFormEnquiry from './PTFormEnquiry';
 import SessionTracker from './SessionTracker';
 
 const PTForm = ({ route, navigation }) => {
+  const router = useRouter();
   const { user, role } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({});
@@ -59,15 +61,16 @@ const PTForm = ({ route, navigation }) => {
         [
           {
             text: 'OK',
-            onPress: () => navigation.goBack()
+            onPress: () => router.back()
           }
         ]
       );
     } catch (error) {
       console.error('Error submitting PT form:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to submit PT form. Please try again.';
       Alert.alert(
         'Error',
-        'Failed to submit PT form. Please try again.',
+        errorMessage,
         [{ text: 'OK' }]
       );
     } finally {
