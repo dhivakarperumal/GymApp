@@ -8,14 +8,6 @@ export default function MoreOptions() {
 
   const menuItems = [
     {
-      id: "ptform",
-      title: "PT Form",
-      icon: "create-outline",
-      iconType: "Ionicons",
-      route: "/(trainers)/pt-form",
-      color: "#f59e0b", // Orange
-    },
-    {
       id: "attendance",
       title: "Attendance",
       icon: "calendar-outline",
