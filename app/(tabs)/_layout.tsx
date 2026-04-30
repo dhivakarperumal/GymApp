@@ -1,25 +1,25 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
-import { Tabs, useRouter } from "expo-router";
-import { useCallback, useState, useEffect } from "react";
+import { Redirect, Tabs, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
-  Image,
-  Modal,
-  Pressable,
-  Text,
-  TouchableOpacity,
-  View,
-  BackHandler,
+    ActivityIndicator,
+    BackHandler,
+    Image,
+    Modal,
+    Pressable,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 import { getCart } from "../../services/api";
-import { ActivityIndicator } from "react-native";
 
 export default function TabLayout() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { user, logout, loading } = useAuth();
+
+  const router = useRouter();
   const [cartCount, setCartCount] = useState(0);
   const [menuVisible, setMenuVisible] = useState(false);
   const [logoutVisible, setLogoutVisible] = useState(false);

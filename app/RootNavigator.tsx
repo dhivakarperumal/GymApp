@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
+import { ActivityIndicator, View } from "react-native";
 import { useAuth } from "../context/AuthContext";
-import { View, ActivityIndicator } from "react-native";
 
 export default function RootNavigator() {
   const { user, loading } = useAuth();

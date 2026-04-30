@@ -1,7 +1,6 @@
-import { Stack } from "expo-router";
-import { AuthProvider } from "../context/AuthContext";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import { AuthProvider } from "../context/AuthContext";
 import "./global.css";
 import RootNavigator from "./RootNavigator";
 

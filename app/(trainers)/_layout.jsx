@@ -368,6 +368,84 @@ export default function TrainersLayout() {
       <Tabs.Screen name="follow-up-enquiry" options={{ href: null }} />
       <Tabs.Screen name="pricing"          options={{ href: null }} />
       <Tabs.Screen name="messages"         options={{ href: null }} />
+
+      {/* Hide all PTForm components */}
+      <Tabs.Screen
+        name="PTForm/FitnessScreening"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="PTForm/FlexibilityAndMeasurements"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="PTForm/HealthHistory2"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="PTForm/HealthHistoy"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="PTForm/InformedConsent"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="PTForm/PTForm"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="PTForm/PTFormEnquiry"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="PTForm/PTFormPreviewContent"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="PTForm/PTFormPrint"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="PTForm/SessionTracker"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="pt-form"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
