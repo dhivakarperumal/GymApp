@@ -307,7 +307,7 @@ export default function TrainersLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: "Dashboard",
+          title: "Home",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
@@ -356,7 +356,7 @@ export default function TrainersLayout() {
         options={{
           title: "More",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="menu-outline" size={size} color={color} />
+            <Ionicons name="ellipsis-horizontal-outline" size={size} color={color} />
           ),
         }}
       />
