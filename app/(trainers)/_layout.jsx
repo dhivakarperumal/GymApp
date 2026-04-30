@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Image, Text, TouchableOpacity, View, Modal, Pressable } from "react-native";
 
+const BASE_URL = "https://mygym.qtechx.com";
+
 function TrainerHeader() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -16,9 +18,11 @@ function TrainerHeader() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
-  const confirmLogout = () => {
+  const { logout } = useAuth();
+
+  const confirmLogout = async () => {
     setLogoutModalVisible(false);
-    router.replace("/login");
+    await logout();
   };
 
   useEffect(() => {
@@ -83,7 +87,7 @@ function TrainerHeader() {
             <Ionicons name="notifications-outline" size={22} color="white" />
 
             {newMembers.length > 0 && (
-              <View className="absolute top-20 right-4 bg-red-600 w-4 h-4 rounded-full items-center justify-center">
+              <View className="absolute -top-1.5 -right-2 bg-red-600 w-4 h-4 rounded-full items-center justify-center">
                 <Text className="text-[10px] text-white font-bold">
                   {newMembers.length}
                 </Text>
@@ -208,47 +212,6 @@ function TrainerHeader() {
         </Pressable>
       </Modal>
 
-      {/* PROFILE Modal */}
-
-      <Modal
-        transparent
-        visible={showProfileMenu}
-        animationType="fade"
-        onRequestClose={() => setShowProfileMenu(false)}
-      >
-        <Pressable
-          className="flex-1"
-          onPress={() => setShowProfileMenu(false)}
-        >
-          <View className="absolute top-20 right-2 w-60 bg-[#141414] border border-[#262626] rounded-xl p-2">
-
-            <TouchableOpacity
-              onPress={() => {
-                setShowProfileMenu(false);
-                router.push("/(trainers)/profile");
-              }}
-              className="flex-row items-center p-2"
-            >
-              <Ionicons name="person-outline" size={18} color="white" />
-              <Text className="text-white ml-2">Profile</Text>
-            </TouchableOpacity>
-
-            <View className="h-[1px] bg-[#262626] my-1" />
-
-            <TouchableOpacity
-              onPress={() => {
-                setShowProfileMenu(false);
-                setLogoutModalVisible(true);
-              }}
-              className="flex-row items-center p-2"
-            >
-              <Ionicons name="log-out-outline" size={18} color="red" />
-              <Text className="text-red-500 ml-2">Logout</Text>
-            </TouchableOpacity>
-
-          </View>
-        </Pressable>
-      </Modal>
 
       {/* LOGOUT CONFIRM MODAL */}
 

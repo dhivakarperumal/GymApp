@@ -14,11 +14,12 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 import { getCart } from "../../services/api";
+import { ActivityIndicator } from "react-native";
 
 export default function TabLayout() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const [cartCount, setCartCount] = useState(0);
   const [menuVisible, setMenuVisible] = useState(false);
   const [logoutVisible, setLogoutVisible] = useState(false);
@@ -41,10 +42,10 @@ export default function TabLayout() {
   );
 
   useEffect(() => {
-    if (!user) {
+    if (!loading && !user) {
       router.replace("/(auth)/login");
     }
-  }, [user]);
+  }, [user, loading]);
 
   useEffect(() => {
     const backAction = () => {
@@ -65,6 +66,14 @@ export default function TabLayout() {
     setLogoutVisible(false);
     await logout();
   };
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0f0f0f" }}>
+        <ActivityIndicator size="large" color="#e11d1d" />
+      </View>
+    );
+  }
 
   return (
     <Tabs

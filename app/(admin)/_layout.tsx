@@ -1,5 +1,5 @@
 import { Tabs, useRouter, Redirect } from "expo-router";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 
 function AdminHeader() {
   const router = useRouter();
+  const { logout } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
 
   const userName = "Dhivakar"; 
@@ -80,10 +81,9 @@ function AdminHeader() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => {
+            onPress={async () => {
               setShowMenu(false);
-              // logout logic here
-              router.replace("/");
+              await logout();
             }}
           >
             <Text className="py-2 text-sm text-red-500 font-semibold">
@@ -100,7 +100,13 @@ function AdminHeader() {
 export default function AdminLayout() {
   const { user, loading } = useAuth();
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#111827" }}>
+        <ActivityIndicator size="large" color="#2563EB" />
+      </View>
+    );
+  }
 
   // 🔒 Block non-admin users
   if (!user || user.role !== "admin") {

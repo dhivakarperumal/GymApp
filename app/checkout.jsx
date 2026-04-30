@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import RazorpayCheckout from "react-native-razorpay";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../context/AuthContext";
+import { ActivityIndicator } from "react-native";
 
 import api from "../services/api";
 
@@ -39,6 +40,7 @@ export default function Checkout() {
 
   const { user } = useAuth();
   const userId = user?.id;
+  const [placing, setPlacing] = useState(false);
   const states = [
     "Andhra Pradesh",
     "Arunachal Pradesh",
@@ -148,6 +150,7 @@ export default function Checkout() {
   const total = subtotal + delivery;
 
   const handleOnlinePayment = () => {
+    if (placing) return;
 
     if (!shipping.name || !shipping.phone || !shipping.address) {
       Toast.show({
@@ -220,9 +223,9 @@ export default function Checkout() {
     }
   };
 
-  /* PLACE ORDER */
-
   const placeOrder = async (paymentStatus = "pending") => {
+    if (placing) return;
+    setPlacing(true);
     try {
       if (!cartItems.length) {
         Toast.show({
@@ -236,115 +239,76 @@ export default function Checkout() {
       /* VALIDATE SHIPPING */
 
       if (!shipping.name.trim()) {
-        Toast.show({
-          type: "error",
-          text1: "Validation Error",
-          text2: "Please enter your name",
-        });
+        Toast.show({ type: "error", text1: "Validation Error", text2: "Please enter your name" });
         return;
       }
 
       if (!/^[6-9]\d{9}$/.test(shipping.phone)) {
-        Toast.show({
-          type: "error",
-          text1: "Validation Error",
-          text2: "Enter a valid 10 digit phone number",
-        });
+        Toast.show({ type: "error", text1: "Validation Error", text2: "Enter a valid 10 digit phone number" });
         return;
       }
 
       if (!/^\S+@\S+\.\S+$/.test(shipping.email)) {
-        Toast.show({
-          type: "error",
-          text1: "Validation Error",
-          text2: "Enter a valid email address",
-        });
+        Toast.show({ type: "error", text1: "Validation Error", text2: "Enter a valid email address" });
         return;
       }
 
       if (!shipping.address.trim()) {
-        Toast.show({
-          type: "error",
-          text1: "Validation Error",
-          text2: "Please enter your city",
-        });
+        Toast.show({ type: "error", text1: "Validation Error", text2: "Please enter your address" });
         return;
       }
 
       if (!shipping.city.trim()) {
-        Toast.show({
-          type: "error",
-          text1: "Validation Error",
-          text2: "Please enter your city",
-        });
+        Toast.show({ type: "error", text1: "Validation Error", text2: "Please enter your city" });
         return;
       }
 
       if (!shipping.state.trim()) {
-        Toast.show({
-          type: "error",
-          text1: "Validation Error",
-          text2: "Please enter your state",
-        });
+        Toast.show({ type: "error", text1: "Validation Error", text2: "Please enter your state" });
         return;
       }
 
       if (!/^\d{6}$/.test(shipping.zip)) {
-        Toast.show({
-          type: "error",
-          text1: "Validation Error",
-          text2: "Enter a valid 6 digit ZIP code",
-        });
+        Toast.show({ type: "error", text1: "Validation Error", text2: "Enter a valid 6 digit ZIP code" });
         return;
       }
 
       if (!shipping.country.trim()) {
-        Toast.show({
-          type: "error",
-          text1: "Validation Error",
-          text2: "Please enter your country",
-        });
+        Toast.show({ type: "error", text1: "Validation Error", text2: "Please enter your country" });
         return;
       }
 
-      // console.log("STEP 1");
       await saveCheckoutAddress();
       const orderRes = await generateOrderId();
       const orderId = orderRes.order_id;
 
-      // console.log("ORDER ID 👉", orderId);
+      // ✅ Fetch all products IN PARALLEL (was sequential, major slowness fix)
+      const products = await Promise.all(
+        cartItems.map((item) => getProduct(item.productId))
+      );
 
-      // console.log("STEP 2");
-
-      for (const item of cartItems) {
-        const product = await getProduct(item.productId);
-
-        const variantKey =
-          item.variant ||
-          item.weight ||
-          `${item.size}-${item.gender}`;
-
+      // Validate stock in parallel
+      const stockUpdates = cartItems.map((item, index) => {
+        const product = products[index];
+        const variantKey = item.variant || item.weight || `${item.size}-${item.gender}`;
         const stock = { ...(product.stock || {}) };
-
         const currentQty = stock?.[variantKey]?.qty || 0;
-
         const newQty = currentQty - item.quantity;
 
         if (newQty < 0) {
-          Toast.show({
-            type: "error",
-            text1: "Stock Error",
-            text2: `${item.name} is out of stock`,
-          });
-          return;
+          throw new Error(`${item.name} is out of stock`);
         }
 
         stock[variantKey].qty = newQty;
+        return { productId: product.id, stock };
+      });
 
-        await api.put(`/products/${product.id}`, { stock });
-      }
-
-      // console.log("STEP 3 - CREATE PAYLOAD");
+      // Update all product stocks IN PARALLEL
+      await Promise.all(
+        stockUpdates.map(({ productId, stock }) =>
+          api.put(`/products/${productId}`, { stock })
+        )
+      );
 
       const payload = {
         order_id: orderId,
@@ -374,13 +338,8 @@ export default function Checkout() {
         })),
       };
 
-      // console.log("PAYLOAD 👉", payload);
-
-      // console.log("STEP 4");
-
       await createOrderApi(payload);
 
-      // Store ordered items locally so we can show them later even if the API doesn't return them
       try {
         await AsyncStorage.setItem(
           `order_items_${orderId}`,
@@ -390,14 +349,10 @@ export default function Checkout() {
         console.log("Failed to cache order items", err);
       }
 
-      // console.log("ORDER CREATED");
-
       if (!buyNow) {
         const cart = await getCart(userId);
-
-        for (const item of cart) {
-          await deleteCartApi(item.id);
-        }
+        // Delete all cart items in parallel
+        await Promise.all(cart.map((item) => deleteCartApi(item.id)));
       }
 
       setCartItems([]);
@@ -412,10 +367,15 @@ export default function Checkout() {
         router.replace("/Orders");
       }, 1200);
 
-    
-
     } catch (err) {
       console.log("ERROR 👉", err);
+      Toast.show({
+        type: "error",
+        text1: "Order Failed",
+        text2: err?.message || "Something went wrong",
+      });
+    } finally {
+      setPlacing(false);
     }
   };
 
@@ -654,6 +614,7 @@ export default function Checkout() {
         {/* PLACE ORDER */}
 
         <TouchableOpacity
+          disabled={placing}
           onPress={() => {
             if (paymentMethod === "ONLINE") {
               handleOnlinePayment();
@@ -661,9 +622,15 @@ export default function Checkout() {
               placeOrder("pending");
             }
           }}
-          className="bg-red-600 py-5 rounded-2xl items-center mt-6"
+          className={`py-5 rounded-2xl items-center mt-6 ${
+            placing ? "bg-red-800" : "bg-red-600"
+          }`}
         >
-          <Text className="text-white font-bold text-lg">Place Order</Text>
+          {placing ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-white font-bold text-lg">Place Order</Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

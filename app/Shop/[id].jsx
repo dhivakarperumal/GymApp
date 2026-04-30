@@ -8,16 +8,16 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { getAllProducts } from "../../services/api";
-import { useRef } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getCart, addToCartApi, updateCartApi } from "../../services/api";
+import { addToCartApi } from "../../services/api";
 import Header from "../Header";
 import { useAuth } from "../../context/AuthContext";
 import BackButton from "../BackButton";
 import Toast from "react-native-toast-message";
+
+const BASE_URL = "https://mygym.qtechx.com/api";
 
 const { width } = Dimensions.get("window");
 
@@ -32,6 +32,8 @@ export default function ProductDetails() {
   const [selectedWeight, setSelectedWeight] = useState(null);
   const [selectedGender, setSelectedGender] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [adding, setAdding] = useState(false);
+  const [buying, setBuying] = useState(false);
   const { user } = useAuth();
   const userId = user?.id;
 
@@ -41,10 +43,10 @@ export default function ProductDetails() {
 
   const fetchProduct = async () => {
     try {
-      const data = await getAllProducts();
-      const list = data.products || data;
-      const found = list.find((item) => String(item.id) === String(id));
-      setProduct(found || null);
+      // Fetch only this specific product — much faster than fetching all
+      const res = await fetch(`${BASE_URL}/products/${id}`);
+      const data = await res.json();
+      setProduct(data || null);
     } catch (err) {
       console.log("Product detail error:", err.message);
     } finally {
@@ -105,6 +107,7 @@ export default function ProductDetails() {
 
 
   const handleBuyNow = () => {
+    if (buying) return;
 
     if (!user || !user.id) {
       Toast.show({
@@ -115,19 +118,21 @@ export default function ProductDetails() {
       return;
     }
 
-if (!variantKey) {
-  Toast.show({
-    type: "error",
-    text1: "Variant Missing",
-    text2: "Please select size / weight",
-  });
-  return;
-}
+    if (!variantKey) {
+      Toast.show({
+        type: "error",
+        text1: "Variant Missing",
+        text2: "Please select size / weight",
+      });
+      return;
+    }
+
+    const currentPrice = pricing ? Number(pricing.offerPrice) : 0;
 
     const buyNowItem = {
       productId: product.id,
       name: product.name,
-      price: price,
+      price: currentPrice,
       quantity: quantity,
       size: selectedSize || null,
       gender: selectedGender || null,
@@ -136,12 +141,15 @@ if (!variantKey) {
       images: product.images,
     };
 
+    setBuying(true);
     router.push({
       pathname: "/checkout",
       params: {
         buyNow: JSON.stringify(buyNowItem),
       },
     });
+    // reset after navigation
+    setTimeout(() => setBuying(false), 1500);
   };
 
   if (loading) {
@@ -167,53 +175,48 @@ if (!variantKey) {
   const oldPrice = pricing ? Number(pricing.mrp) : 0;
 
   const handleAddToCart = async () => {
+    if (adding) return;
+
+    if (!user || !user.id) {
+      Toast.show({
+        type: "error",
+        text1: "Login Required",
+        text2: "Please login to add items to cart",
+      });
+      return;
+    }
+
+    if (quantity > remainingStock) {
+      Toast.show({
+        type: "error",
+        text1: "Stock Limit",
+        text2: `Only ${remainingStock} items available`,
+      });
+      return;
+    }
+
+    setAdding(true);
     try {
-      if (!user || !user.id) {
-        Toast.show({
-          type: "error",
-          text1: "Login Required",
-          text2: "Please login to add items to cart",
-        });
-        return;
-      }
-
-        if (quantity > remainingStock) {
-  Toast.show({
-    type: "error",
-    text1: "Stock Limit",
-    text2: `Only ${remainingStock} items available`,
-  });
-  return;
-}
-
-      const userId = user.id;
-
-      const cartItems = await getCart(userId);
-
-     const existing = cartItems.find(
-  (item) => item.productId === product.id && item.variant === variantKey,
-);
-
-      if (existing) {
-        await updateCartApi(existing.id, existing.quantity + quantity);
-      } else {
-        await addToCartApi({
-          userId: userId,
-          productId: product.id,
-          name: product.name,
-          price: price,
-          quantity: quantity,
-          size: selectedSize || null,
-          gender: selectedGender || null,
-          weight: selectedWeight || null,
-          variant: variantKey,
-          images: product.images,
-        });
-      }
+      // Add directly — backend handles duplicates/qty merging
+      await addToCartApi({
+        userId: user.id,
+        productId: product.id,
+        name: product.name,
+        price: price,
+        quantity: quantity,
+        size: selectedSize || null,
+        gender: selectedGender || null,
+        weight: selectedWeight || null,
+        variant: variantKey,
+        images: product.images,
+      });
 
       router.push("/cart");
     } catch (err) {
       console.log("Add to cart error:", err);
+      Toast.show({ type: "error", text1: "Failed to add to cart" });
+    } finally {
+      setAdding(false);
     }
   };
 
@@ -482,29 +485,38 @@ if (!variantKey) {
           <View className="flex-row justify-between mt-4">
             {/* ADD TO CART */}
             <TouchableOpacity
-              disabled={remainingStock === 0 || quantity > remainingStock}
+              disabled={remainingStock === 0 || quantity > remainingStock || adding}
               onPress={handleAddToCart}
+              activeOpacity={0.75}
               className={`w-[48%] py-4 rounded-2xl items-center ${
-                remainingStock === 0
+                remainingStock === 0 || adding
                   ? "bg-gray-600"
                   : "bg-[#1f1f1f] border border-primary"
               }`}
             >
-              <Text className="text-primary font-bold text-lg">
-                ADD TO CART
-              </Text>
+              {adding ? (
+                <ActivityIndicator color="#e11d1d" />
+              ) : (
+                <Text className="text-primary font-bold text-lg">ADD TO CART</Text>
+              )}
             </TouchableOpacity>
 
             {/* BUY NOW */}
             <TouchableOpacity
-              disabled={remainingStock === 0 || quantity > remainingStock}
+              disabled={remainingStock === 0 || quantity > remainingStock || buying}
               onPress={handleBuyNow}
-              className={`w-[48%] py-4 rounded-2xl items-center ${remainingStock === 0
-                ? "bg-gray-600"
-                : "bg-[#1f1f1f] border border-primary"
-                }`}
+              activeOpacity={0.75}
+              className={`w-[48%] py-4 rounded-2xl items-center ${
+                remainingStock === 0 || buying
+                  ? "bg-gray-600"
+                  : "bg-primary"
+              }`}
             >
-              <Text className="text-white font-bold text-lg">BUY NOW</Text>
+              {buying ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="text-white font-bold text-lg">BUY NOW</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
