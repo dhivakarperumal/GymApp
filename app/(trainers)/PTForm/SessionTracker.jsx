@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import api from "../../api";
-import { useAuth } from "../../PrivateRouter/AuthContext";
-import toast from "react-hot-toast";
+import { ScrollView, View, Text, TextInput, TouchableOpacity } from "react-native";
+import api from "../../../services/api";
+import { useAuth } from '../../../context/AuthContext.js'
+import Toast from "react-native-toast-message";
 
 const SessionTracker = ({
   onNext,
@@ -15,7 +16,8 @@ const SessionTracker = ({
   onSaved = () => {},
 }) => {
   const { user } = useAuth();
-  const trainerName = localStorage.getItem('username') || localStorage.getItem('name') || "";
+
+  const trainerName = ""; // localStorage not available in RN
 
   const [localFormData, setLocalFormData] = useState({
     sessions: initialFormData?.sessions || Array(25).fill(null).map((_, i) => ({
@@ -29,7 +31,7 @@ const SessionTracker = ({
   });
 
   useEffect(() => {
-    if (initialFormData && initialFormData.sessions) {
+    if (initialFormData?.sessions) {
       setLocalFormData(prev => ({
         ...prev,
         sessions: initialFormData.sessions
@@ -44,32 +46,32 @@ const SessionTracker = ({
 
     const newSessions = [...localFormData.sessions];
     const updatedSession = { ...newSessions[index], [field]: value };
-    
-    // Auto-fill Client Sign if status becomes Completed
+
     if (field === "status") {
       if (value === "Completed") {
-        updatedSession.client_sign = userMode ? (user?.username || user?.name || "") : (initialFormData?.name || "");
+        updatedSession.client_sign = userMode
+          ? (user?.username || user?.name || "")
+          : (initialFormData?.name || "");
       } else {
         updatedSession.client_sign = "";
       }
     }
 
     newSessions[index] = updatedSession;
-    setLocalFormData((prev) => ({ ...prev, sessions: newSessions }));
+    setLocalFormData(prev => ({ ...prev, sessions: newSessions }));
   };
 
   const hasRequiredSessionFields = (session) => {
-    return String(session.date || "").trim() !== "" && String(session.workout || "").trim() !== "";
+    return String(session.date || "").trim() !== "" &&
+           String(session.workout || "").trim() !== "";
   };
 
   const canApproveSession = (session) => {
     return userMode && session.status === "Pending" && hasRequiredSessionFields(session);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (userMode) {
-      // In user mode, update the PT form with approved sessions
       try {
         const payload = {
           member_id: initialFormData.member_id,
@@ -77,12 +79,13 @@ const SessionTracker = ({
           formData: { ...initialFormData, sessions: localFormData.sessions },
           completed: true
         };
+
         await api.post(`/pt-forms`, payload);
-        toast.success("Sessions approved successfully!");
+        Toast.show({ type: "success", text1: "Sessions approved successfully!" });
+
         onSaved({ ...initialFormData, sessions: localFormData.sessions });
-      } catch (error) {
-        console.error("Error updating sessions:", error);
-        toast.error("Failed to approve sessions.");
+      } catch (err) {
+        Toast.show({ type: "error", text1: "Failed to approve sessions" });
       }
     } else {
       onNext(localFormData);
@@ -90,120 +93,114 @@ const SessionTracker = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="border-2 border-white/20 rounded-2xl p-8 bg-white/[0.02] shadow-xl">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-white uppercase tracking-widest">Session Tracker</h2>
-          {userMode && <p className="text-white/60 text-sm mt-2">Approve your workout sessions</p>}
-          <div className="w-24 h-1 bg-orange-500 mx-auto mt-2 rounded-full"></div>
-        </div>
+    <ScrollView className="flex-1 bg-black">
+      <View className="p-6">
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="overflow-x-auto border border-white/10 rounded-xl shadow-2xl">
-            <table className="w-full border-collapse text-sm">
-              <thead className="bg-white/5 backdrop-blur-xl border-b border-white/10 text-white/60 uppercase text-[10px] tracking-[0.2em] font-black sticky top-0">
-                <tr>
-                  <th className="p-4 border-r border-white/5 w-20 text-center">Session. No</th>
-                  <th className="p-4 border-r border-white/5 w-40 text-center">Date</th>
-                  <th className="p-4 border-r border-white/5 text-left">Workout</th>
-                  <th className="p-4 border-r border-white/5 w-32 text-center">Status</th>
-                  <th className="p-4 border-r border-white/5 w-32 text-center">Client Sign</th>
-                  <th className="p-4 w-32 text-center">Trainer Sign</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {localFormData.sessions.map((session, index) => (
-                  <tr key={index} className="hover:bg-white/[0.02] transition-colors group">
-                    <td className="p-0 border-r border-white/5 text-center bg-white/[0.01] font-bold text-white/40">
-                      {session.session_no}
-                    </td>
-                    <td className="p-0 border-r border-white/5">
-                      <input
-                        type="date"
-                        value={session.date || ""}
-                        onChange={(e) => handleSessionChange(index, "date", e.target.value)}
-                        className="w-full p-4 bg-transparent text-white focus:outline-none focus:bg-white/5 transition-colors text-center"
-                        readOnly={userMode}
-                      />
-                    </td>
-                    <td className="p-0 border-r border-white/5">
-                      <input
-                        type="text"
-                        value={session.workout || ""}
-                        onChange={(e) => handleSessionChange(index, "workout", e.target.value)}
-                        placeholder="Describe the workout sessions..."
-                        className="w-full p-4 bg-transparent text-white focus:outline-none focus:bg-white/5 transition-colors placeholder-white/10"
-                        readOnly={userMode}
-                      />
-                    </td>
-                    <td className="p-4 border-r border-white/5 text-center">
-                       <button
-                         type="button"
-                         onClick={() => {
-                           if (canApproveSession(session)) {
-                             handleSessionChange(index, "status", "Completed");
-                           }
-                         }}
-                         className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider transition-all border shadow-sm ${
-                           session.status === "Completed" 
-                           ? "bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500 hover:text-white" 
-                           : "bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500 hover:text-white"
-                         }`}
-                         disabled={!canApproveSession(session)}
-                       >
-                         {session.status || "Pending"}
-                       </button>
-                    </td>
-                    <td className="p-0 border-r border-white/5">
-                      <input
-                        type="text"
-                        value={session.client_sign || ""}
-                        placeholder="Sign/Initial"
-                        className="w-full p-4 bg-transparent text-white focus:outline-none focus:bg-white/5 transition-colors text-center placeholder-white/10"
-                        readOnly
-                      />
-                    </td>
-                    <td className="p-0">
-                      <input
-                        type="text"
-                        value={session.trainer_sign || ""}
-                        onChange={(e) => handleSessionChange(index, "trainer_sign", e.target.value)}
-                        placeholder="Sign/Initial"
-                        className="w-full p-4 bg-transparent text-white focus:outline-none focus:bg-white/5 transition-colors text-center placeholder-white/10 font-bold"
-                        readOnly={userMode}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        {/* TITLE */}
+        <Text className="text-white text-xl font-bold text-center mb-2">
+          Session Tracker
+        </Text>
 
-          <div className="pt-6 border-t border-white/10 mt-8">
-            <p className="text-center text-white/20 text-[10px] uppercase tracking-[0.3em] font-bold mb-6">
-              DAP Fitness Studio - Official Session Records
-            </p>
-            <div className="flex gap-4">
-              {!userMode && (
-                <button
-                  type="button"
-                  onClick={onPrevious}
-                  className="flex-1 px-6 py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-xl font-bold transition-all uppercase tracking-widest text-xs"
-                >
-                  Previous
-                </button>
-              )}
-              <button
-                type="submit"
-                className="flex-[2] px-6 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-2xl shadow-orange-600/20 transition-all uppercase tracking-widest text-xs"
-              >
-                {userMode ? "Approve Sessions" : (isLastStep ? "Complete Registration" : "Next Step")}
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
+        {userMode && (
+          <Text className="text-white/60 text-center mb-4">
+            Approve your workout sessions
+          </Text>
+        )}
+
+        {/* SESSION LIST */}
+        {localFormData.sessions.map((session, index) => (
+          <View key={index} className="bg-white/5 p-4 rounded-xl mb-4">
+
+            <Text className="text-orange-400 font-bold mb-2">
+              Session {session.session_no}
+            </Text>
+
+            {/* Date */}
+            <TextInput
+              value={session.date}
+              onChangeText={(t) => handleSessionChange(index, "date", t)}
+              placeholder="Date"
+              placeholderTextColor="#aaa"
+              editable={!userMode}
+              className="bg-white/10 p-2 rounded text-white mb-2"
+            />
+
+            {/* Workout */}
+            <TextInput
+              value={session.workout}
+              onChangeText={(t) => handleSessionChange(index, "workout", t)}
+              placeholder="Workout"
+              placeholderTextColor="#aaa"
+              editable={!userMode}
+              className="bg-white/10 p-2 rounded text-white mb-2"
+            />
+
+            {/* Status */}
+            <TouchableOpacity
+              onPress={() => {
+                if (canApproveSession(session)) {
+                  handleSessionChange(index, "status", "Completed");
+                }
+              }}
+              disabled={!canApproveSession(session)}
+              className={`p-2 rounded mb-2 ${
+                session.status === "Completed"
+                  ? "bg-green-500"
+                  : "bg-orange-500"
+              }`}
+            >
+              <Text className="text-white text-center">
+                {session.status}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Client Sign */}
+            <TextInput
+              value={session.client_sign}
+              placeholder="Client Sign"
+              editable={false}
+              className="bg-white/10 p-2 rounded text-white mb-2"
+            />
+
+            {/* Trainer Sign */}
+            <TextInput
+              value={session.trainer_sign}
+              onChangeText={(t) => handleSessionChange(index, "trainer_sign", t)}
+              editable={!userMode}
+              placeholder="Trainer Sign"
+              className="bg-white/10 p-2 rounded text-white"
+            />
+
+          </View>
+        ))}
+
+        {/* BUTTONS */}
+        <View className="flex-row gap-3 mt-6">
+
+          {!userMode && (
+            <TouchableOpacity
+              onPress={onPrevious}
+              className="flex-1 bg-gray-700 p-3 rounded-lg"
+            >
+              <Text className="text-white text-center">Previous</Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity
+            onPress={handleSubmit}
+            className="flex-1 bg-orange-600 p-3 rounded-lg"
+          >
+            <Text className="text-white text-center">
+              {userMode
+                ? "Approve Sessions"
+                : (isLastStep ? "Complete Registration" : "Next")}
+            </Text>
+          </TouchableOpacity>
+
+        </View>
+
+      </View>
+    </ScrollView>
   );
 };
 
