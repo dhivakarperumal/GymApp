@@ -8,11 +8,13 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
 import { getTrainerDashboard } from "../../services/api";
 
 export default function TrainerDashboard() {
   const { user } = useAuth();
+  const router = useRouter();
 
   const [stats, setStats] = useState({
     members: 0,
@@ -267,7 +269,65 @@ export default function TrainerDashboard() {
                     </Text>
                   </View>
                 </View>
-              </View>
+
+                {/* Row 4: PT Form Status */}
+                <View className="mt-3 pt-3 border-t border-[#262626]">
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-gray-400 text-sm">PT Form</Text>
+                    <View className="flex-row items-center gap-2">
+                      <TouchableOpacity
+                        onPress={() => {
+                          router.push({
+                            pathname: "/(trainers)/pt-form",
+                            params: { member_id: m.gymMemberId || m.userId || m.user_id }
+                          });
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase border ${
+                          m.ptFormCompleted
+                            ? "bg-green-500/10 text-green-400 border-green-500/20"
+                            : "bg-red-500/10 text-red-400 border-red-500/20"
+                        }`}
+                      >
+                        <Text
+                          className={`text-xs font-bold ${
+                            m.ptFormCompleted ? "text-green-400" : "text-red-400"
+                          }`}
+                        >
+                          {m.ptFormCompleted ? "Completed" : "Pending"}
+                        </Text>
+                      </TouchableOpacity>
+
+                      {m.ptFormCompleted && (
+                        <View className="flex-row gap-1">
+                          <TouchableOpacity
+                            onPress={() => {
+                              // For now, navigate to edit - could be enhanced to show view modal
+                              router.push({
+                                pathname: "/(trainers)/pt-form",
+                                params: { member_id: m.gymMemberId || m.userId || m.user_id }
+                              });
+                            }}
+                            className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20"
+                          >
+                            <Ionicons name="eye-outline" size={16} color="#3b82f6" />
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => {
+                              router.push({
+                                pathname: "/(trainers)/pt-form",
+                                params: { member_id: m.gymMemberId || m.userId || m.user_id }
+                              });
+                            }}
+                            className="p-2 bg-orange-500/10 rounded-lg border border-orange-500/20"
+                          >
+                            <Ionicons name="pencil-outline" size={16} color="#f59e0b" />
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                </View>
+                </View> 
             );
           })
         )}
