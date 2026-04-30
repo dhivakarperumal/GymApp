@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { useRouter, useSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
     ActivityIndicator,
@@ -66,7 +66,7 @@ const steps = [
 export default function TrainerPTForm() {
   const router = useRouter();
   const { user } = useAuth();
-  const searchParams = useSearchParams();
+  const searchParams = useLocalSearchParams();
   const memberIdFromUrl = searchParams?.member_id || "";
 
   const [currentStep, setCurrentStep] = useState(1);
