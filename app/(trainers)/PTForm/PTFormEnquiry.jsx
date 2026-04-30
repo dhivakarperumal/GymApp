@@ -2,8 +2,8 @@ import dayjs from "dayjs";
 import { Search, Users } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useAuth } from "../../PrivateRouter/AuthContext";
-import api from "../../services/api";
+import { useAuth } from "../../../context/AuthContext";
+import api from "../../../services/api";
 
 const PTFormEnquiry = ({
   onNext,

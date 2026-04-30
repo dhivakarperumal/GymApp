@@ -130,6 +130,25 @@ export default function TrainerDashboard() {
     );
   }
 
+  /* ─── CALCULATE EXTRA STATS ─── */
+  const todayStr = new Date().toISOString().split("T")[0];
+
+  const todayAssignedCount = members.filter((m) => {
+    const d = m.updatedAt || m.planStartDate || m.plan_start_date;
+    if (!d) return false;
+    return new Date(d).toISOString().split("T")[0] === todayStr;
+  }).length;
+
+  const expiryMembersCount = members.filter((m) => {
+    const d = m.planEndDate || m.plan_end_date;
+    if (!d) return false;
+    const endDate = new Date(d);
+    
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    return endDate <= nextWeek;
+  }).length;
+
   /* ─── MAIN ─── */
   return (
     <View className="flex-1 bg-black pt-12 px-5">
@@ -159,6 +178,8 @@ export default function TrainerDashboard() {
           <StatCard title="Today's Check-ins" value={stats.todayCheckins} icon="calendar-outline"   />
           <StatCard title="Workout Plans"     value={stats.workoutPlans}  icon="barbell-outline"    />
           <StatCard title="Diet Plans"        value={stats.dietPlans}     icon="restaurant-outline" />
+          <StatCard title="Today Assigned"    value={todayAssignedCount}  icon="person-add-outline" />
+          <StatCard title="Expiry Members"    value={expiryMembersCount}  icon="warning-outline"    />
         </View>
 
         {/* MEMBERS SECTION HEADER */}
