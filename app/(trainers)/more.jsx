@@ -17,6 +17,14 @@ export default function MoreOptions() {
       color: "#3b82f6", // Blue
     },
     {
+      id: "followup",
+      title: "Follow-up Enquiry",
+      icon: "chatbubble-ellipses-outline",
+      iconType: "Ionicons",
+      route: "/(trainers)/follow-up-enquiry",
+      color: "#f59e0b", // Orange
+    },
+    {
       id: "profile",
       title: "My Profile",
       icon: "person-outline",

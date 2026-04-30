@@ -368,6 +368,12 @@ export default function TrainersLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="follow-up-enquiry"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
