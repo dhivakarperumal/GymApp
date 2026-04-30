@@ -1,5 +1,5 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { Redirect, Tabs, useRouter } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Image, Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -282,12 +282,6 @@ function TrainerHeader() {
 }
 
 export default function TrainersLayout() {
-  const { user } = useAuth();
-
-  if (!user || user.role !== "trainer") {
-    return <Redirect href="/(tabs)" />;
-  }
-
   const insets = useSafeAreaInsets();
 
   return (

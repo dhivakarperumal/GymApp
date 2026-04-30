@@ -17,15 +17,9 @@ import { useAuth } from "../../context/AuthContext";
 import { getCart } from "../../services/api";
 
 export default function TabLayout() {
-  const { user } = useAuth();
-
-  if (!user) {
-    return <Redirect href="/(auth)" />;
-  }
+  const { user, logout, loading } = useAuth();
 
   const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const { user, logout, loading } = useAuth();
   const [cartCount, setCartCount] = useState(0);
   const [menuVisible, setMenuVisible] = useState(false);
   const [logoutVisible, setLogoutVisible] = useState(false);
