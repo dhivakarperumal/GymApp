@@ -1,10 +1,11 @@
 import dayjs from "dayjs";
-import { Search, Users } from "lucide-react";
+import { Search, Users } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import api from "../../api";
+import { ActivityIndicator, Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../PrivateRouter/AuthContext";
+import api from "../../services/api";
 
-const Enquiry = ({
+const PTFormEnquiry = ({
   onNext,
   onPrevious,
   onSelectMember,
@@ -84,7 +85,7 @@ const Enquiry = ({
     try {
       setError(null);
       let data = [];
-      
+
       if (role === 'trainer') {
         // Fetch only members assigned to this trainer
         const res = await api.get(`/assignments?trainerUserId=${user.id}`);
@@ -102,7 +103,7 @@ const Enquiry = ({
         const response = await api.get('/members');
         data = Array.isArray(response.data) ? response.data : [];
       }
-      
+
       setMembers(data);
     } catch (error) {
       console.error('Error fetching members:', error);
@@ -157,444 +158,421 @@ const Enquiry = ({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
+      <View className="flex-1 items-center justify-center py-20">
+        <ActivityIndicator size="large" color="#f97316" />
+        <Text className="text-white mt-4">Loading members...</Text>
+      </View>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
-        <p>{error}</p>
-      </div>
+      <View className="bg-red-900/20 border border-red-500 rounded-lg p-4 mx-4 my-4">
+        <Text className="text-red-400 text-center">{error}</Text>
+      </View>
     );
   }
 
   return (
-    <div className="space-y-6 overflow-visible">
-      <div className="border-2 border-white/20 rounded-2xl p-8 bg-white/[0.02] shadow-xl">
-        <div className={isModal ? "w-full" : "w-full py-2"}>
-          {/* Quick Select Section */}
-          {!isModal && (
-            <div className="relative mb-8 bg-white/5 p-4 rounded-xl border border-white/10">
-              <label className="block text-sm font-medium text-orange-400 mb-2 font-bold uppercase tracking-widest">
-                Import from Existing Member (Optional)
-              </label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setShowMemberList(true);
-                  }}
-                  onFocus={() => setShowMemberList(true)}
-                  placeholder="Search member by name, phone or email..."
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:ring-2 focus:ring-orange-500 outline-none transition-all placeholder:text-white/20"
-                />
+    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <View className="p-6">
+        {/* Quick Select Section */}
+        {!isModal && (
+          <View className="bg-white/5 p-4 rounded-xl border border-white/10 mb-6">
+            <Text className="text-orange-400 text-sm font-bold uppercase tracking-widest mb-2">
+              Import from Existing Member (Optional)
+            </Text>
+            <View className="relative">
+              <View className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+                <Search size={16} color="#ffffff40" />
+              </View>
+              <TextInput
+                value={searchTerm}
+                onChangeText={(text) => {
+                  setSearchTerm(text);
+                  setShowMemberList(true);
+                }}
+                onFocus={() => setShowMemberList(true)}
+                placeholder="Search member by name, phone or email..."
+                placeholderTextColor="#ffffff40"
+                className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
 
-                {showMemberList && (
-                  <div className="absolute z-50 w-full mt-1 bg-[#1a1a2e] border border-white/20 rounded-lg shadow-2xl overflow-hidden backdrop-blur-xl max-h-60 overflow-y-auto custom-scrollbar">
+              {showMemberList && (
+                <View className="absolute top-full left-0 right-0 mt-1 bg-[#1a1a2e] border border-white/20 rounded-lg shadow-2xl z-50 max-h-60">
+                  <ScrollView showsVerticalScrollIndicator={false}>
                     {filteredMembers.length > 0 ? (
                       filteredMembers.map(member => (
-                        <button
+                        <TouchableOpacity
                           key={member.id}
-                          type="button"
-                          onClick={() => handleSelectMember(member)}
-                          className="w-full px-4 py-3 text-left hover:bg-orange-500/10 border-b border-white/5 last:border-0 transition-colors group"
+                          onPress={() => handleSelectMember(member)}
+                          className="px-4 py-3 border-b border-white/5"
                         >
-                          <div className="font-bold text-white group-hover:text-orange-400">{member.name}</div>
-                          <div className="text-[10px] text-white/40 flex gap-2 uppercase tracking-tight">
-                            <span>{member.phone || 'No Phone'}</span>
-                            <span>•</span>
-                            <span>{member.email || member.user_email || 'No Email'}</span>
-                            {member.plan && (
-                              <>
-                                <span>•</span>
-                                <span className="text-orange-500/60">{member.plan}</span>
-                              </>
-                            )}
-                          </div>
-                        </button>
+                          <Text className="font-bold text-white text-orange-400">{member.name}</Text>
+                          <Text className="text-xs text-white/40 uppercase tracking-tight">
+                            {member.phone || 'No Phone'} • {member.email || member.user_email || 'No Email'}
+                            {member.plan && ` • ${member.plan}`}
+                          </Text>
+                        </TouchableOpacity>
                       ))
                     ) : (
-                      <div className="px-4 py-4 text-white/40 text-sm italic text-center">No matching members found</div>
+                      <Text className="px-4 py-4 text-white/40 text-sm italic text-center">No matching members found</Text>
                     )}
-                    <button
-                      onClick={() => setShowMemberList(false)}
-                      className="w-full py-2 text-[10px] font-bold uppercase tracking-widest text-orange-500 bg-white/5 hover:bg-white/10 transition-colors"
+                    <TouchableOpacity
+                      onPress={() => setShowMemberList(false)}
+                      className="py-2 border-t border-white/10"
                     >
-                      Close Suggestions
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+                      <Text className="text-xs font-bold uppercase tracking-widest text-orange-500 text-center">Close Suggestions</Text>
+                    </TouchableOpacity>
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
+        {/* Personal Information */}
+        <View className="mb-6">
+          <Text className="text-orange-500 font-bold border-b border-white/10 pb-1 uppercase tracking-wider text-sm mb-4">
+            Personal Information
+          </Text>
+          <View className="mb-4">
+            <Text className="text-white/80 text-sm mb-1">Name</Text>
+            <TextInput
+              value={localFormData.name}
+              onChangeText={(text) => setLocalFormData(prev => ({ ...prev, name: text }))}
+              className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+              style={{ color: 'white' }}
+              placeholder="Enter name"
+              placeholderTextColor="#ffffff40"
+            />
+          </View>
+          <View className="mb-4">
+            <Text className="text-white/80 text-sm mb-1">Email</Text>
+            <TextInput
+              value={localFormData.email}
+              onChangeText={(text) => setLocalFormData(prev => ({ ...prev, email: text }))}
+              className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+              style={{ color: 'white' }}
+              placeholder="Enter email"
+              placeholderTextColor="#ffffff40"
+              keyboardType="email-address"
+            />
+          </View>
+          <View className="mb-4">
+            <Text className="text-white/80 text-sm mb-1">Phone</Text>
+            <TextInput
+              value={localFormData.phone}
+              onChangeText={(text) => setLocalFormData(prev => ({ ...prev, phone: text }))}
+              className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+              style={{ color: 'white' }}
+              placeholder="Enter phone"
+              placeholderTextColor="#ffffff40"
+              keyboardType="phone-pad"
+            />
+          </View>
+          <View className="flex-row gap-2 mb-4">
+            <View className="flex-1">
+              <Text className="text-white/80 text-sm mb-1">Date of Birth</Text>
+              <TextInput
+                value={localFormData.dob}
+                onChangeText={(text) => setLocalFormData(prev => ({ ...prev, dob: text }))}
+                className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor="#ffffff40"
+              />
+            </View>
+            <View className="flex-1">
+              <Text className="text-white/80 text-sm mb-1">Age</Text>
+              <TextInput
+                value={localFormData.age}
+                onChangeText={(text) => setLocalFormData(prev => ({ ...prev, age: text }))}
+                className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+                placeholder="Enter age"
+                placeholderTextColor="#ffffff40"
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+          <View className="mb-4">
+            <Text className="text-white/80 text-sm mb-1">Blood Group</Text>
+            <TextInput
+              value={localFormData.blood_group}
+              onChangeText={(text) => setLocalFormData(prev => ({ ...prev, blood_group: text }))}
+              className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+              style={{ color: 'white' }}
+              placeholder="e.g., A+, B-"
+              placeholderTextColor="#ffffff40"
+            />
+          </View>
+          <View className="mb-4">
+            <Text className="text-white/80 text-sm mb-1">Gender</Text>
+            <TextInput
+              value={localFormData.gender}
+              onChangeText={(text) => setLocalFormData(prev => ({ ...prev, gender: text }))}
+              className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+              style={{ color: 'white' }}
+              placeholder="Male/Female/Other"
+              placeholderTextColor="#ffffff40"
+            />
+          </View>
+          <View className="mb-4">
+            <Text className="text-white/80 text-sm mb-1">Full Address</Text>
+            <TextInput
+              value={localFormData.address}
+              onChangeText={(text) => setLocalFormData(prev => ({ ...prev, address: text }))}
+              className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+              style={{ color: 'white' }}
+              placeholder="Enter full address"
+              placeholderTextColor="#ffffff40"
+              multiline
+              numberOfLines={2}
+            />
+          </View>
+        </View>
+
+        {/* Professional Information */}
+        <View className="mb-6">
+          <Text className="text-orange-500 font-bold border-b border-white/10 pb-1 uppercase tracking-wider text-sm mb-4">
+            Professional Information
+          </Text>
+          <View className="flex-row gap-4 mb-4">
+            <View className="flex-1">
+              <Text className="text-white/80 text-sm mb-1">Employer</Text>
+              <TextInput
+                value={localFormData.employer}
+                onChangeText={(text) => setLocalFormData(prev => ({ ...prev, employer: text }))}
+                className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+                placeholder="Enter employer"
+                placeholderTextColor="#ffffff40"
+              />
+            </View>
+            <View className="flex-1">
+              <Text className="text-white/80 text-sm mb-1">Occupation</Text>
+              <TextInput
+                value={localFormData.occupation}
+                onChangeText={(text) => setLocalFormData(prev => ({ ...prev, occupation: text }))}
+                className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+                placeholder="Enter occupation"
+                placeholderTextColor="#ffffff40"
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* Emergency Contact */}
+        <View className="mb-6">
+          <Text className="text-orange-500 font-bold border-b border-white/10 pb-1 uppercase tracking-wider text-sm mb-4">
+            In Case of Emergency
+          </Text>
+          <View className="flex-row gap-4 mb-4">
+            <View className="flex-1">
+              <Text className="text-white/80 text-sm mb-1">Contact Name</Text>
+              <TextInput
+                value={localFormData.emergency_contact_name}
+                onChangeText={(text) => setLocalFormData(prev => ({ ...prev, emergency_contact_name: text }))}
+                className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+                placeholder="Enter contact name"
+                placeholderTextColor="#ffffff40"
+              />
+            </View>
+            <View className="flex-1">
+              <Text className="text-white/80 text-sm mb-1">Relationship</Text>
+              <TextInput
+                value={localFormData.emergency_contact_relationship}
+                onChangeText={(text) => setLocalFormData(prev => ({ ...prev, emergency_contact_relationship: text }))}
+                className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+                placeholder="Enter relationship"
+                placeholderTextColor="#ffffff40"
+              />
+            </View>
+          </View>
+          <View className="flex-row gap-4 mb-4">
+            <View className="flex-1">
+              <Text className="text-white/80 text-sm mb-1">Home Phone</Text>
+              <TextInput
+                value={localFormData.emergency_contact_phone_home}
+                onChangeText={(text) => setLocalFormData(prev => ({ ...prev, emergency_contact_phone_home: text }))}
+                className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+                placeholder="Enter home phone"
+                placeholderTextColor="#ffffff40"
+                keyboardType="phone-pad"
+              />
+            </View>
+            <View className="flex-1">
+              <Text className="text-white/80 text-sm mb-1">Work Phone</Text>
+              <TextInput
+                value={localFormData.emergency_contact_phone_work}
+                onChangeText={(text) => setLocalFormData(prev => ({ ...prev, emergency_contact_phone_work: text }))}
+                className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+                placeholder="Enter work phone"
+                placeholderTextColor="#ffffff40"
+                keyboardType="phone-pad"
+              />
+            </View>
+          </View>
+          <View className="mb-4">
+            <Text className="text-white/80 text-sm mb-1">Contact Address</Text>
+            <TextInput
+              value={localFormData.emergency_contact_address}
+              onChangeText={(text) => setLocalFormData(prev => ({ ...prev, emergency_contact_address: text }))}
+              className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+              style={{ color: 'white' }}
+              placeholder="Enter contact address"
+              placeholderTextColor="#ffffff40"
+              multiline
+              numberOfLines={2}
+            />
+          </View>
+        </View>
+
+        {/* Health & Goals */}
+        <View className="mb-6">
+          <Text className="text-orange-500 font-bold border-b border-white/10 pb-1 uppercase tracking-wider text-sm mb-4">
+            Health & Fitness Goals
+          </Text>
+          <View className="flex-row gap-4 mb-4">
+            <View className="flex-1">
+              <Text className="text-white/80 text-sm mb-1">Height (cm)</Text>
+              <TextInput
+                value={localFormData.height}
+                onChangeText={(text) => setLocalFormData(prev => ({ ...prev, height: text }))}
+                className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+                placeholder="Enter height"
+                placeholderTextColor="#ffffff40"
+                keyboardType="numeric"
+              />
+            </View>
+            <View className="flex-1">
+              <Text className="text-white/80 text-sm mb-1">Weight (kg)</Text>
+              <TextInput
+                value={localFormData.weight}
+                onChangeText={(text) => setLocalFormData(prev => ({ ...prev, weight: text }))}
+                className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+                placeholder="Enter weight"
+                placeholderTextColor="#ffffff40"
+                keyboardType="numeric"
+              />
+            </View>
+            <View className="flex-1">
+              <Text className="text-white/80 text-sm mb-1">BMI</Text>
+              <TextInput
+                value={localFormData.bmi}
+                editable={false}
+                className="px-3 py-2 bg-white/20 border border-white/20 rounded-lg text-orange-400 font-bold"
+                style={{ color: '#f97316' }}
+              />
+            </View>
+          </View>
+          <View className="mb-4">
+            <Text className="text-white/80 text-sm mb-1">Fitness Goals</Text>
+            <TextInput
+              value={localFormData.fitness_goal}
+              onChangeText={(text) => setLocalFormData(prev => ({ ...prev, fitness_goal: text }))}
+              className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+              style={{ color: 'white' }}
+              placeholder="Describe your fitness objectives..."
+              placeholderTextColor="#ffffff40"
+              multiline
+              numberOfLines={2}
+            />
+          </View>
+          <View className="mb-4">
+            <Text className="text-white/80 text-sm mb-1">Additional Notes / Message</Text>
+            <TextInput
+              value={localFormData.message}
+              onChangeText={(text) => setLocalFormData(prev => ({ ...prev, message: text }))}
+              className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+              style={{ color: 'white' }}
+              placeholder="Enter additional notes"
+              placeholderTextColor="#ffffff40"
+              multiline
+              numberOfLines={2}
+            />
+          </View>
+        </View>
+
+        {/* Informed Consent */}
+        <View className="p-6 rounded-2xl bg-slate-950/80 border border-white/10 mb-6">
+          <View className="flex-row gap-4 mb-4">
+            <View className="w-10 h-10 rounded-full bg-orange-500/20 items-center justify-center">
+              <Users size={20} color="#f97316" />
+            </View>
+            <View>
+              <Text className="text-xl font-bold text-white uppercase tracking-widest">Informed Consent</Text>
+              <Text className="text-white/60 text-sm">Please complete the consent form before moving to the next step.</Text>
+            </View>
+          </View>
+
+          <Text className="text-white/80 leading-7 mb-4">
+            I <Text className="font-bold">{localFormData.participant_name || '__________'}</Text> give my consent to participate in the physical fitness evaluation program conducted by DAP Unisex Fitness Studio.
+          </Text>
+
+          <View className="mb-4">
+            <Text className="text-white/80 text-sm mb-1">Participant Name</Text>
+            <TextInput
+              value={localFormData.participant_name}
+              onChangeText={(text) => setLocalFormData(prev => ({ ...prev, participant_name: text }))}
+              className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+              style={{ color: 'white' }}
+              placeholder="Full Name"
+              placeholderTextColor="#ffffff40"
+            />
+          </View>
+
+          <View className="flex-row items-center gap-3 mt-4">
+            <TouchableOpacity
+              onPress={() => setLocalFormData(prev => ({ ...prev, consent_agree: !prev.consent_agree }))}
+              className={`w-5 h-5 border-2 rounded ${localFormData.consent_agree ? 'bg-orange-500 border-orange-500' : 'border-white/20'}`}
+            />
+            <Text className="text-white">I have read and agree to the informed consent above.</Text>
+          </View>
+
+          {!localFormData.consent_agree && (
+            <Text className="text-red-400 text-sm mt-2">You must check the box to proceed.</Text>
+          )}
+        </View>
+
+        {/* Navigation Buttons */}
+        <View className="flex-row gap-3 pt-6">
+          <TouchableOpacity
+            onPress={onPrevious}
+            disabled={isFirstStep}
+            className={`flex-1 px-4 py-3 rounded-lg ${isFirstStep ? 'bg-gray-600' : 'bg-gray-700'}`}
+            style={{ opacity: isFirstStep ? 0.5 : 1 }}
+          >
+            <Text className="text-white text-center font-bold">Previous</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              if (!localFormData.consent_agree) {
+                Alert.alert('Error', 'Please agree to the informed consent to proceed.');
+                return;
+              }
               onNext(localFormData);
             }}
-            className="space-y-6"
+            className="flex-1 px-4 py-3 bg-orange-600 rounded-lg"
           >
-            {/* SECTION: PERSONAL INFO */}
-            <div className="space-y-4">
-              <h3 className="text-orange-500 font-bold border-b border-white/10 pb-1 uppercase tracking-wider text-sm">Personal Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1">Name</label>
-                  <input
-                    type="text"
-                    value={localFormData.name}
-                    onChange={(e) => setLocalFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={localFormData.email}
-                    onChange={(e) => setLocalFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1">Phone</label>
-                  <input
-                    type="tel"
-                    value={localFormData.phone}
-                    onChange={(e) => setLocalFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-1">Date of Birth</label>
-                    <input
-                      type="date"
-                      value={localFormData.dob}
-                      onChange={(e) => setLocalFormData(prev => ({ ...prev, dob: e.target.value }))}
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-1">Age</label>
-                    <input
-                      type="number"
-                      value={localFormData.age}
-                      onChange={(e) => setLocalFormData(prev => ({ ...prev, age: e.target.value }))}
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1">Blood Group</label>
-                  <select
-                    value={localFormData.blood_group}
-                    onChange={(e) => setLocalFormData(prev => ({ ...prev, blood_group: e.target.value }))}
-                    className="bg-[#1f2937] text-white w-full px-3 py-2  border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select Blood Group</option>
-                    <option value="A+" className="bg-[#1f2937] text-white">A+</option>
-                    <option value="A-" className="bg-[#1f2937] text-white">A-</option>
-                    <option value="B+" className="bg-[#1f2937] text-white">B+</option>
-                    <option value="B-" className="bg-[#1f2937] text-white">B-</option>
-                    <option value="O+" className="bg-[#1f2937] text-white">O+</option>
-                    <option value="O-" className="bg-[#1f2937] text-white">O-</option>
-                    <option value="AB+" className="bg-[#1f2937] text-white">AB+</option>
-                    <option value="AB-" className="bg-[#1f2937] text-white">AB-</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1">Gender</label>
-                  <select
-                    value={localFormData.gender}
-                    onChange={(e) => setLocalFormData(prev => ({ ...prev, gender: e.target.value }))}
-                    className="bg-[#1f2937] text-white w-full px-3 py-2 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                {/* <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">Location / Branch</label>
-                <input
-                  type="text"
-                  value={localFormData.location}
-                  onChange={(e) => setLocalFormData(prev => ({ ...prev, location: e.target.value }))}
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., Gym Branch Name"
-                />
-              </div> */}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">Full Address</label>
-                <textarea
-                  value={localFormData.address}
-                  onChange={(e) => setLocalFormData(prev => ({ ...prev, address: e.target.value }))}
-                  rows={2}
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            {/* SECTION: PROFESSIONAL INFO */}
-            <div className="space-y-4">
-              <h3 className="text-orange-500 font-bold border-b border-white/10 pb-1">Professional Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1">Employer</label>
-                  <input
-                    type="text"
-                    value={localFormData.employer}
-                    onChange={(e) => setLocalFormData(prev => ({ ...prev, employer: e.target.value }))}
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1">Occupation</label>
-                  <input
-                    type="text"
-                    value={localFormData.occupation}
-                    onChange={(e) => setLocalFormData(prev => ({ ...prev, occupation: e.target.value }))}
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* SECTION: EMERGENCY CONTACT */}
-            <div className="space-y-4">
-              <h3 className="text-orange-500 font-bold border-b border-white/10 pb-1">In Case of Emergency</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1">Contact Name</label>
-                  <input
-                    type="text"
-                    value={localFormData.emergency_contact_name}
-                    onChange={(e) => setLocalFormData(prev => ({ ...prev, emergency_contact_name: e.target.value }))}
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1">Relationship</label>
-                  <input
-                    type="text"
-                    value={localFormData.emergency_contact_relationship}
-                    onChange={(e) => setLocalFormData(prev => ({ ...prev, emergency_contact_relationship: e.target.value }))}
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1">Home Phone</label>
-                  <input
-                    type="tel"
-                    value={localFormData.emergency_contact_phone_home}
-                    onChange={(e) => setLocalFormData(prev => ({ ...prev, emergency_contact_phone_home: e.target.value }))}
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1">Work Phone</label>
-                  <input
-                    type="tel"
-                    value={localFormData.emergency_contact_phone_work}
-                    onChange={(e) => setLocalFormData(prev => ({ ...prev, emergency_contact_phone_work: e.target.value }))}
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">Contact Address</label>
-                <textarea
-                  value={localFormData.emergency_contact_address}
-                  onChange={(e) => setLocalFormData(prev => ({ ...prev, emergency_contact_address: e.target.value }))}
-                  rows={2}
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            {/* SECTION: HEALTH & GOALS */}
-            <div className="space-y-4">
-              <h3 className="text-orange-500 font-bold border-b border-white/10 pb-1">Health & Fitness Goals</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1">Height (cm)</label>
-                  <input
-                    type="number"
-                    value={localFormData.height}
-                    onChange={(e) => setLocalFormData(prev => ({ ...prev, height: e.target.value }))}
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1">Weight (kg)</label>
-                  <input
-                    type="number"
-                    value={localFormData.weight}
-                    onChange={(e) => setLocalFormData(prev => ({ ...prev, weight: e.target.value }))}
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1">BMI</label>
-                  <input
-                    type="text"
-                    value={localFormData.bmi}
-                    readOnly
-                    className="w-full px-3 py-2 bg-white/20 border border-white/20 rounded-lg text-orange-400 font-bold focus:outline-none"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">Fitness Goals</label>
-                <textarea
-                  value={localFormData.fitness_goal}
-                  onChange={(e) => setLocalFormData(prev => ({ ...prev, fitness_goal: e.target.value }))}
-                  rows={2}
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Describe your fitness objectives..."
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">Additional Notes / Message</label>
-                <textarea
-                  value={localFormData.message}
-                  onChange={(e) => setLocalFormData(prev => ({ ...prev, message: e.target.value }))}
-                  rows={2}
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4 p-6 rounded-2xl bg-slate-950/80 border border-white/10">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30">
-                  <Users className="w-5 h-5 text-orange-500" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white uppercase tracking-widest">Informed Consent</h3>
-                  <p className="text-white/60 text-sm">Please complete the consent form before moving to the next step.</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <p className="text-white/80 leading-7">
-                  I <strong>{localFormData.participant_name || '__________'}</strong> give my consent to participate in the physical fitness evaluation program conducted by DAP Unisex Fitness Studio.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-1">Participant Name</label>
-                    <input
-                      type="text"
-                      name="participant_name"
-                      value={localFormData.participant_name}
-                      onChange={(e) => setLocalFormData(prev => ({ ...prev, participant_name: e.target.value }))}
-                      placeholder="Full Name"
-                      required
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    />
-                  </div>
-                  {/* <div>
-                    <label className="block text-sm font-medium text-white/80 mb-1">Consent Date</label>
-                    <input
-                      type="date"
-                      name="consent_date"
-                      value={localFormData.consent_date}
-                      onChange={(e) => setLocalFormData(prev => ({ ...prev, consent_date: e.target.value }))}
-                      required
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    />
-                  </div> */}
-                </div>
-
-                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-1">Your Signature</label>
-                    <input
-                      type="text"
-                      name="consent_signature"
-                      value={localFormData.consent_signature}
-                      onChange={(e) => setLocalFormData(prev => ({ ...prev, consent_signature: e.target.value }))}
-                      placeholder="Type your name"
-                      required
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-1">Witness / Guardian</label>
-                    <input
-                      type="text"
-                      name="witness"
-                      value={localFormData.witness}
-                      onChange={(e) => setLocalFormData(prev => ({ ...prev, witness: e.target.value }))}
-                      placeholder="Witness name"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    />
-                  </div>
-                </div> */}
-
-                <label className="flex items-center gap-3 mt-4">
-                  <input
-                    type="checkbox"
-                    name="consent_agree"
-                    checked={localFormData.consent_agree}
-                    onChange={(e) => setLocalFormData(prev => ({ ...prev, consent_agree: e.target.checked }))}
-                    className="w-5 h-5 text-orange-500 bg-slate-800 border border-white/10 rounded"
-                    required
-                  />
-                  <span className="text-white">I have read and agree to the informed consent above.</span>
-                </label>
-
-                <div className="text-sm text-red-400">
-                  {localFormData.consent_agree ? '' : 'You must check the box to proceed.'}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-6">
-              <button
-                type="button"
-                onClick={onPrevious}
-                disabled={isFirstStep}
-                className={`flex-1 px-4 py-3 rounded-lg font-bold transition-all ${isFirstStep
-                  ? "bg-gray-600/50 text-gray-400 cursor-not-allowed"
-                  : "bg-gray-700 hover:bg-gray-600 text-white"
-                  }`}
-              >
-                Previous
-              </button>
-
-              <button
-                type="button"
-                onClick={() => window.history.back()}
-                className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 text-white rounded-lg font-bold transition-all border border-white/10"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                className="flex-1 px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-bold shadow-lg hover:shadow-orange-600/20 transition-all"
-              >
-                {isLastStep ? "Complete Registration" : "Next Step"}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-      </div>
-      );
+            <Text className="text-white text-center font-bold">
+              {isLastStep ? 'Complete Registration' : 'Next Step'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </ScrollView>
+  );
 };
 
-      export default Enquiry;
+export default PTFormEnquiry;

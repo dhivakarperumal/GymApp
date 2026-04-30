@@ -1,370 +1,423 @@
 import React, { useState } from "react";
+import { ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 const HealthHistoy = ({ onNext, onPrevious, formData, isFirstStep }) => {
+  const [form, setForm] = useState({
+    medications: formData?.medications || "",
+    med1: formData?.med1 || "",
+    dose1: formData?.dose1 || "",
+    reason1: formData?.reason1 || "",
+    med2: formData?.med2 || "",
+    dose2: formData?.dose2 || "",
+    reason2: formData?.reason2 || "",
+    med3: formData?.med3 || "",
+    dose3: formData?.dose3 || "",
+    reason3: formData?.reason3 || "",
+    allergies: formData?.allergies || "",
+    surgeries1: formData?.surgeries1 || "",
+    surgeries2: formData?.surgeries2 || "",
+    surgeries3: formData?.surgeries3 || "",
+    exercise_program: formData?.exercise_program || "",
+    sports: formData?.sports || "",
+    sport1: formData?.sport1 || "",
+    sport2: formData?.sport2 || "",
+    sport3: formData?.sport3 || "",
+    sport4: formData?.sport4 || "",
+    sport5: formData?.sport5 || "",
+    sport6: formData?.sport6 || "",
+    smoking: formData?.smoking || "",
+    alcohol: formData?.alcohol || "",
+    food_preference: formData?.food_preference || "",
+    supplements: formData?.supplements || ""
+  });
 
-    const [form, setForm] = useState({
-        medications: formData?.medications || "",
-        med1: formData?.med1 || "",
-        dose1: formData?.dose1 || "",
-        reason1: formData?.reason1 || "",
-        med2: formData?.med2 || "",
-        dose2: formData?.dose2 || "",
-        reason2: formData?.reason2 || "",
-        med3: formData?.med3 || "",
-        dose3: formData?.dose3 || "",
-        reason3: formData?.reason3 || "",
-        allergies: formData?.allergies || "",
-        surgeries1: formData?.surgeries1 || "",
-        surgeries2: formData?.surgeries2 || "",
-        surgeries3: formData?.surgeries3 || "",
-        exercise_program: formData?.exercise_program || "",
-        sports: formData?.sports || "",
-        sport1: formData?.sport1 || "",
-        sport2: formData?.sport2 || "",
-        sport3: formData?.sport3 || "",
-        sport4: formData?.sport4 || "",
-        sport5: formData?.sport5 || "",
-        sport6: formData?.sport6 || "",
-        smoking: formData?.smoking || "",
-        alcohol: formData?.alcohol || "",
-        food_preference: formData?.food_preference || "",
-        supplements: formData?.supplements || ""
-    })
-
-    React.useEffect(() => {
-        if (formData) {
-            setForm(prev => ({ ...prev, ...formData }));
-        }
-    }, [formData]);
-
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target
-        setForm(prev => ({
-            ...prev,
-            [name]: type === "checkbox" ? checked : value
-        }))
+  React.useEffect(() => {
+    if (formData) {
+      setForm(prev => ({ ...prev, ...formData }));
     }
+  }, [formData]);
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        onNext(form)
-    }
+  const handleChange = (name, value) => {
+    setForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-    return (
-        <div className="space-y-6">
-            <div className="border-2 border-white/20 rounded-2xl p-8 bg-white/[0.02] shadow-xl">
+  const handleSubmit = () => {
+    onNext(form);
+  };
 
-                <h3 className="text-orange-500 font-bold border-b border-white/10 pb-2 uppercase tracking-wider">
-                    Health History Questionnaire
-                </h3>
+  const RadioButton = ({ label, value, selected, onPress }) => (
+    <TouchableOpacity
+      onPress={() => onPress(value)}
+      className="flex-row items-center gap-2"
+    >
+      <View className={`w-4 h-4 rounded-full border-2 ${selected ? 'bg-orange-500 border-orange-500' : 'border-white/40'}`} />
+      <Text className="text-white">{label}</Text>
+    </TouchableOpacity>
+  );
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+  return (
+    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <View className="p-6">
+        <Text className="text-orange-500 font-bold border-b border-white/10 pb-2 uppercase tracking-wider mb-6">
+          Health History Questionnaire
+        </Text>
 
-                    {/* Medications */}
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                        <p className="mb-4 text-white">
-                            Are you taking any medications?
-                        </p>
+        {/* Medications */}
+        <View className="bg-white/5 border border-white/10 rounded-xl p-6 mb-6">
+          <Text className="text-white mb-4">
+            Are you taking any medications?
+          </Text>
 
-                        <div className="flex gap-8 mb-5">
-                            <label>
-                                <input
-                                    type="radio"
-                                    name="medications"
-                                    value="Yes"
-                                    checked={form.medications === "Yes"}
-                                    onChange={handleChange}
-                                /> Yes
-                            </label>
+          <View className="flex-row gap-8 mb-5">
+            <RadioButton
+              label="Yes"
+              value="Yes"
+              selected={form.medications === "Yes"}
+              onPress={(value) => handleChange("medications", value)}
+            />
+            <RadioButton
+              label="No"
+              value="No"
+              selected={form.medications === "No"}
+              onPress={(value) => handleChange("medications", value)}
+            />
+          </View>
 
-                            <label>
-                                <input
-                                    type="radio"
-                                    name="medications"
-                                    value="No"
-                                    checked={form.medications === "No"}
-                                    onChange={handleChange}
-                                /> No
-                            </label>
-                        </div>
+          <Text className="text-orange-400 mb-4">
+            If yes, complete the following
+          </Text>
 
-                        <p className="text-orange-400 mb-4">
-                            If yes, complete the following
-                        </p>
+          <View className="gap-4">
+            <View className="flex-row gap-2">
+              <TextInput
+                value={form.med1}
+                onChangeText={(text) => handleChange("med1", text)}
+                placeholder="Name"
+                placeholderTextColor="#ffffff40"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
+              <TextInput
+                value={form.dose1}
+                onChangeText={(text) => handleChange("dose1", text)}
+                placeholder="Dosage/Frequency"
+                placeholderTextColor="#ffffff40"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
+              <TextInput
+                value={form.reason1}
+                onChangeText={(text) => handleChange("reason1", text)}
+                placeholder="Reason"
+                placeholderTextColor="#ffffff40"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
+            </View>
 
-                        <div className="grid md:grid-cols-3 gap-4">
-                            <input name="med1"  value={form.med1} onChange={handleChange}
-                                placeholder="Name"
-                                className="input" />
+            <View className="flex-row gap-2">
+              <TextInput
+                value={form.med2}
+                onChangeText={(text) => handleChange("med2", text)}
+                placeholder="Name"
+                placeholderTextColor="#ffffff40"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
+              <TextInput
+                value={form.dose2}
+                onChangeText={(text) => handleChange("dose2", text)}
+                placeholder="Dosage/Frequency"
+                placeholderTextColor="#ffffff40"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
+              <TextInput
+                value={form.reason2}
+                onChangeText={(text) => handleChange("reason2", text)}
+                placeholder="Reason"
+                placeholderTextColor="#ffffff40"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
+            </View>
 
-                            <input name="dose1" value={form.dose1} onChange={handleChange}
-                                placeholder="Dosage/Frequency"
-                                className="input" />
+            <View className="flex-row gap-2">
+              <TextInput
+                value={form.med3}
+                onChangeText={(text) => handleChange("med3", text)}
+                placeholder="Name"
+                placeholderTextColor="#ffffff40"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
+              <TextInput
+                value={form.dose3}
+                onChangeText={(text) => handleChange("dose3", text)}
+                placeholder="Dosage/Frequency"
+                placeholderTextColor="#ffffff40"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
+              <TextInput
+                value={form.reason3}
+                onChangeText={(text) => handleChange("reason3", text)}
+                placeholder="Reason"
+                placeholderTextColor="#ffffff40"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
+            </View>
+          </View>
+        </View>
 
-                            <input name="reason1" value={form.reason1} onChange={handleChange}
-                                placeholder="Reason"
-                                className="input" />
+        {/* Allergies */}
+        <View className="bg-white/5 border border-white/10 rounded-xl p-6 mb-6">
+          <Text className="text-white mb-2">
+            Please list any allergies
+          </Text>
+          <TextInput
+            value={form.allergies}
+            onChangeText={(text) => handleChange("allergies", text)}
+            className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+            style={{ color: 'white' }}
+            placeholder="List your allergies"
+            placeholderTextColor="#ffffff40"
+          />
+        </View>
 
-                            <input name="med2" value={form.med2} onChange={handleChange}
-                                placeholder="Name"
-                                className="input" />
+        {/* Surgeries */}
+        <View className="bg-white/5 border border-white/10 rounded-xl p-6 mb-6">
+          <Text className="text-white mb-4">
+            Have you undergone any major surgeries/major accidents?
+          </Text>
 
-                            <input name="dose2" value={form.dose2} onChange={handleChange}
-                                placeholder="Dosage/Frequency"
-                                className="input" />
+          <TextInput
+            value={form.surgeries1}
+            onChangeText={(text) => handleChange("surgeries1", text)}
+            placeholder="1."
+            placeholderTextColor="#ffffff40"
+            className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white mb-3"
+            style={{ color: 'white' }}
+          />
 
-                            <input name="reason2" value={form.reason2} onChange={handleChange}
-                                placeholder="Reason"
-                                className="input" />
+          <TextInput
+            value={form.surgeries2}
+            onChangeText={(text) => handleChange("surgeries2", text)}
+            placeholder="2."
+            placeholderTextColor="#ffffff40"
+            className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white mb-3"
+            style={{ color: 'white' }}
+          />
 
-                            <input name="med3" value={form.med3} onChange={handleChange}
-                                placeholder="Name"
-                                className="input" />
+          <TextInput
+            value={form.surgeries3}
+            onChangeText={(text) => handleChange("surgeries3", text)}
+            placeholder="3."
+            placeholderTextColor="#ffffff40"
+            className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+            style={{ color: 'white' }}
+          />
+        </View>
 
-                            <input name="dose3" value={form.dose3} onChange={handleChange}
-                                placeholder="Dosage/Frequency"
-                                className="input" />
+        {/* Exercise Program */}
+        <View className="bg-white/5 border border-white/10 rounded-xl p-6 mb-6">
+          <Text className="text-white mb-4">
+            Are you currently involved in any exercise program?
+          </Text>
 
-                            <input name="reason3" value={form.reason3} onChange={handleChange}
-                                placeholder="Reason"
-                                className="input" />
-                        </div>
-                    </div>
+          <View className="flex-row gap-8 mb-6">
+            <RadioButton
+              label="Yes"
+              value="Yes"
+              selected={form.exercise_program === "Yes"}
+              onPress={(value) => handleChange("exercise_program", value)}
+            />
+            <RadioButton
+              label="No"
+              value="No"
+              selected={form.exercise_program === "No"}
+              onPress={(value) => handleChange("exercise_program", value)}
+            />
+          </View>
 
+          <Text className="text-white mb-4">
+            Are you involved in recreational sports?
+          </Text>
 
-                    {/* Allergies */}
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                        <label className="block mb-2">
-                            Please list any allergies
-                        </label>
+          <View className="gap-4">
+            <View className="flex-row gap-2">
+              <TextInput
+                value={form.sport1}
+                onChangeText={(text) => handleChange("sport1", text)}
+                placeholder="1."
+                placeholderTextColor="#ffffff40"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
+              <TextInput
+                value={form.sport4}
+                onChangeText={(text) => handleChange("sport4", text)}
+                placeholder="4."
+                placeholderTextColor="#ffffff40"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
+            </View>
 
-                        <input
-                            name="allergies"
-                            value={form.allergies}
-                            onChange={handleChange}
-                            className="input w-full"
-                        />
-                    </div>
+            <View className="flex-row gap-2">
+              <TextInput
+                value={form.sport2}
+                onChangeText={(text) => handleChange("sport2", text)}
+                placeholder="2."
+                placeholderTextColor="#ffffff40"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
+              <TextInput
+                value={form.sport5}
+                onChangeText={(text) => handleChange("sport5", text)}
+                placeholder="5."
+                placeholderTextColor="#ffffff40"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
+            </View>
 
+            <View className="flex-row gap-2">
+              <TextInput
+                value={form.sport3}
+                onChangeText={(text) => handleChange("sport3", text)}
+                placeholder="3."
+                placeholderTextColor="#ffffff40"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
+              <TextInput
+                value={form.sport6}
+                onChangeText={(text) => handleChange("sport6", text)}
+                placeholder="6."
+                placeholderTextColor="#ffffff40"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                style={{ color: 'white' }}
+              />
+            </View>
+          </View>
+        </View>
 
-                    {/* Surgeries */}
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                        <p className="mb-4">
-                            Have you undergone any major surgeries/major accidents?
-                        </p>
+        {/* Lifestyle */}
+        <View className="bg-white/5 border border-white/10 rounded-xl p-6 mb-6">
+          <Text className="text-orange-400 font-bold mb-5 uppercase tracking-wider">
+            Lifestyle and Dietary Factors
+          </Text>
 
-                        <input
-                            name="surgeries1"
-                            value={form.surgeries1}
-                            placeholder="1."
-                            onChange={handleChange}
-                            className="input w-full mb-3"
-                        />
+          <Text className="text-white mb-4 font-semibold">
+            Smoking and Alcohol Consumption
+          </Text>
 
-                        <input
-                            name="surgeries2"
-                            value={form.surgeries2}
-                            placeholder="2."
-                            onChange={handleChange}
-                            className="input w-full mb-3"
-                        />
+          <View className="gap-6 mb-6">
+            <View>
+              <Text className="text-white mb-2">Smoking</Text>
+              <View className="flex-row gap-4">
+                <TouchableOpacity
+                  onPress={() => handleChange("smoking", "Yes")}
+                  className={`px-4 py-2 rounded-lg border ${form.smoking === "Yes" ? 'bg-orange-500 border-orange-500' : 'border-white/20'}`}
+                >
+                  <Text className="text-white">Yes</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleChange("smoking", "No")}
+                  className={`px-4 py-2 rounded-lg border ${form.smoking === "No" ? 'bg-orange-500 border-orange-500' : 'border-white/20'}`}
+                >
+                  <Text className="text-white">No</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
 
-                        <input
-                            name="surgeries3"
-                            value={form.surgeries3}
-                            placeholder="3."
-                            onChange={handleChange}
-                            className="input w-full"
-                        />
-                    </div>
+            <View>
+              <Text className="text-white mb-2">Alcohol</Text>
+              <View className="flex-row gap-4">
+                <TouchableOpacity
+                  onPress={() => handleChange("alcohol", "Yes")}
+                  className={`px-4 py-2 rounded-lg border ${form.alcohol === "Yes" ? 'bg-orange-500 border-orange-500' : 'border-white/20'}`}
+                >
+                  <Text className="text-white">Yes</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleChange("alcohol", "No")}
+                  className={`px-4 py-2 rounded-lg border ${form.alcohol === "No" ? 'bg-orange-500 border-orange-500' : 'border-white/20'}`}
+                >
+                  <Text className="text-white">No</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
 
+          <View className="mb-6">
+            <Text className="text-white mb-3">
+              Food Preference
+            </Text>
+            <View className="flex-row gap-8">
+              <RadioButton
+                label="Veg"
+                value="Veg"
+                selected={form.food_preference === "Veg"}
+                onPress={(value) => handleChange("food_preference", value)}
+              />
+              <RadioButton
+                label="Non-Veg"
+                value="Non-Veg"
+                selected={form.food_preference === "Non-Veg"}
+                onPress={(value) => handleChange("food_preference", value)}
+              />
+            </View>
+          </View>
 
-                    {/* Exercise Program */}
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+          <View>
+            <Text className="text-white mb-3">
+              Do you take dietary supplements?
+            </Text>
+            <View className="flex-row gap-8">
+              <RadioButton
+                label="Yes"
+                value="Yes"
+                selected={form.supplements === "Yes"}
+                onPress={(value) => handleChange("supplements", value)}
+              />
+              <RadioButton
+                label="No"
+                value="No"
+                selected={form.supplements === "No"}
+                onPress={(value) => handleChange("supplements", value)}
+              />
+            </View>
+          </View>
+        </View>
 
-                        <p className="mb-4">
-                            Are you currently involved in any exercise program?
-                        </p>
+        {/* Navigation Buttons */}
+        <View className="flex-row gap-3 pt-6">
+          <TouchableOpacity
+            onPress={onPrevious}
+            disabled={isFirstStep}
+            className={`flex-1 px-4 py-3 rounded-lg ${isFirstStep ? 'bg-gray-600' : 'bg-gray-700'}`}
+            style={{ opacity: isFirstStep ? 0.5 : 1 }}
+          >
+            <Text className="text-white text-center font-bold">Previous</Text>
+          </TouchableOpacity>
 
-                        <div className="flex gap-8 mb-6">
-                            <label>
-                                <input
-                                    type="radio"
-                                    name="exercise_program"
-                                    value="Yes"
-                                    checked={form.exercise_program === "Yes"}
-                                    onChange={handleChange}
-                                /> Yes
-                            </label>
+          <TouchableOpacity
+            onPress={handleSubmit}
+            className="flex-1 px-4 py-3 bg-orange-600 rounded-lg"
+          >
+            <Text className="text-white text-center font-bold">Next Step</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </ScrollView>
+  );
+};
 
-                            <label>
-                                <input
-                                    type="radio"
-                                    name="exercise_program"
-                                    value="No"
-                                    checked={form.exercise_program === "No"}
-                                    onChange={handleChange}
-                                /> No
-                            </label>
-                        </div>
-
-
-                        <p className="mb-4">
-                            Are you involved in recreational sports?
-                        </p>
-
-                        <div className="grid md:grid-cols-2 gap-4">
-                            <input name="sport1" value={form.sport1} placeholder="1." onChange={handleChange} className="input" />
-                            <input name="sport4" value={form.sport4} placeholder="4." onChange={handleChange} className="input" />
-
-                            <input name="sport2" value={form.sport2} placeholder="2." onChange={handleChange} className="input" />
-                            <input name="sport5" value={form.sport5} placeholder="5." onChange={handleChange} className="input" />
-
-                            <input name="sport3" value={form.sport3} placeholder="3." onChange={handleChange} className="input" />
-                            <input name="sport6" value={form.sport6} placeholder="6." onChange={handleChange} className="input" />
-                        </div>
-
-                    </div>
-
-
-                    {/* Lifestyle */}
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                        <h3 className="text-orange-400 font-bold mb-5">
-                            LIFESTYLE AND DIETARY FACTORS
-                        </h3>
-
-                        <p className="mb-4 font-semibold">
-                            Smoking and Alcohol Consumption
-                        </p>
-
-                        <div className="grid md:grid-cols-2 gap-6">
-
-                            <div>
-                                <label>Smoking</label>
-                                <select
-                                    name="smoking"
-                                    onChange={handleChange}
-                                    className="input w-full mt-2"
-                                    value={form.smoking}
-                                >
-                                    <option value="">Select</option>
-                                    <option>Yes</option>
-                                    <option>No</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label>Alcohol</label>
-                                <select
-                                    name="alcohol"
-                                    onChange={handleChange}
-                                    className="input w-full mt-2"
-                                    value={form.alcohol}
-                                >
-                                    <option value="">Select</option>
-                                    <option>Yes</option>
-                                    <option>No</option>
-                                </select>
-                            </div>
-
-                        </div>
-
-
-                        <div className="mt-6">
-                            <label className="block mb-3">
-                                Food Preference
-                            </label>
-
-                            <div className="flex gap-8">
-                                <label>
-                                    <input
-                                        type="radio"
-                                        name="food_preference"
-                                        value="Veg"
-                                        onChange={handleChange}
-                                        checked={form.food_preference === "Veg"}
-                                    /> Veg
-                                </label>
-
-                                <label>
-                                    <input
-                                        type="radio"
-                                        name="food_preference"
-                                        value="Non-Veg"
-                                        onChange={handleChange}
-                                        checked={form.food_preference === "Non-Veg"}
-                                    /> Non-Veg
-                                </label>
-                            </div>
-                        </div>
-
-
-                        <div className="mt-6">
-                            <label className="block mb-3">
-                                Do you take dietary supplements?
-                            </label>
-
-                            <div className="flex gap-8">
-                                <label>
-                                    <input
-                                        type="radio"
-                                        name="supplements"
-                                        value="Yes"
-                                        onChange={handleChange}
-                                        checked={form.supplements === "Yes"}
-                                    /> Yes
-                                </label>
-
-                                <label>
-                                    <input
-                                        type="radio"
-                                        name="supplements"
-                                        value="No"
-                                        onChange={handleChange}
-                                        checked={form.supplements === "No"}
-                                    /> No
-                                </label>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div className="flex gap-3 pt-6">
-                        <button
-                            type="button"
-                            onClick={onPrevious}
-                            disabled={isFirstStep}
-                            className="flex-1 px-4 py-3 bg-gray-700 rounded-lg"
-                        >
-                            Previous
-                        </button>
-
-                        <button
-                            type="submit"
-                            className="flex-1 px-4 py-3 bg-orange-600 rounded-lg font-bold"
-                        >
-                            Next Step
-                        </button>
-                    </div>
-
-                </form>
-
-                <style jsx>{`
-.input{
-background:rgba(255,255,255,.08);
-border:1px solid rgba(255,255,255,.2);
-padding:12px;
-border-radius:10px;
-width:100%;
-color:white;
-}
-`}</style>
-
-            </div>
-        </div>
-    )
-
-}
-
-export default HealthHistoy
+export default HealthHistoy;
