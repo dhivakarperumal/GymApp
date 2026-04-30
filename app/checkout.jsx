@@ -8,9 +8,11 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Modal,
+  ActivityIndicator,
 } from "react-native";
 import Toast from "react-native-toast-message";
-import { Modal } from "react-native";
+
 import { Ionicons } from "@expo/vector-icons";
 
 import { useRouter } from "expo-router";
@@ -18,7 +20,7 @@ import { useEffect, useState } from "react";
 import RazorpayCheckout from "react-native-razorpay";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../context/AuthContext";
-import { ActivityIndicator } from "react-native";
+
 
 import api from "../services/api";
 
@@ -31,7 +33,7 @@ import {
 } from "../services/api";
 import BackButton from "./BackButton";
 import Header from "./Header";
-import { ActivityIndicator } from "react-native";
+
 
 export default function Checkout() {
   const [cartItems, setCartItems] = useState([]);
@@ -376,18 +378,15 @@ export default function Checkout() {
         router.replace("/Orders");
       }, 1200);
 
-
-
     } catch (err) {
       console.log("ERROR 👉", err);
-    } finally {
-      setLoading(false); // at end (IMPORTANT)
       Toast.show({
         type: "error",
         text1: "Order Failed",
         text2: err?.message || "Something went wrong",
       });
     } finally {
+      setLoading(false);
       setPlacing(false);
     }
   };

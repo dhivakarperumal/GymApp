@@ -1,4 +1,4 @@
-const BASE_URL = "https://mygym.qtechx.com/api";
+const BASE_URL = "https://dap.qtechx.com/api";
 
 /* ------------------ HELPER ------------------ */
 // lightweight wrapper that mimics axios-style responses; screens currently
