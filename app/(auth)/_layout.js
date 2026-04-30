@@ -1,12 +1,20 @@
-import { Stack } from "expo-router";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Redirect, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Layout() {
+  const { user } = useAuth();
+
+  if (user) {
+    if (user.role === "admin") return <Redirect href="/(admin)" />;
+    if (user.role === "trainer") return <Redirect href="/(trainers)" />;
+    return <Redirect href="/(tabs)" />;
+  }
+
   return (
-    <SafeAreaProvider>
+    <>
       <StatusBar style="light" backgroundColor="#000" />
       <Stack screenOptions={{ headerShown: false }} />
-    </SafeAreaProvider>
+    </>
   );
 }
