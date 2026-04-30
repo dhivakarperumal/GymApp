@@ -352,16 +352,6 @@ export default function TrainersLayout() {
       />
 
       <Tabs.Screen
-        name="pt-form"
-        options={{
-          title: "PT Form",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="create-outline" size={size} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
         name="more"
         options={{
           title: "More",
