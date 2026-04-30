@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Alert, ScrollView, Text, View } from 'react-native';
-import { useAuth } from '../../PrivateRouter/AuthContext';
-import api from '../../services/api';
+import { useAuth } from '../../../context/AuthContext.js';
+import api from '../../../services/api';
 import HealthHistory2 from './HealthHistory2';
 import HealthHistoy from './HealthHistoy';
 import PTFormEnquiry from './PTFormEnquiry';
