@@ -37,6 +37,9 @@ import dayjs from "dayjs";
 import * as XLSX from "xlsx";
 import * as DocumentPicker from "expo-document-picker";
 import Toast from "react-native-toast-message";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Picker } from "@react-native-picker/picker";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 import api, {
   getFollowups,
@@ -73,19 +76,9 @@ export default function FollowupEnquiry() {
     phone: "",
     subject: "",
     message: "",
-    height: "",
-    weight: "",
-    bmi: "",
     dob: "",
     age: "",
     address: "",
-    employer: "",
-    occupation: "",
-    emergency_contact_name: "",
-    emergency_contact_relationship: "",
-    emergency_contact_address: "",
-    emergency_contact_phone_home: "",
-    emergency_contact_phone_work: "",
     fitness_goal: "",
     blood_group: "",
     gender: "",
@@ -96,8 +89,7 @@ export default function FollowupEnquiry() {
     reg_no: "",
     organization: "",
     website: "",
-    best_time_to_reach: "",
-    updated_by: "",
+    updated_by: user?.username || "Admin",
     referred_by: "",
   });
 
@@ -176,6 +168,7 @@ export default function FollowupEnquiry() {
       setShowForm(false);
       Toast.show({ type: "success", text1: "Record saved successfully!" });
     } catch (err) {
+      console.error("Save record error:", err);
       Toast.show({ type: "error", text1: "Error saving record" });
     }
   };
@@ -231,29 +224,19 @@ export default function FollowupEnquiry() {
       phone: "",
       subject: "",
       message: "",
-      height: "",
-      weight: "",
-      bmi: "",
       dob: "",
       age: "",
       address: "",
-      employer: "",
-      occupation: "",
-      emergency_contact_name: "",
-      emergency_contact_relationship: "",
-      emergency_contact_address: "",
-      emergency_contact_phone_home: "",
-      emergency_contact_phone_work: "",
       fitness_goal: "",
       blood_group: "",
       gender: "",
       status: "pending",
       plan_name: "",
+      plan_price: "",
       plan_duration: "",
       reg_no: "",
       organization: "",
       website: "",
-      best_time_to_reach: "",
       updated_by: user?.username || "Admin",
       referred_by: "",
     });
@@ -311,6 +294,11 @@ export default function FollowupEnquiry() {
   };
 
   const filteredEnquiries = enquiries.filter((e) => {
+    // Only show followups created/updated by the current user
+    if (user?.username && e.updated_by !== user.username) {
+      return false;
+    }
+
     const matchesSearch =
       e.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       e.phone?.includes(searchTerm) ||
@@ -457,10 +445,13 @@ export default function FollowupEnquiry() {
 
       {/* FULL FORM MODAL */}
       <Modal visible={showForm} animationType="slide" transparent>
-        <View className="flex-1 bg-black/90">
-          <SafeAreaView className="flex-1">
+        <View className="flex-1 bg-black/80 justify-end">
+          <SafeAreaView className="flex-[0.95] bg-[#0a0a0a] rounded-t-[32px] border-t border-[#262626] shadow-2xl overflow-hidden pt-2">
+            {/* Grabber */}
+            <View className="w-12 h-1.5 bg-[#333] rounded-full self-center mb-2" />
+            
             {/* Header */}
-            <View className="px-4 py-4 border-b border-[#262626] flex-row justify-between items-center">
+            <View className="px-6 py-4 border-b border-[#262626] flex-row justify-between items-center">
               <View>
                 <Text className="text-white text-lg font-bold">
                   {selectedEnquiry ? "Enquiry Management" : "Create New Lead"}
@@ -500,26 +491,103 @@ export default function FollowupEnquiry() {
               ))}
             </View>
 
-            <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
-              <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+            <KeyboardAwareScrollView 
+              className="flex-1 p-4" 
+              showsVerticalScrollIndicator={false}
+              enableOnAndroid={true}
+              extraScrollHeight={20}
+              keyboardShouldPersistTaps="handled"
+            >
                 {activeTab === "basic" && (
                   <View className="space-y-4">
                     <FormInput label="Full Name *" value={formData.name} onChange={(v) => setFormData({ ...formData, name: v })} placeholder="Enter name" />
-                    <FormInput label="Phone *" value={formData.phone} onChange={(v) => setFormData({ ...formData, phone: v })} placeholder="9876543210" keyboardType="phone-pad" />
+                    <View className="flex-row gap-2">
+                      <View className="flex-[2]">
+                        <FormDatePicker label="Date of Birth" value={formData.dob} onChange={(v) => {
+                          const newAge = v ? dayjs().diff(dayjs(v), 'year').toString() : formData.age;
+                          setFormData({ ...formData, dob: v, age: newAge });
+                        }} />
+                      </View>
+                      <View className="flex-1">
+                        <FormInput label="Age" value={formData.age?.toString()} onChange={(v) => setFormData({ ...formData, age: v })} keyboardType="numeric" placeholder="25" />
+                      </View>
+                    </View>
+                    <FormPicker 
+                      label="Gender" 
+                      selectedValue={formData.gender} 
+                      onValueChange={(v) => setFormData({ ...formData, gender: v })}
+                      items={[
+                        { label: "[SELECT]", value: "" },
+                        { label: "Male", value: "Male" },
+                        { label: "Female", value: "Female" },
+                        { label: "Other", value: "Other" },
+                      ]}
+                    />
                     <FormInput label="Email" value={formData.email} onChange={(v) => setFormData({ ...formData, email: v })} placeholder="email@example.com" keyboardType="email-address" />
-                    <FormInput label="Gender" value={formData.gender} onChange={(v) => setFormData({ ...formData, gender: v })} placeholder="Male/Female/Other" />
+                    <FormInput label="Phone *" value={formData.phone} onChange={(v) => setFormData({ ...formData, phone: v })} placeholder="9876543210" keyboardType="phone-pad" />
                     <FormInput label="Address" value={formData.address} onChange={(v) => setFormData({ ...formData, address: v })} placeholder="Full address" multiline numberOfLines={3} />
-                    <FormInput label="Fitness Goal" value={formData.fitness_goal} onChange={(v) => setFormData({ ...formData, fitness_goal: v })} placeholder="e.g. Weight loss" />
+                    <FormPicker 
+                      label="Blood Group" 
+                      selectedValue={formData.blood_group} 
+                      onValueChange={(v) => setFormData({ ...formData, blood_group: v })}
+                      items={[
+                        { label: "[SELECT]", value: "" },
+                        { label: "A+", value: "A+" },
+                        { label: "A-", value: "A-" },
+                        { label: "B+", value: "B+" },
+                        { label: "B-", value: "B-" },
+                        { label: "AB+", value: "AB+" },
+                        { label: "AB-", value: "AB-" },
+                        { label: "O+", value: "O+" },
+                        { label: "O-", value: "O-" },
+                      ]}
+                    />
                   </View>
                 )}
 
                 {activeTab === "details" && (
                   <View className="space-y-4">
-                    <FormInput label="Organization" value={formData.organization} onChange={(v) => setFormData({ ...formData, organization: v, employer: v })} placeholder="Company name" />
-                    <FormInput label="Plan Name" value={formData.plan_name} onChange={(v) => setFormData({ ...formData, plan_name: v })} placeholder="Interested plan" />
+                    {selectedEnquiry && (
+                      <View className="mb-4">
+                        <Text className="text-gray-500 text-[10px] font-black uppercase mb-2 tracking-widest">Reg. No</Text>
+                        <TextInput value={`#F-${selectedEnquiry.id}`} editable={false} className="bg-[#141414] border border-[#262626] text-gray-500 p-4 rounded-2xl" />
+                      </View>
+                    )}
+                    <FormInput label="Organization" value={formData.organization} onChange={(v) => setFormData({ ...formData, organization: v })} placeholder="Company name" />
+                    
                     <FormInput label="Subject" value={formData.subject} onChange={(v) => setFormData({ ...formData, subject: v })} placeholder="Topic" />
                     <FormInput label="Message" value={formData.message} onChange={(v) => setFormData({ ...formData, message: v })} placeholder="Notes" multiline numberOfLines={4} />
                     
+                    <FormPicker 
+                      label="Plan Name" 
+                      selectedValue={formData.plan_name} 
+                      onValueChange={(v) => {
+                        const selectedPlan = plans.find(p => p.name === v);
+                        setFormData({ 
+                          ...formData, 
+                          plan_name: v,
+                          plan_price: selectedPlan ? (selectedPlan.finalPrice || selectedPlan.price)?.toString() : ""
+                        });
+                      }}
+                      items={[
+                        { label: "[SELECT PLAN]", value: "" },
+                        ...plans.map(p => ({ label: `${p.name} - ₹${p.finalPrice || p.price}`, value: p.name }))
+                      ]}
+                    />
+                    <FormInput label="Plan Price" value={formData.plan_price} onChange={(v) => setFormData({ ...formData, plan_price: v })} placeholder="Price" keyboardType="numeric" editable={false} />
+                    <FormInput label="Plan Duration" value={formData.plan_duration} onChange={(v) => setFormData({ ...formData, plan_duration: v })} placeholder="e.g. 3 Months" />
+                    
+                    <FormInput label="Fitness Goal" value={formData.fitness_goal} onChange={(v) => setFormData({ ...formData, fitness_goal: v })} placeholder="e.g. Weight loss" />
+                    <FormInput label="Website" value={formData.website} onChange={(v) => setFormData({ ...formData, website: v })} placeholder="https://" keyboardType="url" />
+                    <View className="flex-row gap-2">
+                      <View className="flex-1">
+                        <FormInput label="Referred By" value={formData.referred_by} onChange={(v) => setFormData({ ...formData, referred_by: v })} placeholder="Name" />
+                      </View>
+                      <View className="flex-1">
+                        <FormInput label="Updated By" value={formData.updated_by} onChange={(v) => setFormData({ ...formData, updated_by: v })} editable={false} />
+                      </View>
+                    </View>
+
                     <Text className="text-gray-500 text-[10px] font-black uppercase mt-4 mb-2">Status Selection</Text>
                     <View className="flex-row flex-wrap gap-2">
                       {["pending", "followup", "completed", "cancelled"].map((s) => (
@@ -580,8 +648,7 @@ export default function FollowupEnquiry() {
                   </View>
                 )}
                 <View className="h-40" />
-              </KeyboardAvoidingView>
-            </ScrollView>
+            </KeyboardAwareScrollView>
 
             {/* Footer */}
             <View className="p-4 border-t border-[#262626] bg-[#0f0f0f] flex-row gap-3">
@@ -610,15 +677,70 @@ export default function FollowupEnquiry() {
   );
 }
 
-function FormInput({ label, ...props }) {
+function FormInput({ label, onChange, ...props }) {
   return (
     <View className="mb-4">
       <Text className="text-gray-500 text-[10px] font-black uppercase mb-2 tracking-widest">{label}</Text>
       <TextInput
+        onChangeText={onChange}
         placeholderTextColor="#333"
         className="bg-[#141414] border border-[#262626] text-white p-4 rounded-2xl focus:border-red-600"
         {...props}
       />
+    </View>
+  );
+}
+
+function FormPicker({ label, selectedValue, onValueChange, items }) {
+  return (
+    <View className="mb-4">
+      <Text className="text-gray-500 text-[10px] font-black uppercase mb-2 tracking-widest">{label}</Text>
+      <View className="bg-[#141414] border border-[#262626] rounded-2xl overflow-hidden h-14 justify-center">
+        <Picker
+          selectedValue={selectedValue}
+          onValueChange={onValueChange}
+          dropdownIconColor="white"
+          style={{ color: "white", backgroundColor: "transparent" }}
+        >
+          {items.map((item, idx) => (
+            <Picker.Item key={idx} label={item.label} value={item.value} color={Platform.OS === 'ios' ? 'white' : undefined} />
+          ))}
+        </Picker>
+      </View>
+    </View>
+  );
+}
+
+function FormDatePicker({ label, value, onChange }) {
+  const [show, setShow] = useState(false);
+  
+  const handleConfirm = (event, selectedDate) => {
+    setShow(Platform.OS === 'ios');
+    if (selectedDate) {
+      onChange(dayjs(selectedDate).format("YYYY-MM-DD"));
+    }
+  };
+
+  return (
+    <View className="mb-4">
+      <Text className="text-gray-500 text-[10px] font-black uppercase mb-2 tracking-widest">{label}</Text>
+      <TouchableOpacity 
+        onPress={() => setShow(true)}
+        className="bg-[#141414] border border-[#262626] p-4 rounded-2xl h-14 justify-center"
+      >
+        <Text className={value ? "text-white" : "text-[#333]"}>
+          {value ? dayjs(value).format("YYYY-MM-DD") : "YYYY-MM-DD"}
+        </Text>
+      </TouchableOpacity>
+      {show && (
+        <DateTimePicker
+          value={value ? new Date(value) : new Date()}
+          mode="date"
+          display="default"
+          onChange={handleConfirm}
+          onValueChange={handleConfirm}
+        />
+      )}
     </View>
   );
 }

@@ -170,6 +170,31 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
 
+  /* ── Section Header ── */
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    marginTop: -8,
+  },
+  sectionLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#1f1f1f",
+  },
+  sectionLabelBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    gap: 6,
+  },
+  sectionLabel: {
+    color: "#ff3c00",
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 1.5,
+  },
+
   /* ── Card ── */
   card: {
     flexDirection: "row",
