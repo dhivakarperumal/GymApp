@@ -1,8 +1,11 @@
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import {
+  ScrollView,
   StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -30,6 +33,19 @@ const menuItems = [
     arrowBg: "#f59e0b20",
     arrowColor: "#fbbf24",
     borderAccent: "#f59e0b30",
+  },
+  {
+    id: "ptform",
+    title: "PT Form",
+    subtitle: "Create & manage personal training requests",
+    icon: "create-outline",
+    iconType: "Ionicons",
+    route: "/(trainers)/pt-form",
+    iconBg: "#ef4444",
+    glowBg: "#ef444418",
+    arrowBg: "#ef444420",
+    arrowColor: "#f87171",
+    borderAccent: "#ef444430",
   },
   {
     id: "pricing",
@@ -60,33 +76,6 @@ const menuItems = [
 
 export default function MoreOptions() {
   const router = useRouter();
-
-  const menuItems = [
-    {
-      id: "ptform",
-      title: "PT Form",
-      icon: "create-outline",
-      iconType: "Ionicons",
-      route: "/(trainers)/pt-form",
-      color: "#f59e0b", // Orange
-    },
-    {
-      id: "attendance",
-      title: "Attendance",
-      icon: "calendar-outline",
-      iconType: "Ionicons",
-      route: "/(trainers)/Attendance",
-      color: "#3b82f6", // Blue
-    },
-    {
-      id: "profile",
-      title: "My Profile",
-      icon: "person-outline",
-      iconType: "Ionicons",
-      route: "/(trainers)/profile",
-      color: "#ef4444", // Red
-    },
-  ];
 
   return (
     <SafeAreaView style={styles.safe} edges={["left", "right"]}>
