@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Arnold Gym",
-    "slug": "arnold-gym",
+    "name": "DAP FITNESS STUDIO",
+    "slug": "dap-fitness-studio",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo_dark.png",
-    "scheme": "arnold-gym",
+    "scheme": "DAP FITNESS STUDIO",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

@@ -174,7 +174,7 @@ export default function BuyPlan() {
       currency: "INR",
       key: "rzp_test_SGj8n5SyKSE10b",
       amount: Number(selectedPlan.final_price ?? selectedPlan.price ?? 0) * 100,
-      name: "Arnold Gym",
+      name: "DAP FITNESS STUDIO",
       prefill: {
         email: form.email,
         contact: form.phone,
@@ -284,7 +284,7 @@ export default function BuyPlan() {
   //     currency: "INR",
   //     key: "rzp_test_SGj8n5SyKSE10b",
   //     amount: Number(selectedPlan.price) * 100,
-  //     name: "Arnold Gym",
+  //     name: "DAP FITNESS STUDIO",
   //     prefill: {
   //       email: form.email,
   //       contact: form.phone,
