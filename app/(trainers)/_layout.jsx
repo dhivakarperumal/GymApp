@@ -1,9 +1,9 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Tabs, useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
+import { Image, Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
-import { Image, Text, TouchableOpacity, View, Modal, Pressable } from "react-native";
 
 const BASE_URL = "https://mygym.qtechx.com";
 
@@ -346,6 +346,13 @@ export default function TrainersLayout() {
 
       <Tabs.Screen
         name="Attendance"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="pt-form"
         options={{
           href: null,
         }}

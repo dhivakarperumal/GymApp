@@ -1,13 +1,20 @@
-import React from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function MoreOptions() {
   const router = useRouter();
 
   const menuItems = [
+    {
+      id: "ptform",
+      title: "PT Form",
+      icon: "create-outline",
+      iconType: "Ionicons",
+      route: "/(trainers)/pt-form",
+      color: "#f59e0b", // Orange
+    },
     {
       id: "attendance",
       title: "Attendance",
