@@ -260,7 +260,8 @@ export const updateUserApi = async (id, data) => {
 
 export const getTrainerMembers = async (trainerId, user) => {
   try {
-    const res = await api.get("/assignments");
+    /* Use server-side filter — same as dashboard */
+    const res = await api.get(`/assignments?trainerUserId=${trainerId}`);
 
     const raw = res.data || [];
 
@@ -268,41 +269,35 @@ export const getTrainerMembers = async (trainerId, user) => {
       ? raw
       : raw.data || raw.assignments || [];
 
-    const filtered = assignments
-      .filter((a) => {
-        let include = false;
+    /* Show active OR status-less members (same logic as web + dashboard) */
+    const activeAssignments = assignments.filter(
+      (a) => !a.status || (a.status || "").toLowerCase() === "active"
+    );
 
-        const assignTrainerId = Number(a.trainerId || a.trainer_id);
+    /* Deduplicate by userId */
+    const seen = new Set();
+    const unique = [];
+    for (const a of activeAssignments) {
+      const uid = String(a.userId || a.user_id || "");
+      if (uid && !seen.has(uid)) {
+        seen.add(uid);
+        unique.push(a);
+      }
+    }
 
-        if (!isNaN(assignTrainerId) && assignTrainerId === Number(trainerId)) {
-          include = true;
-        }
-
-        if (!include && user?.username && (a.trainerName || a.trainer_name)) {
-          if (
-            (a.trainerName || a.trainer_name).toLowerCase() ===
-            user.username.toLowerCase()
-          ) {
-            include = true;
-          }
-        }
-
-        return include;
-      })
-      .map((a) => ({
-        id: String(a.userId || a.user_id),
-        name: a.username || a.user_name || "Member",
-        email: a.userEmail || a.user_email || "",
-        mobile: a.userMobile || a.user_mobile || "",
-        planName: a.planName || a.plan_name || "",
-      }));
-
-    return filtered;
+    return unique.map((a) => ({
+      id: String(a.userId || a.user_id),
+      name: a.username || a.user_name || "Member",
+      email: a.userEmail || a.user_email || "",
+      mobile: a.userMobile || a.user_mobile || "",
+      planName: a.planName || a.plan_name || "",
+    }));
   } catch (err) {
     console.log("Get trainer members error:", err);
     throw err;
   }
 };
+
 
 // Trainer assigned to user
 export const getUserAssignment = async () => {
