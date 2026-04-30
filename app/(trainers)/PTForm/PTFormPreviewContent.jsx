@@ -1,143 +1,110 @@
-import React, { useEffect, useState } from 'react';
-import api from '../../api';
+﻿import { ScrollView, Text, View } from 'react-native';
 import dayjs from 'dayjs';
 
-const PTFormPreviewContent = ({ memberId }) => {
-  const [member, setMember] = useState(null);
-  const [ptForm, setPtForm] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!memberId) return;
-      try {
-        setLoading(true);
-        const [memRes, ptRes] = await Promise.all([
-          api.get(`/members/${memberId}`),
-          api.get(`/pt-forms/${memberId}`)
-        ]);
-        setMember(memRes.data);
-        const data = ptRes.data.form_data;
-        setPtForm(typeof data === 'string' ? JSON.parse(data) : data);
-      } catch (err) {
-        console.error("Failed to fetch data for preview", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [memberId]);
-
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center py-20 gap-4">
-      <div className="w-10 h-10 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin" />
-      <p className="text-gray-400 text-xs animate-pulse font-bold uppercase">Fetching Assessment Data...</p>
-    </div>
+const PTFormPreviewContent = ({ formData = {} }) => {
+  const renderRow = (label, value) => (
+    <View className= mb-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3>
+      <Text className=text-white/70 mb-1>{label}</Text>
+      <Text className=text-white>{value ; 'N/A'}</Text>
+    </View>
   );
 
-  if (!member || !ptForm) return (
-    <div className="p-20 text-center text-gray-500">
-      <p className="font-bold">PT Form data not found for this member.</p>
-    </div>
-  );
+  const measurements = formData.measurements ; [];
+  const sessions = formData.sessions ; [];
 
   return (
-    <div className="bg-white text-black font-serif p-8 max-w-4xl mx-auto shadow-inner">
-      <div className="border-2 border-black p-6">
-        {/* Header */}
-        <div className="text-center border-b-2 border-black pb-4 mb-4">
-          <h1 className="text-2xl font-bold uppercase tracking-widest">DAP Unisex Fitness Studio</h1>
-          <p className="text-xs mt-1">Personal Training Registration & Assessment Form</p>
-          <div className="mt-4 flex justify-between text-[10px] font-bold uppercase">
-            <span>Member ID: {member.member_id || member.id}</span>
-            <span>Date: {dayjs(member.pt_form_completed_at || new Date()).format('DD/MM/YYYY')}</span>
-          </div>
-        </div>
+    <ScrollView className=flex-1 bg-[#0f0f0f] px-4 py-4 showsVerticalScrollIndicator={false}>
+      <View className=rounded-3xl border border-white/10 bg-white/5 p-5 mb-4>
+        <Text className=text-center text-xl font-bold text-orange-400>PT Form Preview</Text>
+      </View>
 
-        {/* Section 1: Personal Details */}
-        <div className="mb-6">
-          <h2 className="text-lg font-bold bg-gray-100 p-1 mb-2 border border-black uppercase text-sm">1. Personal Information</h2>
-          <div className="grid grid-cols-2 gap-y-2 text-[11px]">
-            <div className="border-b border-gray-300 pb-1"><span className="font-bold">Full Name:</span> {ptForm.name || member.name}</div>
-            <div className="border-b border-gray-300 pb-1"><span className="font-bold">Gender:</span> {ptForm.gender || member.gender}</div>
-            <div className="border-b border-gray-300 pb-1"><span className="font-bold">Phone:</span> {ptForm.phone || member.phone}</div>
-            <div className="border-b border-gray-300 pb-1"><span className="font-bold">Email:</span> {ptForm.email || member.email}</div>
-            <div className="border-b border-gray-300 pb-1"><span className="font-bold">DOB:</span> {ptForm.dob} ({ptForm.age} yrs)</div>
-            <div className="border-b border-gray-300 pb-1"><span className="font-bold">Blood Group:</span> {ptForm.blood_group}</div>
-            <div className="col-span-2 border-b border-gray-300 pb-1"><span className="font-bold">Address:</span> {ptForm.address}</div>
-            <div className="border-b border-gray-300 pb-1"><span className="font-bold">Occupation:</span> {ptForm.occupation}</div>
-            <div className="border-b border-gray-300 pb-1"><span className="font-bold">Fitness Goal:</span> {ptForm.fitness_goal}</div>
-          </div>
-        </div>
+      <View className=space-y-5>
+        <View className=rounded-3xl border border-white/10 bg-white/5 p-5>
+          <Text className=mb-4 text-base font-bold uppercase text-orange-400>Personal Information</Text>
+          {renderRow('Name', formData.name)}
+          {renderRow('Email', formData.email)}
+          {renderRow('Phone', formData.phone)}
+          {renderRow('DOB', formData.dob)}
+          {renderRow('Age', formData.age)}
+          {renderRow('Gender', formData.gender)}
+          {renderRow('Blood Group', formData.blood_group)}
+          {renderRow('Address', formData.address)}
+          {renderRow('Occupation', formData.occupation)}
+          {renderRow('Fitness Goal', formData.fitness_goal)}
+        </View>
 
-        {/* Section 2: Health History */}
-        <div className="mb-6">
-          <h2 className="text-lg font-bold bg-gray-100 p-1 mb-2 border border-black uppercase text-sm">2. Health History</h2>
-          <div className="text-[11px] space-y-3">
-            <div className="grid grid-cols-2 gap-x-6 gap-y-1">
-              <p><span className="font-bold">Meds:</span> {ptForm.medications}</p>
-              <p><span className="font-bold">Allergies:</span> {ptForm.allergies || "None"}</p>
-              <p className="col-span-2"><span className="font-bold">Surgeries:</span> {ptForm.surgeries1} {ptForm.surgeries2} {ptForm.surgeries3}</p>
-              <p><span className="font-bold">Smoking/Alc:</span> {ptForm.smoking} / {ptForm.alcohol}</p>
-              <p><span className="font-bold">Food:</span> {ptForm.food_preference}</p>
-              <p><span className="font-bold">Exercise Prgm:</span> {ptForm.exercise_program}</p>
-              <p><span className="font-bold">Supplements:</span> {ptForm.supplements}</p>
-            </div>
-          </div>
-        </div>
+        <View className=rounded-3xl border border-white/10 bg-white/5 p-5>
+          <Text className=mb-4 text-base font-bold uppercase text-orange-400>Health History</Text>
+          {renderRow('Medications', formData.medications)}
+          {renderRow('Allergies', formData.allergies)}
+          {renderRow('Surgeries', [formData.surgeries1, formData.surgeries2, formData.surgeries3].filter(Boolean).join(', '))}
+          {renderRow('Exercise Program', formData.exercise_program)}
+          {renderRow('Sports', [formData.sport1, formData.sport2, formData.sport3, formData.sport4, formData.sport5, formData.sport6].filter(Boolean).join(', '))}
+          {renderRow('Smoking', formData.smoking)}
+          {renderRow('Alcohol', formData.alcohol)}
+          {renderRow('Food Preference', formData.food_preference)}
+          {renderRow('Supplements', formData.supplements)}
+        </View>
 
-        {/* Section 3: Clinical Parameters */}
-        <div className="mb-6">
-          <h2 className="text-lg font-bold bg-gray-100 p-1 mb-2 border border-black uppercase text-sm">3. Clinical & Fitness Screening</h2>
-          <div className="grid grid-cols-5 gap-2 text-[10px] text-center">
-            <div className="border border-black p-1"><div className="font-bold">BP</div>{ptForm.bp}</div>
-            <div className="border border-black p-1"><div className="font-bold">Sugar</div>{ptForm.sugar}</div>
-            <div className="border border-black p-1"><div className="font-bold">Chol</div>{ptForm.cholesterol}</div>
-            <div className="border border-black p-1"><div className="font-bold">Height</div>{ptForm.fs_height}</div>
-            <div className="border border-black p-1"><div className="font-bold">Weight</div>{ptForm.fs_weight}</div>
-          </div>
-          <div className="mt-3 text-[10px] grid grid-cols-3 gap-2">
-            <p><span className="font-bold">Push-ups:</span> {ptForm.fs_push_ups_count} ({ptForm.fs_push_ups_level})</p>
-            <p><span className="font-bold">Squats:</span> {ptForm.fs_squats_count} ({ptForm.fs_squats_level})</p>
-            <p><span className="font-bold">Plank:</span> {ptForm.fs_plank_hold_count} ({ptForm.fs_plank_hold_level})</p>
-          </div>
-        </div>
+        <View className=rounded-3xl border border-white/10 bg-white/5 p-5>
+          <Text className=mb-4 text-base font-bold uppercase text-orange-400>Clinical ;& Fitness Screening</Text>
+          {renderRow('Blood Pressure', formData.bp)}
+          {renderRow('Blood Sugar', formData.sugar)}
+          {renderRow('Cholesterol', formData.cholesterol)}
+          {renderRow('Thyroid', formData.thyroid)}
+          {renderRow('Uric Acid', formData.uric)}
+          {renderRow('Serum 3D', formData.serum3d)}
+          {renderRow('Height (cm)', formData.fs_height)}
+          {renderRow('Weight (kg)', formData.fs_weight)}
+          {renderRow('Fat %', formData.fs_fat_percentage)}
+          {renderRow('Fat Level', formData.fs_fat_level)}
+          {renderRow('Speed (km)', formData.fs_speed_km)}
+          {renderRow('Heart Rate', formData.fs_heart_rate)}
+        </View>
 
-        {/* Section 4: Session Tracker */}
-        <div className="mb-6">
-          <h2 className="text-lg font-bold bg-gray-100 p-1 mb-2 border border-black uppercase text-center text-sm">Session Tracker</h2>
-          <table className="w-full border-collapse border border-black text-[8px]">
-            <thead>
-              <tr className="bg-gray-100 font-bold">
-                <th className="border border-black p-1 w-10 text-center">S.No</th>
-                <th className="border border-black p-1 w-20 text-center">Date</th>
-                <th className="border border-black p-1">Workout</th>
-                <th className="border border-black p-1 w-16 text-center">Status</th>
-                <th className="border border-black p-1 w-24 text-center">Client</th>
-                <th className="border border-black p-1 w-24 text-center">Trainer</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(ptForm.sessions || Array(10).fill({})).slice(0, 15).map((session, i) => (
-                <tr key={i} className="h-6">
-                  <td className="border border-black p-1 text-center bg-gray-50 font-bold">{i + 1}</td>
-                  <td className="border border-black p-1 text-center">{session.date ? dayjs(session.date).format('DD/MM/YYYY') : ""}</td>
-                  <td className="border border-black p-1">{session.workout || ""}</td>
-                  <td className="border border-black p-1 text-center text-[7px] font-bold uppercase">{session.status || "Pending"}</td>
-                  <td className="border border-black p-1 text-center italic">{session.client_sign || ""}</td>
-                  <td className="border border-black p-1 text-center font-bold">{session.trainer_sign || ""}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <View className=rounded-3xl border border-white/10 bg-white/5 p-5>
+          <Text className=mb-4 text-base font-bold uppercase text-orange-400>Measurements</Text>
+          {measurements.map((measurement, index) => (
+            <View key={index} className=mb-4 rounded-2xl border border-white/10 bg-white/10 p-4>
+              <Text className=mb-3 text-white/80>Entry {index + 1}</Text>
+              {renderRow('Date', measurement.date)}
+              {renderRow('Height', measurement.height)}
+              {renderRow('Weight', measurement.weight)}
+              {renderRow('Neck', measurement.neck)}
+              {renderRow('Shoulder', measurement.shoulder)}
+              {renderRow('Arm', measurement.arm)}
+              {renderRow('Chest Normal', measurement.chest_normal)}
+              {renderRow('Chest Expanded', measurement.chest_expanded)}
+              {renderRow('Waist', measurement.waist)}
+              {renderRow('Abdomen', measurement.abdomen)}
+              {renderRow('Hip', measurement.hip)}
+              {renderRow('Thigh', measurement.thigh)}
+              {renderRow('Calf', measurement.calf)}
+              {renderRow('Lat', measurement.lat)}
+            </View>
+          ))}
+        </View>
 
-        {/* Footer Branding */}
-        <p className="text-[10px] font-bold text-center uppercase tracking-widest border-t border-black pt-2 mt-4">
-          DAP Fitness Studio - Personal Training Division
-        </p>
-      </div>
-    </div>
+        <View className=rounded-3xl border border-white/10 bg-white/5 p-5>
+          <Text className=mb-4 text-base font-bold uppercase text-orange-400>Session Tracker</Text>
+          {sessions.map((session, index) => (
+            <View key={index} className=mb-4 rounded-2xl border border-white/10 bg-white/10 p-4>
+              <Text className=mb-3 text-white/80>Session {index + 1}</Text>
+              {renderRow('Date', session.date ? dayjs(session.date).format('DD/MM/YYYY') : '')}
+              {renderRow('Workout', session.workout)}
+              {renderRow('Status', session.status)}
+              {renderRow('Client sign', session.client_sign)}
+              {renderRow('Trainer sign', session.trainer_sign)}
+            </View>
+          ))}
+        </View>
+
+        <View className=rounded-3xl border border-white/10 bg-white/5 p-5>
+          <Text className=mb-4 text-base font-bold uppercase text-orange-400>Informed Consent</Text>
+          <Text className=text-white/80>I, {formData.participant_name ; formData.name ; '________________'}, hereby declare that the information above is true and accurate to the best of my knowledge.</Text>
+        </View>
+      </View>
+    </ScrollView>
   );
 };
 
