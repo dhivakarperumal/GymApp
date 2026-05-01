@@ -305,7 +305,7 @@ export default function TrainerDashboard() {
 
                       {m.ptFormCompleted && (
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
-                          <TouchableOpacity
+                          {/* <TouchableOpacity
                             onPress={() => {
                               router.push({
                                 pathname: "/(trainers)/pt-form",
@@ -322,7 +322,7 @@ export default function TrainerDashboard() {
                             }}
                           >
                             <Ionicons name="eye-outline" size={16} color="#3b82f6" />
-                          </TouchableOpacity>
+                          </TouchableOpacity> */}
                           <TouchableOpacity
                             onPress={() => {
                               router.push({
