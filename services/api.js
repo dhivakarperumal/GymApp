@@ -633,5 +633,10 @@ export const getStaff = async () => {
   return res.json();
 };
 
+export const getOffers = async () => {
+  const res = await fetch(`${BASE_URL}/offers`);
+  return res.json();
+};
+
 export default api;
 
