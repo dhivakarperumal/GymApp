@@ -252,35 +252,41 @@ export default function PTFormUser() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
-      {/* PREMIUM HEADER BANNER */}
+      {/* HEADER */}
       <View style={{
-        paddingHorizontal: 20,
+        paddingHorizontal: 16,
         paddingTop: 16,
-        paddingBottom: 24,
+        paddingBottom: 16,
         backgroundColor: "#000",
         borderBottomWidth: 1,
         borderBottomColor: "#111",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
       }}>
-        <BackButton title="PT Form" style={{ marginBottom: 16 }} />
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        {/* Left: Back + Title */}
+        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+          <BackButton style={{ marginRight: 12 }} />
           <View>
-            <Text style={{ color: "#fff", fontSize: 28, fontWeight: "900", letterSpacing: -0.5 }}>PT Form</Text>
-            <Text style={{ color: "#4b5563", fontSize: 12, marginTop: 3, textTransform: "uppercase", letterSpacing: 2 }}>Personal Training Record</Text>
+            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "900", letterSpacing: -0.3 }}>PT Form</Text>
+            <Text style={{ color: "#4b5563", fontSize: 10, textTransform: "uppercase", letterSpacing: 2 }}>Personal Training Record</Text>
           </View>
-          <View style={{
-            width: 48,
-            height: 48,
-            borderRadius: 14,
-            backgroundColor: "#e11d1d",
-            alignItems: "center",
-            justifyContent: "center",
-            shadowColor: "#e11d1d",
-            shadowOpacity: 0.5,
-            shadowRadius: 12,
-            elevation: 8,
-          }}>
-            <Text style={{ color: "#fff", fontSize: 22 }}>🏋️</Text>
-          </View>
+        </View>
+
+        {/* Right: Icon */}
+        <View style={{
+          width: 44,
+          height: 44,
+          borderRadius: 12,
+          backgroundColor: "#e11d1d",
+          alignItems: "center",
+          justifyContent: "center",
+          shadowColor: "#e11d1d",
+          shadowOpacity: 0.5,
+          shadowRadius: 10,
+          elevation: 8,
+        }}>
+          <Text style={{ fontSize: 20 }}>🏋️</Text>
         </View>
       </View>
 
