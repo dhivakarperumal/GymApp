@@ -217,7 +217,6 @@ function TrainerHeader() {
                   <Text className="text-white text-sm font-semibold">
                     {m.name}
                   </Text>
-
                   <Text className="text-gray-400 text-xs">
                     📧 {m.email}
                   </Text>

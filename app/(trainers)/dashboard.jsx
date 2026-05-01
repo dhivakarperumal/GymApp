@@ -179,7 +179,10 @@ export default function TrainerDashboard() {
           <View className="items-center justify-center py-16">
             <Ionicons name="people-outline" size={52} color="#444" />
             <Text className="text-gray-500 text-base mt-4 text-center">
-              No members assigned yet.{"\n"}Pull down to refresh.
+              No members assigned yet.
+            </Text>
+            <Text className="text-gray-500 text-sm text-center">
+              Pull down to refresh.
             </Text>
           </View>
         ) : (
@@ -279,14 +282,16 @@ export default function TrainerDashboard() {
                             params: { member_id: m.gymMemberId || m.userId || m.user_id }
                           });
                         }}
-                        className={`px-3 py-1.5 rounded-xl border ${m.ptFormCompleted
+                        className={`px-3 py-1.5 rounded-xl border ${
+                          m.ptFormCompleted
                             ? "bg-green-500/10 border-green-500/20"
                             : "bg-red-500/10 border-red-500/20"
-                          }`}
+                        }`}
                       >
                         <Text
-                          className={`text-xs font-bold ${m.ptFormCompleted ? "text-green-400" : "text-red-400"
-                            }`}
+                          className={`text-xs font-bold uppercase ${
+                            m.ptFormCompleted ? "text-green-400" : "text-red-400"
+                          }`}
                         >
                           {m.ptFormCompleted ? "Completed" : "Pending"}
                         </Text>
@@ -322,7 +327,7 @@ export default function TrainerDashboard() {
                     </View>
                   </View>
                 </View>
-              </View>
+                </View>
             );
           })
         )}

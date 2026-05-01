@@ -147,7 +147,7 @@ export default function TrainerPricing() {
             <Text style={s.eyebrow}>MEMBERSHIP</Text>
             <Text style={s.headerTitle}>Pricing Plans</Text>
             <Text style={s.headerSub}>
-              All available plans &amp; pricing tiers
+              All available plans & pricing tiers
             </Text>
           </View>
         </View>

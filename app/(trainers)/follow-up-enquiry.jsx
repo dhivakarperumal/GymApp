@@ -619,9 +619,10 @@ export default function FollowupEnquiry() {
                     ) : (
                       <View>
                         {/* Timeline */}
-                        <Text className="text-white font-bold mb-4 flex-row items-center">
-                           <History size={16} color="#ef4444" /> Timeline
-                        </Text>
+                        <View className="flex-row items-center mb-4">
+                           <History size={16} color="#ef4444" />
+                           <Text className="text-white font-bold ml-2">Timeline</Text>
+                        </View>
                         {followupLoading ? (
                           <ActivityIndicator color="red" />
                         ) : (
