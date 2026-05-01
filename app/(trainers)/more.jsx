@@ -6,8 +6,10 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "../../context/AuthContext";
 
 const menuItems = [
   {
@@ -60,11 +62,42 @@ const menuItems = [
     borderAccent: "#10b98130",
   },
 
+  {
+    id: "delete",
+    title: "Delete Account",
+    subtitle: "Permanently remove your account",
+    icon: "trash-outline",
+    route: null,
+    iconBg: "#dc2626",
+    glowBg: "#dc262618",
+    arrowBg: "#dc262620",
+    arrowColor: "#f87171",
+    borderAccent: "#dc262630",
+  },
 ];
-
 
 export default function MoreOptions() {
   const router = useRouter();
+  const { logout } = useAuth();
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action is permanent and cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            // Here you would typically call your delete API
+            await logout();
+            router.replace("/login");
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safe} edges={["left", "right"]}>
@@ -87,7 +120,13 @@ export default function MoreOptions() {
           <TouchableOpacity
             key={item.id}
             activeOpacity={0.8}
-            onPress={() => router.push(item.route)}
+            onPress={() => {
+              if (item.id === "delete") {
+                handleDeleteAccount();
+              } else {
+                router.push(item.route);
+              }
+            }}
             style={[
               styles.card,
               {
@@ -170,31 +209,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 6,
     letterSpacing: 0.2,
-  },
-
-  /* ── Section Header ── */
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-    marginTop: -8,
-  },
-  sectionLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#1f1f1f",
-  },
-  sectionLabelBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    gap: 6,
-  },
-  sectionLabel: {
-    color: "#ff3c00",
-    fontSize: 10,
-    fontWeight: "700",
-    letterSpacing: 1.5,
   },
 
   /* ── Card ── */
