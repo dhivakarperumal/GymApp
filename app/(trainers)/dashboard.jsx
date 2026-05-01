@@ -63,11 +63,11 @@ export default function TrainerDashboard() {
   }, [loadDashboard]);
 
   /* ─── Safe field helpers (matches web field names) ─── */
-  const getName   = (m) => m.username   || m.user_name  || "No Name";
-  const getEmail  = (m) => m.userEmail  || m.user_email || "-";
+  const getName = (m) => m.username || m.user_name || "No Name";
+  const getEmail = (m) => m.userEmail || m.user_email || "-";
   const getMobile = (m) => m.userMobile || m.user_mobile || "-";
-  const getPlan   = (m) => m.planName   || m.plan_name  || "-";
-  const getStatus = (m) => m.status     || "Active";
+  const getPlan = (m) => m.planName || m.plan_name || "-";
+  const getStatus = (m) => m.status || "Active";
 
   const formatDate = (val) => {
     if (!val) return "-";
@@ -78,7 +78,6 @@ export default function TrainerDashboard() {
   /* ─── Stat Card ─── */
   const StatCard = ({ title, value, icon }) => (
     <View
-      style={{ width: "48%" }}
       className="bg-[#141414] rounded-2xl p-5 border border-[#262626] mb-3"
       style={{
         width: "48%",
@@ -157,10 +156,10 @@ export default function TrainerDashboard() {
 
         {/* STATS */}
         <View className="flex-row flex-wrap justify-between mb-2">
-          <StatCard title="Assigned Members"  value={stats.members}       icon="people-outline"     />
-          <StatCard title="Today's Check-ins" value={stats.todayCheckins} icon="calendar-outline"   />
-          <StatCard title="Workout Plans"     value={stats.workoutPlans}  icon="barbell-outline"    />
-          <StatCard title="Diet Plans"        value={stats.dietPlans}     icon="restaurant-outline" />
+          <StatCard title="Assigned Members" value={stats.members} icon="people-outline" />
+          <StatCard title="Today's Check-ins" value={stats.todayCheckins} icon="calendar-outline" />
+          <StatCard title="Workout Plans" value={stats.workoutPlans} icon="barbell-outline" />
+          <StatCard title="Diet Plans" value={stats.dietPlans} icon="restaurant-outline" />
         </View>
 
         {/* MEMBERS SECTION HEADER */}
@@ -185,7 +184,7 @@ export default function TrainerDashboard() {
           </View>
         ) : (
           members.map((m, i) => {
-            const status   = getStatus(m);
+            const status = getStatus(m);
             const isActive = status.toLowerCase() === "active";
 
             return (
@@ -223,14 +222,12 @@ export default function TrainerDashboard() {
 
                   {/* Status Badge */}
                   <View
-                    className={`px-3 py-1 rounded-2xl ${
-                      isActive ? "bg-green-500/20" : "bg-gray-500/20"
-                    }`}
+                    className={`px-3 py-1 rounded-2xl ${isActive ? "bg-green-500/20" : "bg-gray-500/20"
+                      }`}
                   >
                     <Text
-                      className={`text-xs font-bold ${
-                        isActive ? "text-green-400" : "text-gray-400"
-                      }`}
+                      className={`text-xs font-bold ${isActive ? "text-green-400" : "text-gray-400"
+                        }`}
                     >
                       {status}
                     </Text>
@@ -282,16 +279,14 @@ export default function TrainerDashboard() {
                             params: { member_id: m.gymMemberId || m.userId || m.user_id }
                           });
                         }}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase border ${
-                          m.ptFormCompleted
-                            ? "bg-green-500/10 text-green-400 border-green-500/20"
-                            : "bg-red-500/10 text-red-400 border-red-500/20"
-                        }`}
+                        className={`px-3 py-1.5 rounded-xl border ${m.ptFormCompleted
+                            ? "bg-green-500/10 border-green-500/20"
+                            : "bg-red-500/10 border-red-500/20"
+                          }`}
                       >
                         <Text
-                          className={`text-xs font-bold ${
-                            m.ptFormCompleted ? "text-green-400" : "text-red-400"
-                          }`}
+                          className={`text-xs font-bold ${m.ptFormCompleted ? "text-green-400" : "text-red-400"
+                            }`}
                         >
                           {m.ptFormCompleted ? "Completed" : "Pending"}
                         </Text>
@@ -327,7 +322,7 @@ export default function TrainerDashboard() {
                     </View>
                   </View>
                 </View>
-                </View> 
+              </View>
             );
           })
         )}
