@@ -1,8 +1,8 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Header from "../Header";
 import BackButton from "../BackButton";
 import { getAllPlans, getUserMemberships } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
@@ -78,19 +78,30 @@ export default function Pricing() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0f0f0f]">
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+
+      {/* HEADER ROW */}
+      <View style={{
+        paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16,
+        backgroundColor: "#000", borderBottomWidth: 1, borderBottomColor: "#111",
+        flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+          <BackButton style={{ marginRight: 12 }} />
+          <View>
+            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "900", letterSpacing: -0.3 }}>Membership Plans</Text>
+            <Text style={{ color: "#4b5563", fontSize: 10, textTransform: "uppercase", letterSpacing: 2 }}>Choose Your Plan</Text>
+          </View>
+        </View>
+        <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#e11d1d", alignItems: "center", justifyContent: "center", shadowColor: "#e11d1d", shadowOpacity: 0.4, shadowRadius: 10, elevation: 6 }}>
+          <Ionicons name="pricetag-outline" size={20} color="#fff" />
+        </View>
+      </View>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
-        className="flex-1 bg-[#090909] px-5"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40 }}
       >
-        <BackButton style={{ marginTop: 20, marginBottom: 20 }} />
-        {/* Header */}
-        <Text className="text-white text-3xl font-extrabold mb-2">
-          Membership Plans
-        </Text>
-        <Text className="text-gray-400 mb-10">
-          Choose the perfect plan for your fitness journey
-        </Text>
 
         {plans.length === 0 && (
           <Text className="text-gray-400 text-center mt-10">

@@ -5,12 +5,12 @@ import {
   Dimensions,
   TouchableOpacity,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { getAllServices } from "../../services/api";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Header from "../Header";
 import BackButton from "../BackButton";
 
 const { width } = Dimensions.get("window");
@@ -57,22 +57,30 @@ export default function Services() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0a0a0a]">
-      <Header />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+
+      {/* HEADER ROW */}
+      <View style={{
+        paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16,
+        backgroundColor: "#000", borderBottomWidth: 1, borderBottomColor: "#111",
+        flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+          <BackButton style={{ marginRight: 12 }} />
+          <View>
+            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "900", letterSpacing: -0.3 }}>Premium Services</Text>
+            <Text style={{ color: "#4b5563", fontSize: 10, textTransform: "uppercase", letterSpacing: 2 }}>Train Smarter. Train Stronger.</Text>
+          </View>
+        </View>
+        <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#e11d1d", alignItems: "center", justifyContent: "center", shadowColor: "#e11d1d", shadowOpacity: 0.4, shadowRadius: 10, elevation: 6 }}>
+          <Ionicons name="flash-outline" size={20} color="#fff" />
+        </View>
+      </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        className="flex-1 bg-[#0a0a0a] px-5"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40 }}
       >
-        <BackButton style={{ marginTop: 20, marginBottom: 20 }} />
-
-        {/* Header */}
-        <Text className="text-white text-3xl font-extrabold mb-2">
-          Premium Services
-        </Text>
-        <Text className="text-gray-500 mb-10 tracking-wide text-sm">
-          Train smarter. Train stronger.
-        </Text>
 
         {services.length === 0 && (
           <Text className="text-gray-400 text-center mt-10">
