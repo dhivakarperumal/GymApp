@@ -1,11 +1,11 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -15,7 +15,6 @@ import BackButton from "./BackButton";
 import Header from "./Header";
 import EnquiryFormPage from "./pt-form-user/EnquiryFormPage";
 import FitnessScreeningPage from "./pt-form-user/FitnessScreeningPage";
-import FlexibilityAndMeasurementsPage from "./pt-form-user/FlexibilityAndMeasurementsPage";
 import HealthHistory2Page from "./pt-form-user/HealthHistory2Page";
 import HealthHistoryPage from "./pt-form-user/HealthHistoryPage";
 const tabs = [
@@ -361,61 +360,60 @@ export default function PTFormUser() {
 }
 
 
-const FitnessScreeningPage = ({ formData = {}, onNext, onPrevious }) => {
-  return (
-    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-      <View className="p-6 space-y-5">
-        <Text className="text-orange-400 text-xl font-bold">Fitness Screening</Text>
-
-        <View className="bg-[#111] rounded-3xl p-5 space-y-4">
-          {[
-            { label: 'Height', value: formData.height },
-            { label: 'Weight', value: formData.weight },
-            { label: 'Resting HR', value: formData.resting_hr },
-            { label: 'Fat %', value: formData.fat_percentage },
-            { label: 'Fat Level', value: formData.fat_level },
-            { label: 'Speed (km)', value: formData.speed_km },
-            { label: 'Heart Rate', value: formData.heart_rate },
-          ].map((field) => (
-            <View key={field.label} className="space-y-2">
-              <Text className="text-white/80">{field.label}</Text>
-              <Text className="bg-[#1a1a1a] text-white p-4 rounded-2xl">{field.value || '-'}</Text>
-            </View>
-          ))}
-
-          {[
-            { label: 'Push Ups', count: formData.push_ups_count, level: formData.push_ups_level },
-            { label: 'Squats', count: formData.squats_count, level: formData.squats_level },
-            { label: 'Plank Hold', count: formData.plank_hold_count, level: formData.plank_hold_level },
-            { label: 'Shoulder', count: formData.shoulder_count, level: formData.shoulder_level },
-            { label: 'Biceps', count: formData.biceps_count, level: formData.biceps_level },
-            { label: 'Triceps', count: formData.triceps_count, level: formData.triceps_level },
-            { label: 'Curl Ups', count: formData.curl_ups_count, level: formData.curl_ups_level },
-          ].map((item) => (
-            <View key={item.label} className="bg-[#1a1a1a] rounded-2xl p-4">
-              <Text className="text-white/80 mb-2">{item.label}</Text>
-              <Text className="text-white">Count: {item.count || '-'}</Text>
-              <Text className="text-white">Level: {item.level || '-'}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View className="flex-row gap-3 mt-4">
-          <TouchableOpacity onPress={onPrevious} className="flex-1 bg-gray-700 rounded-2xl p-4">
-            <Text className="text-white text-center">Previous</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => onNext(formData)} className="flex-1 bg-orange-600 rounded-2xl p-4">
-            <Text className="text-white text-center">Next</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ScrollView>
-  );
-};
-
 const FlexibilityAndMeasurementsPage = ({ formData = {}, onNext, onPrevious }) => {
-  const measurements = formData.measurements || [
-    { date: '', height: '', weight: '', neck: '', shoulder: '', arm: '', chest_normal: '', chest_expanded: '', waist: '', abdomen: '', hip: '', thigh: '', calf: '', lat: '' },
+  const [localFormData, setLocalFormData] = useState({
+    flex_apley_test: "",
+    flex_ymca_val: "",
+    flex_ymca_test: "",
+    flex_knee_val: "",
+    flex_knee_test: "",
+    measurements: Array(5).fill({
+      date: "",
+      height: "",
+      weight: "",
+      neck: "",
+      shoulder: "",
+      arm: "",
+      chest_normal: "",
+      chest_expanded: "",
+      waist: "",
+      abdomen: "",
+      hip: "",
+      thigh: "",
+      calf: "",
+      lat: "",
+    })
+  });
+
+  useEffect(() => {
+    if (formData) {
+      setLocalFormData((prev) => ({
+        ...prev,
+        flex_apley_test: String(formData.flex_apley_test || "").trim(),
+        flex_ymca_val: formData.flex_ymca_val || "",
+        flex_ymca_test: String(formData.flex_ymca_test || "").trim(),
+        flex_knee_val: formData.flex_knee_val || "",
+        flex_knee_test: String(formData.flex_knee_test || "").trim(),
+        measurements: formData.measurements || prev.measurements
+      }));
+    }
+  }, [formData]);
+
+  const measurementFields = [
+    { label: "Date", key: "date" },
+    { label: "Height (cms)", key: "height" },
+    { label: "Weight", key: "weight" },
+    { label: "Neck", key: "neck" },
+    { label: "Shoulder (cms)", key: "shoulder" },
+    { label: "Arm", key: "arm" },
+    { label: "Chest (Normal)", key: "chest_normal" },
+    { label: "Chest (Expanded)", key: "chest_expanded" },
+    { label: "Waist", key: "waist" },
+    { label: "Abdomen", key: "abdomen" },
+    { label: "Hip", key: "hip" },
+    { label: "Thigh", key: "thigh" },
+    { label: "Calf", key: "calf" },
+    { label: "Lat", key: "lat" },
   ];
 
   return (
@@ -424,38 +422,78 @@ const FlexibilityAndMeasurementsPage = ({ formData = {}, onNext, onPrevious }) =
         <Text className="text-orange-400 text-xl font-bold">Flexibility & Measurements</Text>
 
         <View className="bg-[#111] rounded-3xl p-5 space-y-4">
-          {[
-            { label: 'Apley Test', value: formData.flex_apley_test },
-            { label: 'YMCA Value', value: formData.flex_ymca_val },
-            { label: 'YMCA Result', value: formData.flex_ymca_test },
-            { label: 'Knee Value', value: formData.flex_knee_val },
-            { label: 'Knee Result', value: formData.flex_knee_test },
-          ].map((field) => (
-            <View key={field.label} className="space-y-2">
-              <Text className="text-white/80">{field.label}</Text>
-              <Text className="bg-[#1a1a1a] text-white p-4 rounded-2xl">{field.value || '-'}</Text>
-            </View>
-          ))}
+          {/* FLEXIBILITY */}
+          <View className="space-y-4">
+            <Text className="text-orange-500 font-bold text-sm uppercase tracking-wider">Flexibility</Text>
 
-          <Text className="text-white/80">Measurements</Text>
-          {measurements.map((item, index) => (
-            <View key={index} className="bg-[#1a1a1a] rounded-2xl p-4 space-y-3">
-              <Text className="text-white/80">Session {index + 1}</Text>
-              {Object.entries(item).map(([key, value]) => (
-                <View key={key} className="flex-row justify-between">
-                  <Text className="text-white/80">{key.replace(/_/g, ' ')}</Text>
-                  <Text className="text-white">{value || '-'}</Text>
+            {/* Apley's Scratch test */}
+            <View className="bg-[#1a1a1a] rounded-2xl p-4">
+              <Text className="text-white/80 mb-2">Apley&apos;s Scratch test:</Text>
+              <Text className="text-white">{localFormData.flex_apley_test || "-"}</Text>
+            </View>
+
+            {/* YMCA sit & Reach test */}
+            <View className="bg-[#1a1a1a] rounded-2xl p-4">
+              <Text className="text-white/80 mb-2">YMCA sit & Reach test (normal/back saver):</Text>
+              <Text className="text-white">Value: {localFormData.flex_ymca_val || "-"}</Text>
+              <Text className="text-white">Result: {localFormData.flex_ymca_test || "-"}</Text>
+            </View>
+
+            {/* Knee to Wall Lunge test */}
+            <View className="bg-[#1a1a1a] rounded-2xl p-4">
+              <Text className="text-white/80 mb-2">Knee to Wall Lunge test:</Text>
+              <Text className="text-white">Value: {localFormData.flex_knee_val || "-"}</Text>
+              <Text className="text-white">Result: {localFormData.flex_knee_test || "-"}</Text>
+            </View>
+          </View>
+
+          {/* MEASUREMENTS TABLE */}
+          <View className="space-y-4 pt-4">
+            <Text className="text-orange-500 font-bold text-sm uppercase tracking-wider">Measurements</Text>
+
+            <View className="border border-white/20 rounded-lg overflow-hidden">
+              {/* Header */}
+              <View className="flex-row bg-[#1a1a1a]">
+                <View className="flex-1 p-3 border-r border-white/20">
+                  <Text className="text-white/80 text-center">S.No</Text>
+                </View>
+                <View className="flex-2 p-3 border-r border-white/20">
+                  <Text className="text-white/80">Measurement</Text>
+                </View>
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <View key={num} className="flex-1 p-3 border-r border-white/20 last:border-0">
+                    <Text className="text-orange-400 text-center">{num}</Text>
+                  </View>
+                ))}
+              </View>
+
+              {/* Rows */}
+              {measurementFields.map((field, rowIndex) => (
+                <View key={field.key} className="flex-row border-b border-white/10">
+                  <View className="flex-1 p-3 border-r border-white/20">
+                    <Text className="text-white/70 text-center">{rowIndex + 1}</Text>
+                  </View>
+                  <View className="flex-2 p-3 border-r border-white/20">
+                    <Text className="text-white">{field.label}</Text>
+                  </View>
+                  {[0, 1, 2, 3, 4].map((colIndex) => (
+                    <View key={colIndex} className="flex-1 p-3 border-r border-white/20 last:border-0">
+                      <Text className="text-white text-center">
+                        {localFormData.measurements[colIndex]?.[field.key] || "-"}
+                      </Text>
+                    </View>
+                  ))}
                 </View>
               ))}
             </View>
-          ))}
+          </View>
         </View>
 
         <View className="flex-row gap-3 mt-4">
           <TouchableOpacity onPress={onPrevious} className="flex-1 bg-gray-700 rounded-2xl p-4">
             <Text className="text-white text-center">Previous</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => onNext(formData)} className="flex-1 bg-orange-600 rounded-2xl p-4">
+          <TouchableOpacity onPress={() => onNext(localFormData)} className="flex-1 bg-orange-600 rounded-2xl p-4">
             <Text className="text-white text-center">Next</Text>
           </TouchableOpacity>
         </View>
