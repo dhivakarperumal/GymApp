@@ -5,18 +5,12 @@ import {
     ScrollView,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-import FitnessScreening from "./(trainers)/PTForm/FitnessScreening";
-import FlexibilityAndMeasurements from "./(trainers)/PTForm/FlexibilityAndMeasurements";
-import HealthHistory2 from "./(trainers)/PTForm/HealthHistory2";
-import HealthHistoy from "./(trainers)/PTForm/HealthHistoy";
-import PTFormEnquiry from "./(trainers)/PTForm/PTFormEnquiry";
-import SessionTracker from "./(trainers)/PTForm/SessionTracker";
 import BackButton from "./BackButton";
 import Header from "./Header";
 
@@ -304,18 +298,17 @@ export default function PTFormUser() {
           ) : (
             <View>
               {activeTab === "enquiry" && (
-                <PTFormEnquiry
+                <EnquiryFormPage
                   formData={formData}
                   onNext={(data) => handleEnquirySubmit(data)}
                   onPrevious={() => router.back()}
                   isFirstStep={true}
                   isLastStep={false}
-                  isModal={false}
                 />
               )}
 
               {activeTab === "health1" && (
-                <HealthHistoy
+                <HealthHistoryPage
                   formData={formData}
                   onNext={(data) => handleHealthHistorySubmit(data)}
                   onPrevious={() => setActiveTab("enquiry")}
@@ -324,7 +317,7 @@ export default function PTFormUser() {
               )}
 
               {activeTab === "health2" && (
-                <HealthHistory2
+                <HealthHistory2Page
                   formData={formData}
                   onNext={(data) => handleHealthHistory2Submit(data)}
                   onPrevious={() => setActiveTab("health1")}
@@ -333,32 +326,25 @@ export default function PTFormUser() {
               )}
 
               {activeTab === "fitness" && (
-                <FitnessScreening
-                  initialData={formData}
+                <FitnessScreeningPage
+                  formData={formData}
                   onNext={(data) => handleFitnessSubmit(data)}
                   onPrevious={() => setActiveTab("health2")}
-                  readOnly={true}
                 />
               )}
 
               {activeTab === "flexibility" && (
-                <FlexibilityAndMeasurements
+                <FlexibilityAndMeasurementsPage
                   formData={formData}
                   onNext={(data) => handleFlexibilitySubmit(data)}
                   onPrevious={() => setActiveTab("fitness")}
-                  readOnly={true}
                 />
               )}
 
               {activeTab === "sessions" && (
-                <SessionTracker
+                <SessionTrackerPage
                   formData={formData}
-                  onNext={() => {} }
                   onPrevious={() => setActiveTab("flexibility")}
-                  isFirstStep={false}
-                  isLastStep={true}
-                  readOnly={false}
-                  userMode={true}
                   onSaved={handleSessionSaved}
                 />
               )}
