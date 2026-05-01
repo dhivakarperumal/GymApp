@@ -11,6 +11,7 @@ import {
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { getAllProducts, getOffers, getPlans } from "../../services/api";
 import ProductCard from "../ProductCard";
 
@@ -41,7 +42,6 @@ export default function OffersScreen() {
         getPlans(),
       ]);
 
-      // Create plans map for ID to Name resolution
       const pMap = {};
       if (Array.isArray(plansRes)) {
         plansRes.forEach(p => {
@@ -85,7 +85,11 @@ export default function OffersScreen() {
     const startDate = formatDate(item.start_date);
     const expiryDate = formatDate(item.expiry_date);
     
-    // Resolve plan name from target_id if needed
+    let rawDesc = item.description || item.offer_description || "";
+    if (rawDesc.includes('"error":') || rawDesc.includes("Insert failed")) {
+      rawDesc = "Exclusive deal available for a limited time. Grab it before it's gone!";
+    }
+
     const resolvedPlanName = item.plan_name || (item.target_id ? plansMap[item.target_id] : null);
     
     return (
@@ -103,7 +107,6 @@ export default function OffersScreen() {
           elevation: 10,
         }}
       >
-        {/* IMAGE SECTION */}
         <View style={{ height: 260, position: "relative" }}>
           <Image
             source={{
@@ -116,7 +119,6 @@ export default function OffersScreen() {
           />
           <View style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.2)" }} />
           
-          {/* DISCOUNT BADGE */}
           <View style={{ 
             position: "absolute", 
             bottom: 20, 
@@ -135,13 +137,11 @@ export default function OffersScreen() {
           </View>
         </View>
 
-        {/* CONTENT SECTION */}
         <View style={{ padding: 24, backgroundColor: "#000" }}>
           <Text style={{ color: "#e11d1d", fontSize: 24, fontWeight: "bold", marginBottom: 12 }}>
             {item.offer_name}
           </Text>
 
-          {/* PLAN NAME DISPLAY */}
           {resolvedPlanName && (
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
               <View style={{ width: 18, height: 22, alignItems: "center", justifyContent: "center" }}>
@@ -161,10 +161,9 @@ export default function OffersScreen() {
           )}
 
           <Text style={{ color: "#9ca3af", fontSize: 16, lineHeight: 22, marginBottom: 20 }}>
-            {item.offer_description}
+            {rawDesc}
           </Text>
 
-          {/* DYNAMIC DETAILS: PRICE FOR PRODUCTS, INFO BOX FOR PLANS */}
           {!isPlan && (item.offer_price || item.mrp) ? (
             <View style={{ marginBottom: 24 }}>
                {item.mrp > 0 && (
@@ -193,28 +192,43 @@ export default function OffersScreen() {
             </View>
           )}
 
-          {/* BUTTON */}
+          {/* PREMIUM GRADIENT BUTTON */}
           <Pressable
             onPress={() => {
               if (item.offer_type === "plan") router.push("/Pages/Pricing");
               else router.push("/shop");
             }}
-            style={({ pressed }) => ({
-              backgroundColor: "#e11d1d",
-              paddingVertical: 16,
-              borderRadius: 999,
-              alignItems: "center",
-              justifyContent: "center",
-              shadowColor: "#e11d1d",
-              shadowOpacity: 0.4,
-              shadowRadius: 10,
-              elevation: 8,
-              transform: [{ scale: pressed ? 0.98 : 1 }]
-            })}
           >
-            <Text style={{ color: "white", fontSize: 18, fontWeight: "900", letterSpacing: 1 }}>
-              {isPlan ? "CHOOSE PLAN" : "BUY NOW"}
-            </Text>
+            {({ pressed }) => (
+              <LinearGradient
+                colors={["#e11d1d", "#ff4d4d"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{
+                  paddingVertical: 18,
+                  borderRadius: 20,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  shadowColor: "#e11d1d",
+                  shadowOpacity: 0.6,
+                  shadowRadius: 15,
+                  elevation: 10,
+                  transform: [{ scale: pressed ? 0.97 : 1 }]
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Ionicons 
+                    name={isPlan ? "shield-checkmark-outline" : "flash-outline"} 
+                    size={22} 
+                    color="white" 
+                    style={{ marginRight: 12 }} 
+                  />
+                  <Text style={{ color: "white", fontSize: 18, fontWeight: "900", letterSpacing: 1.5 }}>
+                    {isPlan ? "CHOOSE PLAN" : "CLAIM NOW"}
+                  </Text>
+                </View>
+              </LinearGradient>
+            )}
           </Pressable>
         </View>
       </View>

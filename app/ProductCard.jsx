@@ -1,6 +1,7 @@
 import { View, Text, Image, TouchableOpacity, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -34,56 +35,55 @@ export default function ProductCard({ item, grid }) {
     >
       <View
         style={{
-          borderRadius: 28,
+          borderRadius: 24,
           overflow: "hidden",
           backgroundColor: "#111",
-          borderWidth: 1.5,
+          borderWidth: 1.2,
           borderColor: "#222",
           shadowColor: "#e11d1d",
-          shadowOpacity: 0.15,
-          shadowRadius: 20,
-          elevation: 10,
+          shadowOpacity: 0.1,
+          shadowRadius: 15,
+          elevation: 8,
         }}
       >
         {/* IMAGE AREA */}
-        <View style={{ position: "relative", height: grid ? 160 : 200 }}>
+        <View style={{ position: "relative", height: grid ? 150 : 180 }}>
           <Image
             source={{ uri: imageUrl }}
             style={{ width: "100%", height: "100%" }}
             resizeMode="cover"
           />
-          {/* Subtle overlay for text readability */}
-          <View style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.1)" }} />
+          <View style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.05)" }} />
           
           {/* CATEGORY TAG */}
           <View style={{ 
             position: "absolute", 
-            top: 12, 
-            left: 12, 
-            backgroundColor: "rgba(15, 15, 15, 0.8)", 
-            paddingHorizontal: 10, 
-            paddingVertical: 4, 
-            borderRadius: 12, 
-            borderWidth: 1, 
-            borderColor: "rgba(225, 29, 29, 0.4)" 
+            top: 10, 
+            left: 10, 
+            backgroundColor: "rgba(10, 10, 10, 0.8)", 
+            paddingHorizontal: 8, 
+            paddingVertical: 3, 
+            borderRadius: 8, 
+            borderWidth: 0.5, 
+            borderColor: "rgba(225, 29, 29, 0.3)" 
           }}>
-            <Text style={{ color: "#fff", fontSize: 9, fontWeight: "bold", textTransform: "uppercase", letterSpacing: 0.5 }}>
+            <Text style={{ color: "#fff", fontSize: 8, fontWeight: "900", textTransform: "uppercase" }}>
               {item.category}
             </Text>
           </View>
 
-          {/* DISCOUNT PERCENTAGE */}
+          {/* DISCOUNT BADGE */}
           {hasDiscount && (
             <View style={{ 
               position: "absolute", 
-              top: 12, 
-              right: 12, 
+              top: 10, 
+              right: 10, 
               backgroundColor: "#e11d1d", 
-              paddingHorizontal: 8, 
-              paddingVertical: 4, 
-              borderRadius: 8,
+              paddingHorizontal: 6, 
+              paddingVertical: 3, 
+              borderRadius: 6,
             }}>
-              <Text style={{ color: "white", fontSize: 10, fontWeight: "900" }}>
+              <Text style={{ color: "white", fontSize: 9, fontWeight: "900" }}>
                 {Math.round(((oldPrice - price) / oldPrice) * 100)}%
               </Text>
             </View>
@@ -91,63 +91,61 @@ export default function ProductCard({ item, grid }) {
         </View>
 
         {/* CONTENT AREA */}
-        <View style={{ padding: 16, backgroundColor: "#141414" }}>
+        <View style={{ padding: 12, backgroundColor: "#141414" }}>
           <Text
             numberOfLines={1}
-            style={{ color: "white", fontSize: 15, fontWeight: "bold", marginBottom: 6, letterSpacing: 0.2 }}
+            style={{ color: "white", fontSize: 14, fontWeight: "bold", marginBottom: 4 }}
           >
             {item.name}
           </Text>
 
           {/* RATING */}
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-            <View style={{ flexDirection: "row", marginRight: 6 }}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Ionicons
-                  key={star}
-                  name={star <= (item.rating || item.ratings || 0) ? "star" : "star-outline"}
-                  size={12}
-                  color="#e11d1d"
-                  style={{ marginRight: 1 }}
-                />
-              ))}
-            </View>
-            <Text style={{ color: "#6b7280", fontSize: 11, fontWeight: "600" }}>
-              {(item.rating || item.ratings || 0).toFixed ? (item.rating || item.ratings || 0).toFixed(1) : item.rating || item.ratings || 0}
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+            <Ionicons name="star" size={10} color="#e11d1d" />
+            <Text style={{ color: "#6b7280", fontSize: 10, fontWeight: "700", marginLeft: 4 }}>
+              {(item.rating || item.ratings || 0).toFixed(1)}
             </Text>
           </View>
 
-          {/* PRICE & ACTION */}
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
-            <View>
-              <Text style={{ color: "#fff", fontSize: 18, fontWeight: "900" }}>
-                ₹ {price}
+          {/* PRICE */}
+          <View style={{ marginBottom: 14 }}>
+            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "900" }}>
+              ₹ {price}
+            </Text>
+            {hasDiscount && (
+              <Text style={{ color: "#4b5563", fontSize: 11, textDecorationLine: "line-through" }}>
+                ₹ {oldPrice}
               </Text>
-              {hasDiscount && (
-                <Text style={{ color: "#4b5563", fontSize: 12, marginTop: 2, textDecorationLine: "line-through" }}>
-                  ₹ {oldPrice}
-                </Text>
-              )}
-            </View>
+            )}
+          </View>
 
-            <TouchableOpacity
-              onPress={() => router.push(`/Shop/${item.id}`)}
+          {/* PREMIUM GRADIENT BUTTON */}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => router.push(`/Shop/${item.id}`)}
+          >
+            <LinearGradient
+              colors={["#e11d1d", "#ff4d4d"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
               style={{
-                backgroundColor: "#e11d1d",
-                width: 40,
-                height: 40,
-                borderRadius: 14,
+                paddingVertical: 10,
+                borderRadius: 12,
+                flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "center",
                 shadowColor: "#e11d1d",
-                shadowOpacity: 0.4,
-                shadowRadius: 8,
-                elevation: 4,
+                shadowOpacity: 0.5,
+                shadowRadius: 10,
+                elevation: 6,
               }}
             >
-              <Ionicons name="cart" size={20} color="white" />
-            </TouchableOpacity>
-          </View>
+              <Ionicons name="cart-outline" size={16} color="white" style={{ marginRight: 6 }} />
+              <Text style={{ color: "white", fontSize: 11, fontWeight: "900", letterSpacing: 0.5 }}>
+                BUY NOW
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>
