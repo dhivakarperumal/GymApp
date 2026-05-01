@@ -242,13 +242,23 @@ export default function PTFormUser() {
     setActiveTab("sessions");
   };
 
-  const handleSessionSaved = (updated) => {
-    setFormData(updated);
-    Toast.show({
-      type: "success",
-      text1: "Sessions Updated",
-      text2: "Session tracker was saved successfully.",
-    });
+  const handleSessionSaved = async (updated) => {
+    try {
+      await savePtForm(updated);
+      setFormData(updated);
+      Toast.show({
+        type: "success",
+        text1: "Sessions Updated",
+        text2: "Session tracker was saved successfully.",
+      });
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Save Failed",
+        text2: "Unable to save session updates.",
+      });
+      console.error("Failed to save session tracker", error);
+    }
   };
 
   return (

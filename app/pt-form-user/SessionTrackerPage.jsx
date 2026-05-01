@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 
 const SessionTrackerPage = ({ formData = {}, onPrevious, onSaved }) => {
   const { user } = useAuth();
   const userName = user?.username || user?.name || "";
-  const trainerName = formData.trainer_name_assigned || formData.trainer_sign || userName;
+  const trainerName = formData.trainer_name_assigned || formData.trainer_sign || "";
 
   const [sessions, setSessions] = useState(
     formData.sessions?.length > 0
@@ -111,25 +111,12 @@ const SessionTrackerPage = ({ formData = {}, onPrevious, onSaved }) => {
 
               <View>
                 <Text className="text-white/80 mb-2">Date</Text>
-                <TextInput
-                  value={session.date}
-                  onChangeText={(value) => handleSessionChange(index, "date", value)}
-                  placeholder="YYYY-MM-DD"
-                  placeholderTextColor="#999"
-                  className="bg-[#000] text-white rounded-2xl p-4"
-                />
+                <Text className="bg-[#000] text-white rounded-2xl p-4">{session.date || "-"}</Text>
               </View>
 
               <View>
                 <Text className="text-white/80 mb-2">Workout</Text>
-                <TextInput
-                  value={session.workout}
-                  onChangeText={(value) => handleSessionChange(index, "workout", value)}
-                  placeholder="Describe the workout session"
-                  placeholderTextColor="#999"
-                  className="bg-[#000] text-white rounded-2xl p-4"
-                  multiline
-                />
+                <Text className="bg-[#000] text-white rounded-2xl p-4">{session.workout || "-"}</Text>
               </View>
 
               <View className="flex-row gap-4">
