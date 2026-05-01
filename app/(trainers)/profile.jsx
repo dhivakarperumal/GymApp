@@ -11,6 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const API_BASE = "https://mygym.qtechx.com/api";
 
@@ -74,10 +75,11 @@ export default function Profile() {
   }
 
   return (
-    <ScrollView
-      className="flex-1 bg-black"
-      contentContainerStyle={{ paddingBottom: 40 }}
-    >
+    <SafeAreaView className="flex-1 bg-black" edges={["top", "left", "right"]}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
       <View className="bg-[#111] pt-12 pb-10 px-6 rounded-b-[40px]">
         <TouchableOpacity 
           onPress={() => router.back()} 
@@ -293,6 +295,7 @@ export default function Profile() {
 
         </TouchableOpacity>
       </Modal>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }

@@ -123,7 +123,7 @@ export default function TrainerPricing() {
   }
 
   return (
-    <SafeAreaView style={s.safe} edges={["left", "right"]}>
+    <SafeAreaView style={s.safe} edges={["top", "left", "right"]}>
       <ScrollView
         style={s.scroll}
         contentContainerStyle={s.scrollContent}
@@ -144,11 +144,7 @@ export default function TrainerPricing() {
             <Ionicons name="arrow-back" size={20} color="white" />
           </TouchableOpacity>
           <View style={s.headerTextBlock}>
-            <Text style={s.eyebrow}>MEMBERSHIP</Text>
             <Text style={s.headerTitle}>Pricing Plans</Text>
-            <Text style={s.headerSub}>
-              All available plans & pricing tiers
-            </Text>
           </View>
         </View>
 

@@ -1,57 +1,48 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  ScrollView,
-  FlatList,
-  ActivityIndicator,
-  Modal,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-import {
-  Plus,
-  Search,
-  Eye,
-  Trash2,
-  X,
-  ChevronLeft,
-  ChevronRight,
-  MessageSquare,
-  Phone,
-  Mail,
-  Calendar,
-  User,
-  History,
-  Edit2,
-  ChevronDown,
-  FileText,
-  Download,
-  Info,
-} from "lucide-react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import dayjs from "dayjs";
-import * as XLSX from "xlsx";
-import * as DocumentPicker from "expo-document-picker";
-import Toast from "react-native-toast-message";
+import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
+import dayjs from "dayjs";
+import * as DocumentPicker from "expo-document-picker";
+import { useRouter } from "expo-router";
+import {
+  ChevronRight,
+  FileText,
+  History,
+  Info,
+  Mail,
+  Phone,
+  Plus,
+  Search,
+  Trash2,
+  User,
+  X
+} from "lucide-react-native";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Modal,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
+import * as XLSX from "xlsx";
 
-import api, {
-  getFollowups,
-  createFollowup,
-  updateFollowup,
-  getFollowupInteractions,
-  createFollowupInteraction,
-  getPlans,
-  getStaff,
-} from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
+import api, {
+  createFollowup,
+  createFollowupInteraction,
+  getFollowupInteractions,
+  getFollowups,
+  getPlans,
+  updateFollowup
+} from "../../services/api";
 
 export default function FollowupEnquiry() {
   const { user, role } = useAuth();
@@ -281,7 +272,7 @@ export default function FollowupEnquiry() {
             try {
               await createFollowup(payload);
               successCount++;
-            } catch (err) {}
+            } catch (err) { }
           }
         }
         Toast.show({ type: "success", text1: `Imported ${successCount} leads!` });
@@ -378,30 +369,21 @@ export default function FollowupEnquiry() {
     <SafeAreaView className="flex-1 bg-black" edges={["top", "left", "right"]}>
       <View className="flex-1 px-4 pt-4">
         <View className="flex-row items-center mb-6">
-          <TouchableOpacity 
-            onPress={() => router.back()} 
+          <TouchableOpacity
+            onPress={() => router.back()}
             className="w-10 h-10 bg-[#1a1a1a] rounded-full items-center justify-center mr-3 border border-white/10"
           >
-            <ChevronLeft size={24} color="white" />
+            <Ionicons name="arrow-back" size={20} color="white" />
           </TouchableOpacity>
           <Text className="text-white text-2xl font-bold flex-1">Follow-up Enquiry</Text>
           <View className="flex-row gap-2">
-             <TouchableOpacity
+            <TouchableOpacity
               onPress={handleExcelImport}
               className="w-10 h-10 bg-indigo-600/20 rounded-full items-center justify-center border border-indigo-600/30"
             >
               <FileText size={20} color="#818cf8" />
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                setSelectedEnquiry(null);
-                setShowForm(true);
-                setActiveTab("basic");
-              }}
-              className="w-10 h-10 bg-red-600 rounded-full items-center justify-center"
-            >
-              <Plus size={24} color="white" />
-            </TouchableOpacity>
+           
           </View>
         </View>
 
@@ -419,14 +401,14 @@ export default function FollowupEnquiry() {
           </View>
           <TouchableOpacity
             onPress={() => {
-                // simple status toggle or picker
-                const statuses = ['all', 'pending', 'followup', 'completed', 'cancelled'];
-                const nextIdx = (statuses.indexOf(statusFilter) + 1) % statuses.length;
-                setStatusFilter(statuses[nextIdx]);
+              // simple status toggle or picker
+              const statuses = ['all', 'pending', 'followup', 'completed', 'cancelled'];
+              const nextIdx = (statuses.indexOf(statusFilter) + 1) % statuses.length;
+              setStatusFilter(statuses[nextIdx]);
             }}
             className="bg-[#141414] border border-[#262626] rounded-xl px-4 items-center justify-center"
           >
-             <Text className="text-white text-xs font-bold uppercase">{statusFilter}</Text>
+            <Text className="text-white text-xs font-bold uppercase">{statusFilter}</Text>
           </TouchableOpacity>
         </View>
 
@@ -457,7 +439,7 @@ export default function FollowupEnquiry() {
           <SafeAreaView className="flex-[0.95] bg-[#0a0a0a] rounded-t-[32px] border-t border-[#262626] shadow-2xl overflow-hidden pt-2">
             {/* Grabber */}
             <View className="w-12 h-1.5 bg-[#333] rounded-full self-center mb-2" />
-            
+
             {/* Header */}
             <View className="px-6 py-4 border-b border-[#262626] flex-row justify-between items-center">
               <View>
@@ -481,182 +463,179 @@ export default function FollowupEnquiry() {
               {["basic", "details", "history"]
                 .filter((tab) => selectedEnquiry || tab !== "history")
                 .map((tab) => (
-                <TouchableOpacity
-                  key={tab}
-                  onPress={() => setActiveTab(tab)}
-                  className={`flex-1 py-4 items-center border-b-2 ${
-                    activeTab === tab ? "border-red-600" : "border-transparent"
-                  }`}
-                >
-                  <Text
-                    className={`text-[10px] font-black uppercase tracking-widest ${
-                      activeTab === tab ? "text-red-500" : "text-gray-500"
-                    }`}
+                  <TouchableOpacity
+                    key={tab}
+                    onPress={() => setActiveTab(tab)}
+                    className={`flex-1 py-4 items-center border-b-2 ${activeTab === tab ? "border-red-600" : "border-transparent"
+                      }`}
                   >
-                    {tab}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text
+                      className={`text-[10px] font-black uppercase tracking-widest ${activeTab === tab ? "text-red-500" : "text-gray-500"
+                        }`}
+                    >
+                      {tab}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
             </View>
 
-            <KeyboardAwareScrollView 
-              className="flex-1 p-4" 
+            <KeyboardAwareScrollView
+              className="flex-1 p-4"
               showsVerticalScrollIndicator={false}
               enableOnAndroid={true}
               extraScrollHeight={20}
               keyboardShouldPersistTaps="handled"
             >
-                {activeTab === "basic" && (
-                  <View className="space-y-4">
-                    <FormInput label="Full Name *" value={formData.name} onChange={(v) => setFormData({ ...formData, name: v })} placeholder="Enter name" />
-                    <View className="flex-row gap-2">
-                      <View className="flex-[2]">
-                        <FormDatePicker label="Date of Birth" value={formData.dob} onChange={(v) => {
-                          const newAge = v ? dayjs().diff(dayjs(v), 'year').toString() : formData.age;
-                          setFormData({ ...formData, dob: v, age: newAge });
-                        }} />
-                      </View>
-                      <View className="flex-1">
-                        <FormInput label="Age" value={formData.age?.toString()} onChange={(v) => setFormData({ ...formData, age: v })} keyboardType="numeric" placeholder="25" />
-                      </View>
+              {activeTab === "basic" && (
+                <View className="space-y-4">
+                  <FormInput label="Full Name *" value={formData.name} onChange={(v) => setFormData({ ...formData, name: v })} placeholder="Enter name" />
+                  <View className="flex-row gap-2">
+                    <View className="flex-[2]">
+                      <FormDatePicker label="Date of Birth" value={formData.dob} onChange={(v) => {
+                        const newAge = v ? dayjs().diff(dayjs(v), 'year').toString() : formData.age;
+                        setFormData({ ...formData, dob: v, age: newAge });
+                      }} />
                     </View>
-                    <FormPicker 
-                      label="Gender" 
-                      selectedValue={formData.gender} 
-                      onValueChange={(v) => setFormData({ ...formData, gender: v })}
-                      items={[
-                        { label: "[SELECT]", value: "" },
-                        { label: "Male", value: "Male" },
-                        { label: "Female", value: "Female" },
-                        { label: "Other", value: "Other" },
-                      ]}
-                    />
-                    <FormInput label="Email" value={formData.email} onChange={(v) => setFormData({ ...formData, email: v })} placeholder="email@example.com" keyboardType="email-address" />
-                    <FormInput label="Phone *" value={formData.phone} onChange={(v) => setFormData({ ...formData, phone: v })} placeholder="9876543210" keyboardType="phone-pad" />
-                    <FormInput label="Address" value={formData.address} onChange={(v) => setFormData({ ...formData, address: v })} placeholder="Full address" multiline numberOfLines={3} />
-                    <FormPicker 
-                      label="Blood Group" 
-                      selectedValue={formData.blood_group} 
-                      onValueChange={(v) => setFormData({ ...formData, blood_group: v })}
-                      items={[
-                        { label: "[SELECT]", value: "" },
-                        { label: "A+", value: "A+" },
-                        { label: "A-", value: "A-" },
-                        { label: "B+", value: "B+" },
-                        { label: "B-", value: "B-" },
-                        { label: "AB+", value: "AB+" },
-                        { label: "AB-", value: "AB-" },
-                        { label: "O+", value: "O+" },
-                        { label: "O-", value: "O-" },
-                      ]}
-                    />
+                    <View className="flex-1">
+                      <FormInput label="Age" value={formData.age?.toString()} onChange={(v) => setFormData({ ...formData, age: v })} keyboardType="numeric" placeholder="25" />
+                    </View>
                   </View>
-                )}
+                  <FormPicker
+                    label="Gender"
+                    selectedValue={formData.gender}
+                    onValueChange={(v) => setFormData({ ...formData, gender: v })}
+                    items={[
+                      { label: "[SELECT]", value: "" },
+                      { label: "Male", value: "Male" },
+                      { label: "Female", value: "Female" },
+                      { label: "Other", value: "Other" },
+                    ]}
+                  />
+                  <FormInput label="Email" value={formData.email} onChange={(v) => setFormData({ ...formData, email: v })} placeholder="email@example.com" keyboardType="email-address" />
+                  <FormInput label="Phone *" value={formData.phone} onChange={(v) => setFormData({ ...formData, phone: v })} placeholder="9876543210" keyboardType="phone-pad" />
+                  <FormInput label="Address" value={formData.address} onChange={(v) => setFormData({ ...formData, address: v })} placeholder="Full address" multiline numberOfLines={3} />
+                  <FormPicker
+                    label="Blood Group"
+                    selectedValue={formData.blood_group}
+                    onValueChange={(v) => setFormData({ ...formData, blood_group: v })}
+                    items={[
+                      { label: "[SELECT]", value: "" },
+                      { label: "A+", value: "A+" },
+                      { label: "A-", value: "A-" },
+                      { label: "B+", value: "B+" },
+                      { label: "B-", value: "B-" },
+                      { label: "AB+", value: "AB+" },
+                      { label: "AB-", value: "AB-" },
+                      { label: "O+", value: "O+" },
+                      { label: "O-", value: "O-" },
+                    ]}
+                  />
+                </View>
+              )}
 
-                {activeTab === "details" && (
-                  <View className="space-y-4">
-                    {selectedEnquiry && (
-                      <View className="mb-4">
-                        <Text className="text-gray-500 text-[10px] font-black uppercase mb-2 tracking-widest">Reg. No</Text>
-                        <TextInput value={`#F-${selectedEnquiry.id}`} editable={false} className="bg-[#141414] border border-[#262626] text-gray-500 p-4 rounded-2xl" />
-                      </View>
-                    )}
-                    <FormInput label="Organization" value={formData.organization} onChange={(v) => setFormData({ ...formData, organization: v })} placeholder="Company name" />
-                    
-                    <FormInput label="Subject" value={formData.subject} onChange={(v) => setFormData({ ...formData, subject: v })} placeholder="Topic" />
-                    <FormInput label="Message" value={formData.message} onChange={(v) => setFormData({ ...formData, message: v })} placeholder="Notes" multiline numberOfLines={4} />
-                    
-                    <FormPicker 
-                      label="Plan Name" 
-                      selectedValue={formData.plan_name} 
-                      onValueChange={(v) => {
-                        const selectedPlan = plans.find(p => p.name === v);
-                        setFormData({ 
-                          ...formData, 
-                          plan_name: v,
-                          plan_price: selectedPlan ? (selectedPlan.finalPrice || selectedPlan.price)?.toString() : ""
-                        });
-                      }}
-                      items={[
-                        { label: "[SELECT PLAN]", value: "" },
-                        ...plans.map(p => ({ label: `${p.name} - ₹${p.finalPrice || p.price}`, value: p.name }))
-                      ]}
-                    />
-                    <FormInput label="Plan Price" value={formData.plan_price} onChange={(v) => setFormData({ ...formData, plan_price: v })} placeholder="Price" keyboardType="numeric" editable={false} />
-                    <FormInput label="Plan Duration" value={formData.plan_duration} onChange={(v) => setFormData({ ...formData, plan_duration: v })} placeholder="e.g. 3 Months" />
-                    
-                    <FormInput label="Fitness Goal" value={formData.fitness_goal} onChange={(v) => setFormData({ ...formData, fitness_goal: v })} placeholder="e.g. Weight loss" />
-                    <FormInput label="Website" value={formData.website} onChange={(v) => setFormData({ ...formData, website: v })} placeholder="https://" keyboardType="url" />
-                    <View className="flex-row gap-2">
-                      <View className="flex-1">
-                        <FormInput label="Referred By" value={formData.referred_by} onChange={(v) => setFormData({ ...formData, referred_by: v })} placeholder="Name" />
-                      </View>
-                      <View className="flex-1">
-                        <FormInput label="Updated By" value={formData.updated_by} onChange={(v) => setFormData({ ...formData, updated_by: v })} editable={false} />
-                      </View>
+              {activeTab === "details" && (
+                <View className="space-y-4">
+                  {selectedEnquiry && (
+                    <View className="mb-4">
+                      <Text className="text-gray-500 text-[10px] font-black uppercase mb-2 tracking-widest">Reg. No</Text>
+                      <TextInput value={`#F-${selectedEnquiry.id}`} editable={false} className="bg-[#141414] border border-[#262626] text-gray-500 p-4 rounded-2xl" />
                     </View>
+                  )}
+                  <FormInput label="Organization" value={formData.organization} onChange={(v) => setFormData({ ...formData, organization: v })} placeholder="Company name" />
 
-                    <Text className="text-gray-500 text-[10px] font-black uppercase mt-4 mb-2">Status Selection</Text>
-                    <View className="flex-row flex-wrap gap-2">
-                      {["pending", "followup", "completed", "cancelled"].map((s) => (
-                        <TouchableOpacity
-                          key={s}
-                          onPress={() => setFormData({ ...formData, status: s })}
-                          className={`px-4 py-2 rounded-xl border ${
-                            formData.status === s ? "bg-red-600 border-red-600" : "bg-[#141414] border-[#262626]"
+                  <FormInput label="Subject" value={formData.subject} onChange={(v) => setFormData({ ...formData, subject: v })} placeholder="Topic" />
+                  <FormInput label="Message" value={formData.message} onChange={(v) => setFormData({ ...formData, message: v })} placeholder="Notes" multiline numberOfLines={4} />
+
+                  <FormPicker
+                    label="Plan Name"
+                    selectedValue={formData.plan_name}
+                    onValueChange={(v) => {
+                      const selectedPlan = plans.find(p => p.name === v);
+                      setFormData({
+                        ...formData,
+                        plan_name: v,
+                        plan_price: selectedPlan ? (selectedPlan.finalPrice || selectedPlan.price)?.toString() : ""
+                      });
+                    }}
+                    items={[
+                      { label: "[SELECT PLAN]", value: "" },
+                      ...plans.map(p => ({ label: `${p.name} - ₹${p.finalPrice || p.price}`, value: p.name }))
+                    ]}
+                  />
+                  <FormInput label="Plan Price" value={formData.plan_price} onChange={(v) => setFormData({ ...formData, plan_price: v })} placeholder="Price" keyboardType="numeric" editable={false} />
+                  <FormInput label="Plan Duration" value={formData.plan_duration} onChange={(v) => setFormData({ ...formData, plan_duration: v })} placeholder="e.g. 3 Months" />
+
+                  <FormInput label="Fitness Goal" value={formData.fitness_goal} onChange={(v) => setFormData({ ...formData, fitness_goal: v })} placeholder="e.g. Weight loss" />
+                  <FormInput label="Website" value={formData.website} onChange={(v) => setFormData({ ...formData, website: v })} placeholder="https://" keyboardType="url" />
+                  <View className="flex-row gap-2">
+                    <View className="flex-1">
+                      <FormInput label="Referred By" value={formData.referred_by} onChange={(v) => setFormData({ ...formData, referred_by: v })} placeholder="Name" />
+                    </View>
+                    <View className="flex-1">
+                      <FormInput label="Updated By" value={formData.updated_by} onChange={(v) => setFormData({ ...formData, updated_by: v })} editable={false} />
+                    </View>
+                  </View>
+
+                  <Text className="text-gray-500 text-[10px] font-black uppercase mt-4 mb-2">Status Selection</Text>
+                  <View className="flex-row flex-wrap gap-2">
+                    {["pending", "followup", "completed", "cancelled"].map((s) => (
+                      <TouchableOpacity
+                        key={s}
+                        onPress={() => setFormData({ ...formData, status: s })}
+                        className={`px-4 py-2 rounded-xl border ${formData.status === s ? "bg-red-600 border-red-600" : "bg-[#141414] border-[#262626]"
                           }`}
-                        >
-                          <Text className={`text-[10px] font-bold uppercase ${formData.status === s ? "text-white" : "text-gray-500"}`}>
-                            {s}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </View>
-                )}
-
-                {activeTab === "history" && (
-                  <View>
-                    {!selectedEnquiry ? (
-                      <View className="py-20 items-center">
-                        <Info size={32} color="#333" />
-                        <Text className="text-gray-500 text-center mt-4 px-10">
-                          Save the lead first to enable interaction tracking.
+                      >
+                        <Text className={`text-[10px] font-bold uppercase ${formData.status === s ? "text-white" : "text-gray-500"}`}>
+                          {s}
                         </Text>
-                      </View>
-                    ) : (
-                      <View>
-                        {/* Timeline */}
-                        <View className="flex-row items-center mb-4">
-                           <History size={16} color="#ef4444" />
-                           <Text className="text-white font-bold ml-2">Timeline</Text>
-                        </View>
-                        {followupLoading ? (
-                          <ActivityIndicator color="red" />
-                        ) : (
-                          followups.map((f, idx) => (
-                            <View key={idx} className="flex-row mb-6">
-                              <View className="items-center mr-4">
-                                <View className="w-2 h-2 rounded-full bg-red-600" />
-                                <View className="w-[1px] flex-1 bg-[#262626] mt-1" />
-                              </View>
-                              <View className="flex-1 bg-[#141414] border border-[#262626] rounded-2xl p-4">
-                                <View className="flex-row justify-between mb-2">
-                                  <Text className="text-red-500 text-[10px] font-bold">
-                                    {dayjs(f.followup_date).format("MMM DD, HH:mm")}
-                                  </Text>
-                                  <Text className="text-gray-500 text-[10px] font-bold uppercase">{f.status}</Text>
-                                </View>
-                                <Text className="text-white text-sm">{f.notes}</Text>
-                              </View>
-                            </View>
-                          ))
-                        )}
-                      </View>
-                    )}
+                      </TouchableOpacity>
+                    ))}
                   </View>
-                )}
-                <View className="h-40" />
+                </View>
+              )}
+
+              {activeTab === "history" && (
+                <View>
+                  {!selectedEnquiry ? (
+                    <View className="py-20 items-center">
+                      <Info size={32} color="#333" />
+                      <Text className="text-gray-500 text-center mt-4 px-10">
+                        Save the lead first to enable interaction tracking.
+                      </Text>
+                    </View>
+                  ) : (
+                    <View>
+                      {/* Timeline */}
+                      <View className="flex-row items-center mb-4">
+                        <History size={16} color="#ef4444" />
+                        <Text className="text-white font-bold ml-2">Timeline</Text>
+                      </View>
+                      {followupLoading ? (
+                        <ActivityIndicator color="red" />
+                      ) : (
+                        followups.map((f, idx) => (
+                          <View key={idx} className="flex-row mb-6">
+                            <View className="items-center mr-4">
+                              <View className="w-2 h-2 rounded-full bg-red-600" />
+                              <View className="w-[1px] flex-1 bg-[#262626] mt-1" />
+                            </View>
+                            <View className="flex-1 bg-[#141414] border border-[#262626] rounded-2xl p-4">
+                              <View className="flex-row justify-between mb-2">
+                                <Text className="text-red-500 text-[10px] font-bold">
+                                  {dayjs(f.followup_date).format("MMM DD, HH:mm")}
+                                </Text>
+                                <Text className="text-gray-500 text-[10px] font-bold uppercase">{f.status}</Text>
+                              </View>
+                              <Text className="text-white text-sm">{f.notes}</Text>
+                            </View>
+                          </View>
+                        ))
+                      )}
+                    </View>
+                  )}
+                </View>
+              )}
+              <View className="h-40" />
             </KeyboardAwareScrollView>
 
             {/* Footer */}
@@ -681,6 +660,17 @@ export default function FollowupEnquiry() {
           </SafeAreaView>
         </View>
       </Modal>
+      <TouchableOpacity
+        onPress={() => {
+          setSelectedEnquiry(null);
+          setShowForm(true);
+          setActiveTab("basic");
+        }}
+        className="absolute bottom-6 right-6 w-16 h-16 bg-red-600 rounded-full items-center justify-center shadow-xl shadow-red-600/40 elevation-8"
+        activeOpacity={0.8}
+      >
+        <Ionicons name="add" size={32} color="white" />
+      </TouchableOpacity>
       <Toast />
     </SafeAreaView>
   );
@@ -722,7 +712,7 @@ function FormPicker({ label, selectedValue, onValueChange, items }) {
 
 function FormDatePicker({ label, value, onChange }) {
   const [show, setShow] = useState(false);
-  
+
   const handleConfirm = (event, selectedDate) => {
     setShow(Platform.OS === 'ios');
     if (selectedDate) {
@@ -733,7 +723,7 @@ function FormDatePicker({ label, value, onChange }) {
   return (
     <View className="mb-4">
       <Text className="text-gray-500 text-[10px] font-black uppercase mb-2 tracking-widest">{label}</Text>
-      <TouchableOpacity 
+      <TouchableOpacity
         onPress={() => setShow(true)}
         className="bg-[#141414] border border-[#262626] p-4 rounded-2xl h-14 justify-center"
       >

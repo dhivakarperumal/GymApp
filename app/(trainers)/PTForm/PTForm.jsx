@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, View, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../context/AuthContext.js';
 import api from '../../../services/api';
 import FitnessScreening from './FitnessScreening';
@@ -286,7 +287,8 @@ const PTForm = ({ route, navigation }) => {
   const CurrentStepComponent = steps[currentStep].component;
 
   return (
-    <View className="flex-1 bg-[#0f0f0f]">
+    <SafeAreaView className="flex-1 bg-[#0f0f0f]" edges={["top", "left", "right"]}>
+      <View className="flex-1">
       {/* Header */}
       <View className="bg-[#1a1a1a] px-4 py-4 border-b border-white/10 flex-row items-center">
         <TouchableOpacity 
@@ -296,14 +298,13 @@ const PTForm = ({ route, navigation }) => {
           <Ionicons name="arrow-back" size={18} color="white" />
         </TouchableOpacity>
         <View className="flex-1">
-          <Text className="text-white text-lg font-bold text-center">
-            PT Form - Step {currentStep + 1} of {steps.length}
+          <Text className="text-white text-2xl font-bold text-left">
+            PT Form
           </Text>
-          <Text className="text-orange-400 text-sm text-center mt-1">
-            {steps[currentStep].title}
+          <Text className="text-orange-400 text-xs text-left uppercase tracking-widest">
+            Step {currentStep + 1} of {steps.length} • {steps[currentStep].title}
           </Text>
         </View>
-        <View className="w-8" /> {/* Placeholder to center text */}
       </View>
 
       {/* Progress Bar */}
@@ -352,7 +353,8 @@ const PTForm = ({ route, navigation }) => {
           </View>
         </View>
       )}
-    </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
