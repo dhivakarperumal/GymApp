@@ -18,7 +18,6 @@ import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
 import BackButton from "./BackButton";
-import Header from "./Header";
 
 export default function Address() {
 
@@ -232,9 +231,25 @@ export default function Address() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-card">
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
 
-      <Header />
+      {/* HEADER ROW */}
+      <View style={{
+        paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16,
+        backgroundColor: "#000", borderBottomWidth: 1, borderBottomColor: "#111",
+        flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+          <BackButton style={{ marginRight: 12 }} />
+          <View>
+            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "900", letterSpacing: -0.3 }}>My Addresses</Text>
+            <Text style={{ color: "#4b5563", fontSize: 10, textTransform: "uppercase", letterSpacing: 2 }}>Manage Addresses</Text>
+          </View>
+        </View>
+        <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#e11d1d", alignItems: "center", justifyContent: "center", shadowColor: "#e11d1d", shadowOpacity: 0.4, shadowRadius: 10, elevation: 6 }}>
+          <Ionicons name="location-outline" size={20} color="#fff" />
+        </View>
+      </View>
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "padding"}
@@ -243,10 +258,8 @@ export default function Address() {
         <ScrollView
           className="flex-1 px-5"
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
+          contentContainerStyle={{ paddingBottom: 40, flexGrow: 1, paddingTop: 20 }}
         >
-
-          <BackButton style={{ marginLeft: 20, marginTop: 20 }} />
 
           {/* SAVED ADDRESSES */}
 
