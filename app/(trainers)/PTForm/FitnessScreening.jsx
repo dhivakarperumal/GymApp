@@ -44,7 +44,16 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
   const [manualFat, setManualFat] = useState(false);
 
   useEffect(() => {
-    setForm(prev => ({ ...prev, ...initialData }));
+    const mappedData = {};
+    for (const key in initialData) {
+      if (key.startsWith('fs_')) {
+        const newKey = key.slice(3); // remove 'fs_'
+        mappedData[newKey] = initialData[key];
+      } else {
+        mappedData[key] = initialData[key];
+      }
+    }
+    setForm(prev => ({ ...prev, ...mappedData }));
   }, [initialData]);
 
   const handleChange = (name, value) => {
@@ -76,28 +85,31 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
     setForm(prev => ({ ...prev, fat_level: level }));
   }, [form.fat_percentage, initialData?.gender]);
 
-  const Radio = ({ label, value, name }) => (
-    <TouchableOpacity
-      onPress={() => {
-        if (name === "fat_level") setManualFat(true);
-        handleChange(name, value);
-      }}
-      style={{ flexDirection: "row", alignItems: "center", marginRight: 12 }}
-    >
-      <View
-        style={{
-          width: 16,
-          height: 16,
-          borderRadius: 8,
-          borderWidth: 2,
-          borderColor: form[name] === value ? "#f97316" : "#aaa",
-          backgroundColor: form[name] === value ? "#f97316" : "transparent",
-          marginRight: 6,
+  const Radio = ({ label, value, name }) => {
+    const isSelected = form[name] === value;
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          if (name === "fat_level") setManualFat(true);
+          handleChange(name, value);
         }}
-      />
-      <Text style={{ color: "white" }}>{label}</Text>
-    </TouchableOpacity>
-  );
+        style={{ flexDirection: "row", alignItems: "center", marginRight: 12 }}
+      >
+        <View
+          style={{
+            width: 16,
+            height: 16,
+            borderRadius: 8,
+            borderWidth: 2,
+            borderColor: isSelected ? "#f97316" : "#aaa",
+            backgroundColor: isSelected ? "#f97316" : "transparent",
+            marginRight: 6,
+          }}
+        />
+        <Text style={{ color: "white" }}>{label}</Text>
+      </TouchableOpacity>
+    );
+  };
 
   const MuscleRow = (label, prefix) => (
     <View style={{ marginBottom: 16 }}>
