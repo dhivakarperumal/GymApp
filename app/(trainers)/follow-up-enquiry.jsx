@@ -11,7 +11,6 @@ import {
   Info,
   Mail,
   Phone,
-  Plus,
   Search,
   Trash2,
   User,
@@ -162,7 +161,13 @@ export default function FollowupEnquiry() {
       Toast.show({ type: "success", text1: "Record saved successfully!" });
     } catch (err) {
       console.error("Save record error:", err);
-      Toast.show({ type: "error", text1: "Error saving record" });
+      let errorMsg = err?.response?.data?.message || "Error saving record";
+
+      if (errorMsg.includes("Email or mobile already exists")) {
+        errorMsg = "Email or Mobile number already registered!";
+      }
+
+      Toast.show({ type: "error", text1: errorMsg });
     }
   };
 
@@ -386,7 +391,7 @@ export default function FollowupEnquiry() {
             >
               <FileText size={20} color="#818cf8" />
             </TouchableOpacity>
-           
+
           </View>
         </View>
 

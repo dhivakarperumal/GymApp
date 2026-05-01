@@ -21,8 +21,13 @@ function TrainerHeader() {
   const { logout } = useAuth();
 
   const confirmLogout = async () => {
-    setLogoutModalVisible(false);
-    await logout();
+    try {
+      setLogoutModalVisible(false);
+      await logout();
+      router.replace("/login");
+    } catch (error) {
+      console.log("Trainer logout error:", error);
+    }
   };
 
   useEffect(() => {

@@ -77,9 +77,16 @@ const RegisterScreen = () => {
       router.push("/login"); // ✅ Expo Router navigation
     } catch (err) {
       console.log("registration error", err);
+      let errorMsg = err?.response?.data?.message || "Registration failed";
+
+      // 🔹 Better feedback for duplicate entries
+      if (errorMsg.includes("Email or mobile already exists")) {
+        errorMsg = "Email or Mobile number already registered!";
+      }
+
       Toast.show({
         type: "error",
-        text1: err?.response?.data?.message || "Registration failed",
+        text1: errorMsg,
       });
     } finally {
       setLoading(false);
@@ -162,6 +169,7 @@ const RegisterScreen = () => {
                       className="flex-1 py-5 px-3 text-black"
                     />
                   </View>
+
 
                   {/* MOBILE NUMBER */}
                   <Text className="text-gray-400 text-sm mb-2">MOBILE NUMBER</Text>

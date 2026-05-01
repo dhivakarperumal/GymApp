@@ -35,7 +35,7 @@ const getDistance = (lat1, lon1, lat2, lon2) => {
 };
 
 export default function TrainerCheckInScreen() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
@@ -45,6 +45,20 @@ export default function TrainerCheckInScreen() {
       .charAt(0)
       .toUpperCase() +
     (user?.name || user?.username || "Trainer").slice(1);
+
+  const handleLogout = async () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await logout();
+          router.replace("/login");
+        },
+      },
+    ]);
+  };
 
   const handleCheckIn = async () => {
     try {
@@ -113,7 +127,15 @@ export default function TrainerCheckInScreen() {
     <View className="flex-1 bg-black justify-center px-6">
       
       {/* CARD */}
-      <View className="bg-[#141414] border border-[#262626] rounded-3xl p-6">
+      <View className="bg-[#141414] border border-[#262626] rounded-3xl p-6 relative">
+        
+        {/* LOGOUT BUTTON */}
+        <TouchableOpacity 
+          onPress={handleLogout}
+          className="absolute top-4 right-4 z-10 p-2"
+        >
+          <Ionicons name="log-out-outline" size={24} color="#ef4444" />
+        </TouchableOpacity>
 
         {/* ICON */}
         <View className="w-16 h-16 rounded-full bg-primary/20 items-center justify-center mb-5 self-center">

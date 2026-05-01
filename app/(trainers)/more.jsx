@@ -61,13 +61,37 @@ const menuItems = [
     arrowColor: "#34d399",
     borderAccent: "#10b98130",
   },
-
- 
+  {
+    id: "logout",
+    title: "Logout",
+    subtitle: "Sign out of your account",
+    icon: "log-out",
+    route: "/logout",
+    iconBg: "#ef4444",
+    glowBg: "#ef444418",
+    arrowBg: "#ef444420",
+    arrowColor: "#f87171",
+    borderAccent: "#ef444430",
+  },
 ];
 
 export default function MoreOptions() {
   const router = useRouter();
   const { logout } = useAuth();
+
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await logout();
+          router.replace("/login");
+        },
+      },
+    ]);
+  };
 
   const handleDeleteAccount = () => {
     Alert.alert(
@@ -105,6 +129,8 @@ export default function MoreOptions() {
             onPress={() => {
               if (item.id === "delete") {
                 handleDeleteAccount();
+              } else if (item.id === "logout") {
+                handleLogout();
               } else {
                 router.push(item.route);
               }
