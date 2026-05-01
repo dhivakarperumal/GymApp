@@ -58,7 +58,7 @@ export default function OffersScreen() {
   };
 
   const renderOfferItem = ({ item }) => {
-    // Check for both possible field names from backend
+    const isPlan = item.offer_type === "plan";
     const discount = item.discount_percentage || item.offer_percentage || 0;
     
     return (
@@ -69,10 +69,10 @@ export default function OffersScreen() {
           overflow: "hidden",
           backgroundColor: "#000",
           borderWidth: 1.5,
-          borderColor: "#1a1a1a",
+          borderColor: "#222",
           shadowColor: "#e11d1d",
           shadowOpacity: 0.15,
-          shadowRadius: 25,
+          shadowRadius: 20,
           elevation: 10,
         }}
       >
@@ -87,77 +87,65 @@ export default function OffersScreen() {
             style={{ width: "100%", height: "100%" }}
             resizeMode="cover"
           />
-          <View style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.15)" }} />
+          <View style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.2)" }} />
           
-          {/* TOP LEFT BADGE (TYPE) */}
-          <View style={{ 
-            position: "absolute", 
-            top: 20, 
-            left: 20, 
-            backgroundColor: "rgba(0,0,0,0.7)", 
-            paddingHorizontal: 12, 
-            paddingVertical: 4, 
-            borderRadius: 10,
-            borderWidth: 1,
-            borderColor: "rgba(225, 29, 29, 0.4)"
-          }}>
-            <Text style={{ color: "#fff", fontSize: 9, fontWeight: "900", textTransform: "uppercase", letterSpacing: 1 }}>
-              {item.offer_type === "plan" ? "EXCLUSIVE PLAN" : "LIMITED DEAL"}
-            </Text>
-          </View>
-
-          {/* LARGE PERCENTAGE BADGE */}
+          {/* DISCOUNT BADGE */}
           <View style={{ 
             position: "absolute", 
             bottom: 20, 
             left: 20, 
             backgroundColor: "#e11d1d", 
-            paddingHorizontal: 18, 
-            paddingVertical: 8, 
-            borderRadius: 12,
-            shadowColor: "#000",
-            shadowOpacity: 0.4,
+            paddingHorizontal: 16, 
+            paddingVertical: 10, 
+            borderRadius: 16,
+            shadowColor: "#e11d1d",
+            shadowOpacity: 0.6,
             shadowRadius: 10,
           }}>
-            <Text style={{ color: "white", fontSize: 24, fontWeight: "900", letterSpacing: -1 }}>
-              {parseFloat(discount).toFixed(2)}% OFF
+            <Text style={{ color: "white", fontSize: 22, fontWeight: "900" }}>
+              {Math.round(discount)}% OFF
             </Text>
           </View>
         </View>
 
         {/* CONTENT SECTION */}
-        <View style={{ padding: 24, backgroundColor: "#111" }}>
-          <Text style={{ color: "#fff", fontSize: 22, fontWeight: "bold", marginBottom: 4 }}>
+        <View style={{ padding: 24, backgroundColor: "#000" }}>
+          <Text style={{ color: "#e11d1d", fontSize: 24, fontWeight: "bold", marginBottom: 12 }}>
             {item.offer_name}
           </Text>
 
-          {/* PLAN NAME / DETAILS */}
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
-            <MaterialCommunityIcons name="shield-check" size={14} color="#e11d1d" />
-            <Text style={{ color: "#e11d1d", fontSize: 11, fontWeight: "900", marginLeft: 6, textTransform: "uppercase", letterSpacing: 1.5 }}>
-               {item.plan_name || "MEMBER SPECIAL"}
-            </Text>
-          </View>
-
-          <Text style={{ color: "#9ca3af", fontSize: 14, lineHeight: 20, marginBottom: 24 }} numberOfLines={3}>
+          <Text style={{ color: "#9ca3af", fontSize: 16, lineHeight: 22, marginBottom: 20 }}>
             {item.offer_description}
           </Text>
 
-          {/* VALIDITY & CONTACT CONTAINER */}
-          <View style={{ backgroundColor: "#0a0a0a", padding: 16, borderRadius: 16, marginBottom: 24, borderWidth: 1, borderColor: "#1a1a1a" }}>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-              <Ionicons name="calendar-outline" size={14} color="#e11d1d" />
-              <Text style={{ color: "#6b7280", fontSize: 13, marginLeft: 10 }}>
-                Expires: <Text style={{ color: "#fff", fontWeight: "600" }}>{item.expiry_date || "Jun 01, 2026"}</Text>
-              </Text>
+          {/* DYNAMIC DETAILS: PRICE FOR PRODUCTS, INFO BOX FOR PLANS */}
+          {!isPlan && (item.offer_price || item.mrp) ? (
+            <View style={{ marginBottom: 24 }}>
+               {item.mrp > 0 && (
+                 <Text style={{ color: "#4b5563", fontSize: 18, textDecorationLine: "line-through", marginBottom: 4 }}>
+                   ₹{item.mrp}
+                 </Text>
+               )}
+               <Text style={{ color: "#e11d1d", fontSize: 32, fontWeight: "bold" }}>
+                 ₹{item.offer_price || item.mrp}
+               </Text>
             </View>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Ionicons name="call-outline" size={14} color="#e11d1d" />
-              <Text style={{ color: "#6b7280", fontSize: 13, marginLeft: 10 }}>
-                Contact: <Text style={{ color: "#fff", fontWeight: "600" }}>{item.contact || "8056870767"}</Text>
-              </Text>
+          ) : (
+            <View style={{ marginBottom: 24 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#e11d1d", marginRight: 12 }} />
+                <Text style={{ color: "#9ca3af", fontSize: 15 }}>
+                  Valid: <Text style={{ color: "#fff" }}>{item.start_date || "May 01"} – {item.expiry_date || "Jun 01"}</Text>
+                </Text>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#e11d1d", marginRight: 12 }} />
+                <Text style={{ color: "#9ca3af", fontSize: 15 }}>
+                  Contact: <Text style={{ color: "#e11d1d" }}>{item.contact || "8056870767"}</Text>
+                </Text>
+              </View>
             </View>
-          </View>
+          )}
 
           {/* BUTTON */}
           <Pressable
@@ -166,9 +154,9 @@ export default function OffersScreen() {
               else router.push("/shop");
             }}
             style={({ pressed }) => ({
-              backgroundColor: pressed ? "#991b1b" : "#e11d1d",
+              backgroundColor: "#e11d1d",
               paddingVertical: 16,
-              borderRadius: 16,
+              borderRadius: 999,
               alignItems: "center",
               justifyContent: "center",
               shadowColor: "#e11d1d",
@@ -178,8 +166,8 @@ export default function OffersScreen() {
               transform: [{ scale: pressed ? 0.98 : 1 }]
             })}
           >
-            <Text style={{ color: "white", fontSize: 16, fontWeight: "900", letterSpacing: 2 }}>
-              {item.offer_type === "plan" ? "ACTIVATE NOW" : "CLAIM DEAL"}
+            <Text style={{ color: "white", fontSize: 18, fontWeight: "900", letterSpacing: 1 }}>
+              {isPlan ? "CHOOSE PLAN" : "BUY NOW"}
             </Text>
           </Pressable>
         </View>
@@ -196,7 +184,7 @@ export default function OffersScreen() {
           <Text style={{ color: "#6b7280", fontSize: 12, textTransform: "uppercase", letterSpacing: 4, marginTop: 4 }}>Exclusive Deals For You</Text>
         </View>
 
-        <View style={{ flexDirection: "row", marginBottom: 24, backgroundColor: "#111", padding: 6, borderRadius: 18, borderWidth: 1, borderColor: "#222" }}>
+        <View style={{ flexDirection: "row", marginBottom: 24, backgroundColor: "#111", padding: 6, borderRadius: 20, borderWidth: 1, borderColor: "#222" }}>
           {[
             { id: "offers", label: "Special Offers", icon: "flash-outline" },
             { id: "products", label: "Shop Offers", icon: "cart-outline" }
@@ -208,7 +196,7 @@ export default function OffersScreen() {
                 flex: 1,
                 flexDirection: "row",
                 paddingVertical: 14,
-                borderRadius: 14,
+                borderRadius: 16,
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: activeTab === tab.id ? "#e11d1d" : "transparent",
@@ -216,7 +204,7 @@ export default function OffersScreen() {
             >
               <Ionicons 
                 name={tab.icon} 
-                size={16} 
+                size={18} 
                 color={activeTab === tab.id ? "white" : "#666"} 
                 style={{ marginRight: 8 }}
               />
@@ -241,9 +229,15 @@ export default function OffersScreen() {
           </View>
         ) : (
           <FlatList
+            key={activeTab}
             data={activeTab === "offers" ? offers : offerProducts}
             keyExtractor={(item) => item.id.toString()}
-            renderItem={activeTab === "offers" ? renderOfferItem : ({ item }) => <ProductCard item={item} grid={false} />}
+            numColumns={activeTab === "offers" ? 1 : 2}
+            columnWrapperStyle={activeTab === "products" ? { justifyContent: "space-between" } : null}
+            renderItem={activeTab === "offers" 
+              ? renderOfferItem 
+              : ({ item }) => <ProductCard item={item} grid={true} />
+            }
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 100 }}
             refreshControl={

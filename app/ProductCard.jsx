@@ -84,7 +84,7 @@ export default function ProductCard({ item, grid }) {
               borderRadius: 8,
             }}>
               <Text style={{ color: "white", fontSize: 10, fontWeight: "900" }}>
-                -{Math.round(((oldPrice - price) / oldPrice) * 100)}%
+                {Math.round(((oldPrice - price) / oldPrice) * 100)}%
               </Text>
             </View>
           )}
