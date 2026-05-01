@@ -1,14 +1,14 @@
-import React, { useEffect, useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  ActivityIndicator,
-  TouchableOpacity,
-  RefreshControl,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import { getTrainerDashboard } from "../../services/api";
 
@@ -271,10 +271,10 @@ export default function TrainerDashboard() {
                 </View>
 
                 {/* Row 4: PT Form Status */}
-                <View className="mt-3 pt-3 border-t border-[#262626]">
-                  <View className="flex-row items-center justify-between">
-                    <Text className="text-gray-400 text-sm">PT Form</Text>
-                    <View className="flex-row items-center gap-2">
+                <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#262626' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Text style={{ color: '#9ca3af', fontSize: 14 }}>PT Form</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                       <TouchableOpacity
                         onPress={() => {
                           router.push({
@@ -282,35 +282,47 @@ export default function TrainerDashboard() {
                             params: { member_id: m.gymMemberId || m.userId || m.user_id }
                           });
                         }}
-                        className={`px-3 py-1.5 rounded-xl border ${
-                          m.ptFormCompleted
-                            ? "bg-green-500/10 border-green-500/20"
-                            : "bg-red-500/10 border-red-500/20"
-                        }`}
+                        style={{
+                          paddingVertical: 6,
+                          paddingHorizontal: 12,
+                          borderRadius: 24,
+                          borderWidth: 1,
+                          borderColor: m.ptFormCompleted ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                          backgroundColor: m.ptFormCompleted ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                        }}
                       >
                         <Text
-                          className={`text-xs font-bold uppercase ${
-                            m.ptFormCompleted ? "text-green-400" : "text-red-400"
-                          }`}
+                          style={{
+                            fontSize: 10,
+                            fontWeight: '700',
+                            textTransform: 'uppercase',
+                            color: m.ptFormCompleted ? '#4ade80' : '#f87171',
+                          }}
                         >
                           {m.ptFormCompleted ? "Completed" : "Pending"}
                         </Text>
                       </TouchableOpacity>
 
                       {m.ptFormCompleted && (
-                        <View className="flex-row gap-1">
-                          <TouchableOpacity
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
+                          {/* <TouchableOpacity
                             onPress={() => {
-                              // For now, navigate to edit - could be enhanced to show view modal
                               router.push({
                                 pathname: "/(trainers)/pt-form",
                                 params: { member_id: m.gymMemberId || m.userId || m.user_id }
                               });
                             }}
-                            className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20"
+                            style={{
+                              padding: 8,
+                              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                              borderRadius: 12,
+                              borderWidth: 1,
+                              borderColor: 'rgba(59, 130, 246, 0.2)',
+                              marginRight: 8,
+                            }}
                           >
                             <Ionicons name="eye-outline" size={16} color="#3b82f6" />
-                          </TouchableOpacity>
+                          </TouchableOpacity> */}
                           <TouchableOpacity
                             onPress={() => {
                               router.push({
@@ -318,7 +330,13 @@ export default function TrainerDashboard() {
                                 params: { member_id: m.gymMemberId || m.userId || m.user_id }
                               });
                             }}
-                            className="p-2 bg-orange-500/10 rounded-lg border border-orange-500/20"
+                            style={{
+                              padding: 8,
+                              backgroundColor: 'rgba(251, 146, 60, 0.1)',
+                              borderRadius: 12,
+                              borderWidth: 1,
+                              borderColor: 'rgba(251, 146, 60, 0.2)',
+                            }}
                           >
                             <Ionicons name="pencil-outline" size={16} color="#f59e0b" />
                           </TouchableOpacity>
