@@ -16,6 +16,7 @@ import EnquiryFormPage from "./pt-form-user/EnquiryFormPage";
 import FitnessScreeningPage from "./pt-form-user/FitnessScreeningPage";
 import HealthHistory2Page from "./pt-form-user/HealthHistory2Page";
 import HealthHistoryPage from "./pt-form-user/HealthHistoryPage";
+import SessionTrackerPage from "./pt-form-user/SessionTrackerPage";
 const tabs = [
   { key: "enquiry", label: "Enquiry Form" },
   { key: "health1", label: "Health History" },
@@ -363,7 +364,7 @@ export default function PTFormUser() {
           }}>
             <Text style={{ fontSize: 18 }}>⚠️</Text>
             <Text style={{ color: "#fcd34d", fontSize: 13, flex: 1, lineHeight: 20 }}>
-              Your account is not linked to a gym member record yet. PT form will load but save actions may not complete until you're linked.
+              Your account is not linked to a gym member record yet. PT form will load but save actions may not complete until you&apos;re linked.
             </Text>
           </View>
         )}
@@ -576,91 +577,4 @@ const FlexibilityAndMeasurementsPage = ({ formData = {}, onNext, onPrevious }) =
   );
 };
 
-const SessionTrackerPage = ({ formData = {}, onPrevious, onSaved }) => {
-  const { user } = useAuth();
-  const username = user?.username || user?.name || "User";
-  const [sessions, setSessions] = useState(
-    formData.sessions?.length > 0
-      ? formData.sessions
-      : [
-          {
-            session_no: 1,
-            date: "",
-            workout: "",
-            status: "Completed",
-            client_sign: username,
-            trainer_sign: username,
-          },
-        ]
-  );
 
-  useEffect(() => {
-    if (formData.sessions?.length > 0) {
-      setSessions(formData.sessions.map((session) => ({
-        ...session,
-        client_sign: session.client_sign || username,
-        trainer_sign: session.trainer_sign || username,
-      })));
-    }
-  }, [formData.sessions, username]);
-
-  const markCompleted = (index) => {
-    const nextSessions = [...sessions];
-    nextSessions[index] = {
-      ...nextSessions[index],
-      status: "Completed",
-      client_sign: username,
-      trainer_sign: username,
-    };
-    setSessions(nextSessions);
-  };
-
-  const handleSave = () => {
-    const updated = { ...formData, sessions };
-    onSaved(updated);
-  };
-
-  return (
-    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-      <View className="p-6 space-y-5">
-        <Text className="text-orange-400 text-xl font-bold">Session Tracker</Text>
-
-        <View className="bg-[#111] rounded-3xl p-5 space-y-4">
-          {sessions.map((session, index) => (
-            <View key={index} className="bg-[#1a1a1a] rounded-3xl p-4 space-y-3">
-              <Text className="text-white font-semibold">Session {session.session_no}</Text>
-              <View className="space-y-2">
-                <Text className="text-white/80">Status</Text>
-                <Text className="bg-[#000] text-white p-3 rounded-2xl">{session.status}</Text>
-              </View>
-              <View className="space-y-2">
-                <Text className="text-white/80">Client Sign</Text>
-                <Text className="bg-[#000] text-white p-3 rounded-2xl">{session.client_sign || username}</Text>
-              </View>
-              <View className="space-y-2">
-                <Text className="text-white/80">Trainer Sign</Text>
-                <Text className="bg-[#000] text-white p-3 rounded-2xl">{session.trainer_sign || username}</Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => markCompleted(index)}
-                className={`px-4 py-3 rounded-2xl ${session.status === 'Completed' ? 'bg-green-600' : 'bg-orange-600'}`}>
-                <Text className="text-white text-center">
-                  {session.status === 'Completed' ? 'Completed' : 'Mark Completed'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-
-        <View className="flex-row gap-3 mt-4">
-          <TouchableOpacity onPress={onPrevious} className="flex-1 bg-gray-700 rounded-2xl p-4">
-            <Text className="text-white text-center">Previous</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleSave} className="flex-1 bg-orange-600 rounded-2xl p-4">
-            <Text className="text-white text-center">Save Sessions</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ScrollView>
-  );
-};
