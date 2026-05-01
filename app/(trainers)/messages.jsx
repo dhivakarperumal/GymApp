@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.1)",
   },
-  headerTitle: { color: "#ffffff", fontSize: 18, fontWeight: "700" },
+  headerTitle: { color: "#ffffff", fontSize: 24, fontWeight: "800" },
 
   /* TABS */
   tabContainer: {

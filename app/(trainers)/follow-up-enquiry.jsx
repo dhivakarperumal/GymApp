@@ -375,7 +375,10 @@ export default function FollowupEnquiry() {
           >
             <Ionicons name="arrow-back" size={20} color="white" />
           </TouchableOpacity>
-          <Text className="text-white text-2xl font-bold flex-1">Follow-up Enquiry</Text>
+          <View className="flex-1">
+            <Text className="text-white text-2xl font-bold">Follow-up Enquiry</Text>
+            <Text className="text-gray-400 text-xs uppercase tracking-widest">Manage leads & interactions</Text>
+          </View>
           <View className="flex-row gap-2">
             <TouchableOpacity
               onPress={handleExcelImport}

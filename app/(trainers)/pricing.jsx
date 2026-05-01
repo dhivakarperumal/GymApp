@@ -399,7 +399,7 @@ const s = StyleSheet.create({
   backBtn:         { marginTop: 6, width: 40, height: 40, borderRadius: 20, backgroundColor: "#1a1a1a", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
   headerTextBlock: { flex: 1 },
   eyebrow:         { color: "#f97316", fontSize: 10, fontWeight: "700", letterSpacing: 3, marginBottom: 4 },
-  headerTitle:     { color: "#ffffff", fontSize: 28, fontWeight: "800" },
+  headerTitle:     { color: "#ffffff", fontSize: 24, fontWeight: "800" },
   headerSub:       { color: "#4b5563", fontSize: 12, marginTop: 4 },
 
   /* Stats */

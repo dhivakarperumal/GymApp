@@ -59,18 +59,7 @@ const menuItems = [
     arrowColor: "#34d399",
     borderAccent: "#10b98130",
   },
-  {
-    id: "profile",
-    title: "My Profile",
-    subtitle: "View & edit your account",
-    icon: "person-circle",
-    route: "/(trainers)/profile",
-    iconBg: "#8b5cf6",
-    glowBg: "#8b5cf618",
-    arrowBg: "#8b5cf620",
-    arrowColor: "#a78bfa",
-    borderAccent: "#8b5cf630",
-  },
+
 ];
 
 
