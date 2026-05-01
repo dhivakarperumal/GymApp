@@ -139,6 +139,14 @@ const PTForm = ({ route, navigation }) => {
     }
   };
 
+  const handlePrevious = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    } else {
+      router.back();
+    }
+  };
+
   const handleMemberSelected = async (memberId) => {
     setLoading(true);
     try {
