@@ -12,7 +12,6 @@ import Toast from "react-native-toast-message";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import BackButton from "./BackButton";
-import Header from "./Header";
 import EnquiryFormPage from "./pt-form-user/EnquiryFormPage";
 import HealthHistory2Page from "./pt-form-user/HealthHistory2Page";
 import HealthHistoryPage from "./pt-form-user/HealthHistoryPage";
@@ -252,108 +251,177 @@ export default function PTFormUser() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
-      <Header />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+      {/* PREMIUM HEADER BANNER */}
+      <View style={{
+        paddingHorizontal: 20,
+        paddingTop: 16,
+        paddingBottom: 24,
+        backgroundColor: "#000",
+        borderBottomWidth: 1,
+        borderBottomColor: "#111",
+      }}>
+        <BackButton title="PT Form" style={{ marginBottom: 16 }} />
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <View>
+            <Text style={{ color: "#fff", fontSize: 28, fontWeight: "900", letterSpacing: -0.5 }}>PT Form</Text>
+            <Text style={{ color: "#4b5563", fontSize: 12, marginTop: 3, textTransform: "uppercase", letterSpacing: 2 }}>Personal Training Record</Text>
+          </View>
+          <View style={{
+            width: 48,
+            height: 48,
+            borderRadius: 14,
+            backgroundColor: "#e11d1d",
+            alignItems: "center",
+            justifyContent: "center",
+            shadowColor: "#e11d1d",
+            shadowOpacity: 0.5,
+            shadowRadius: 12,
+            elevation: 8,
+          }}>
+            <Text style={{ color: "#fff", fontSize: 22 }}>🏋️</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* HORIZONTAL SCROLLABLE TAB BAR */}
+      <View style={{ backgroundColor: "#000", borderBottomWidth: 1, borderBottomColor: "#111" }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8 }}
+        >
+          {tabs.map((tab, index) => (
+            <TouchableOpacity
+              key={tab.key}
+              onPress={() => setActiveTab(tab.key)}
+              style={{
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                borderRadius: 20,
+                backgroundColor: activeTab === tab.key ? "#e11d1d" : "#111",
+                borderWidth: 1,
+                borderColor: activeTab === tab.key ? "#e11d1d" : "#222",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+                shadowColor: activeTab === tab.key ? "#e11d1d" : "transparent",
+                shadowOpacity: 0.4,
+                shadowRadius: 8,
+                elevation: activeTab === tab.key ? 6 : 0,
+              }}
+            >
+              <Text style={{ color: "#aaa", fontSize: 11, fontWeight: "700" }}>
+                {index + 1}
+              </Text>
+              <Text style={{
+                color: activeTab === tab.key ? "#fff" : "#6b7280",
+                fontSize: 12,
+                fontWeight: "700",
+                letterSpacing: 0.3,
+              }}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* PROGRESS BAR */}
+        <View style={{ height: 2, backgroundColor: "#111", marginHorizontal: 16, marginBottom: 2, borderRadius: 2 }}>
+          <View style={{
+            height: 2,
+            backgroundColor: "#e11d1d",
+            borderRadius: 2,
+            width: `${((tabs.findIndex(t => t.key === activeTab) + 1) / tabs.length) * 100}%`,
+          }} />
+        </View>
+      </View>
+
+      {/* CONTENT */}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 20, paddingBottom: 120 }}
+        contentContainerStyle={{ paddingBottom: 120 }}
       >
-        <BackButton style={{ marginTop: 20 }} />
-        <Text className="text-white text-3xl font-bold mt-7 mb-4">PT Form</Text>
-
-        <View className="bg-[#111] rounded-3xl p-5 mb-6">
-          <Text className="text-white text-lg font-semibold mb-3">PT Form Tabs</Text>
-          <Text className="text-gray-400 mb-4">
-            Use the tabs below to move between the enquiry form, health history, medical data, fitness screening, flexibility tests, and session tracker.
-          </Text>
-
-          <View className="flex-row flex-wrap gap-2 mb-4">
-            {tabs.map((tab) => (
-              <TouchableOpacity
-                key={tab.key}
-                onPress={() => setActiveTab(tab.key)}
-                className={`px-4 py-3 rounded-full border ${
-                  activeTab === tab.key
-                    ? "border-orange-500 bg-orange-500/20"
-                    : "border-white/20 bg-white/5"
-                }`}
-              >
-                <Text className={`text-sm font-semibold ${activeTab === tab.key ? "text-orange-300" : "text-white"}`}>
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+        {!member?.id && (
+          <View style={{
+            marginHorizontal: 16,
+            marginTop: 16,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: "#f59e0b44",
+            backgroundColor: "#f59e0b11",
+            padding: 14,
+            flexDirection: "row",
+            alignItems: "flex-start",
+            gap: 10,
+          }}>
+            <Text style={{ fontSize: 18 }}>⚠️</Text>
+            <Text style={{ color: "#fcd34d", fontSize: 13, flex: 1, lineHeight: 20 }}>
+              Your account is not linked to a gym member record yet. PT form will load but save actions may not complete until you're linked.
+            </Text>
           </View>
+        )}
 
-          {!member?.id && (
-            <View className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-4 mb-4">
-              <Text className="text-yellow-200">
-                Your account is not linked to a gym member record yet. The PT form will still load, but some save actions may not complete until you are linked.
-              </Text>
-            </View>
-          )}
+        {loading ? (
+          <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 80 }}>
+            <ActivityIndicator size="large" color="#e11d1d" />
+            <Text style={{ color: "#6b7280", marginTop: 16, fontSize: 14 }}>Loading PT form data...</Text>
+          </View>
+        ) : (
+          <View>
+            {activeTab === "enquiry" && (
+              <EnquiryFormPage
+                formData={formData}
+                onNext={(data) => handleEnquirySubmit(data)}
+                onPrevious={() => router.back()}
+                isFirstStep={true}
+                isLastStep={false}
+              />
+            )}
 
-          {loading ? (
-            <View className="items-center justify-center py-20">
-              <ActivityIndicator size="large" color="#f97316" />
-              <Text className="text-white mt-4">Loading PT form data...</Text>
-            </View>
-          ) : (
-            <View>
-              {activeTab === "enquiry" && (
-                <EnquiryFormPage
-                  formData={formData}
-                  onNext={(data) => handleEnquirySubmit(data)}
-                  onPrevious={() => router.back()}
-                  isFirstStep={true}
-                  isLastStep={false}
-                />
-              )}
+            {activeTab === "health1" && (
+              <HealthHistoryPage
+                formData={formData}
+                onNext={(data) => handleHealthHistorySubmit(data)}
+                onPrevious={() => setActiveTab("enquiry")}
+                isFirstStep={false}
+              />
+            )}
 
-              {activeTab === "health1" && (
-                <HealthHistoryPage
-                  formData={formData}
-                  onNext={(data) => handleHealthHistorySubmit(data)}
-                  onPrevious={() => setActiveTab("enquiry")}
-                  isFirstStep={false}
-                />
-              )}
+            {activeTab === "health2" && (
+              <HealthHistory2Page
+                formData={formData}
+                onNext={(data) => handleHealthHistory2Submit(data)}
+                onPrevious={() => setActiveTab("health1")}
+                isFirstStep={false}
+              />
+            )}
 
-              {activeTab === "health2" && (
-                <HealthHistory2Page
-                  formData={formData}
-                  onNext={(data) => handleHealthHistory2Submit(data)}
-                  onPrevious={() => setActiveTab("health1")}
-                  isFirstStep={false}
-                />
-              )}
+            {activeTab === "fitness" && (
+              <FitnessScreeningPage
+                formData={formData}
+                onNext={(data) => handleFitnessSubmit(data)}
+                onPrevious={() => setActiveTab("health2")}
+              />
+            )}
 
-              {activeTab === "fitness" && (
-                <FitnessScreeningPage
-                  formData={formData}
-                  onNext={(data) => handleFitnessSubmit(data)}
-                  onPrevious={() => setActiveTab("health2")}
-                />
-              )}
+            {activeTab === "flexibility" && (
+              <FlexibilityAndMeasurementsPage
+                formData={formData}
+                onNext={(data) => handleFlexibilitySubmit(data)}
+                onPrevious={() => setActiveTab("fitness")}
+              />
+            )}
 
-              {activeTab === "flexibility" && (
-                <FlexibilityAndMeasurementsPage
-                  formData={formData}
-                  onNext={(data) => handleFlexibilitySubmit(data)}
-                  onPrevious={() => setActiveTab("fitness")}
-                />
-              )}
-
-              {activeTab === "sessions" && (
-                <SessionTrackerPage
-                  formData={formData}
-                  onPrevious={() => setActiveTab("flexibility")}
-                  onSaved={handleSessionSaved}
-                />
-              )}
-            </View>
-          )}
-        </View>
+            {activeTab === "sessions" && (
+              <SessionTrackerPage
+                formData={formData}
+                onPrevious={() => setActiveTab("flexibility")}
+                onSaved={handleSessionSaved}
+              />
+            )}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
