@@ -273,8 +273,46 @@ export default function Profile() {
   const initial = userName.charAt(0).toUpperCase();
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
-      <Header />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+
+      {/* HEADER ROW */}
+      <View style={{
+        paddingHorizontal: 16,
+        paddingTop: 16,
+        paddingBottom: 16,
+        backgroundColor: "#000",
+        borderBottomWidth: 1,
+        borderBottomColor: "#111",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}>
+        {/* Left: Back + Title */}
+        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+          <BackButton style={{ marginRight: 12 }} />
+          <View>
+            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "900", letterSpacing: -0.3 }}>My Profile</Text>
+            <Text style={{ color: "#4b5563", fontSize: 10, textTransform: "uppercase", letterSpacing: 2 }}>Account Settings</Text>
+          </View>
+        </View>
+
+        {/* Right: Avatar Circle */}
+        <View style={{
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          backgroundColor: "#e11d1d",
+          alignItems: "center",
+          justifyContent: "center",
+          shadowColor: "#e11d1d",
+          shadowOpacity: 0.4,
+          shadowRadius: 10,
+          elevation: 6,
+        }}>
+          <Text style={{ color: "#fff", fontSize: 18, fontWeight: "900" }}>{initial}</Text>
+        </View>
+      </View>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -282,11 +320,6 @@ export default function Profile() {
           paddingBottom: 120,
         }}
       >
-        <BackButton style={{ marginTop: 20 }} />
-        {/* HEADER */}
-        <Text className="text-white text-3xl font-bold mt-7 mb-8">
-          My Profile
-        </Text>
 
         {/* PROFILE CARD */}
         <View className="bg-[#111] rounded-3xl p-6 items-center mb-8">
