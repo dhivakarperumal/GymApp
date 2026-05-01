@@ -8,7 +8,7 @@ import {
   Pressable,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getAllProducts, getOffers } from "../../services/api";
@@ -57,77 +57,149 @@ export default function OffersScreen() {
     fetchData();
   };
 
-  const renderOfferItem = ({ item }) => (
-    <Pressable
-      onPress={() => {
-        if (item.offer_type === "plan") router.push("/Pages/Pricing");
-        else router.push("/shop");
-      }}
-      style={{
-        marginBottom: 24,
-        borderRadius: 24,
-        overflow: "hidden",
-        backgroundColor: "#111",
-        borderWidth: 1,
-        borderColor: "#222",
-      }}
-    >
-      <View style={{ height: 192, position: "relative" }}>
-        <Image
-          source={{
-            uri: (item.offer_image?.startsWith("http") || item.offer_image?.startsWith("data:"))
-              ? item.offer_image
-              : `${OFFERS_IMAGE_BASE}${item.offer_image?.startsWith("/") ? "" : "/"}${item.offer_image}`,
-          }}
-          style={{ width: "100%", height: "100%" }}
-          resizeMode="cover"
-        />
-        <View style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.3)" }} />
-        <View style={{ position: "absolute", top: 16, right: 16, backgroundColor: "#e11d1d", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 }}>
-          <Text style={{ color: "white", fontSize: 10, fontWeight: "900", textTransform: "uppercase", letterSpacing: 1 }}>
-            {item.offer_percentage}% OFF
+  const renderOfferItem = ({ item }) => {
+    // Check for both possible field names from backend
+    const discount = item.discount_percentage || item.offer_percentage || 0;
+    
+    return (
+      <View
+        style={{
+          marginBottom: 28,
+          borderRadius: 28,
+          overflow: "hidden",
+          backgroundColor: "#000",
+          borderWidth: 1.5,
+          borderColor: "#1a1a1a",
+          shadowColor: "#e11d1d",
+          shadowOpacity: 0.15,
+          shadowRadius: 25,
+          elevation: 10,
+        }}
+      >
+        {/* IMAGE SECTION */}
+        <View style={{ height: 260, position: "relative" }}>
+          <Image
+            source={{
+              uri: (item.offer_image?.startsWith("http") || item.offer_image?.startsWith("data:"))
+                ? item.offer_image
+                : `${OFFERS_IMAGE_BASE}${item.offer_image?.startsWith("/") ? "" : "/"}${item.offer_image}`,
+            }}
+            style={{ width: "100%", height: "100%" }}
+            resizeMode="cover"
+          />
+          <View style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.15)" }} />
+          
+          {/* TOP LEFT BADGE (TYPE) */}
+          <View style={{ 
+            position: "absolute", 
+            top: 20, 
+            left: 20, 
+            backgroundColor: "rgba(0,0,0,0.7)", 
+            paddingHorizontal: 12, 
+            paddingVertical: 4, 
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: "rgba(225, 29, 29, 0.4)"
+          }}>
+            <Text style={{ color: "#fff", fontSize: 9, fontWeight: "900", textTransform: "uppercase", letterSpacing: 1 }}>
+              {item.offer_type === "plan" ? "EXCLUSIVE PLAN" : "LIMITED DEAL"}
+            </Text>
+          </View>
+
+          {/* LARGE PERCENTAGE BADGE */}
+          <View style={{ 
+            position: "absolute", 
+            bottom: 20, 
+            left: 20, 
+            backgroundColor: "#e11d1d", 
+            paddingHorizontal: 18, 
+            paddingVertical: 8, 
+            borderRadius: 12,
+            shadowColor: "#000",
+            shadowOpacity: 0.4,
+            shadowRadius: 10,
+          }}>
+            <Text style={{ color: "white", fontSize: 24, fontWeight: "900", letterSpacing: -1 }}>
+              {parseFloat(discount).toFixed(2)}% OFF
+            </Text>
+          </View>
+        </View>
+
+        {/* CONTENT SECTION */}
+        <View style={{ padding: 24, backgroundColor: "#111" }}>
+          <Text style={{ color: "#fff", fontSize: 22, fontWeight: "bold", marginBottom: 4 }}>
+            {item.offer_name}
           </Text>
-        </View>
-      </View>
 
-      <View style={{ padding: 20 }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: "white", fontSize: 20, fontWeight: "bold" }}>{item.offer_name}</Text>
-            <Text style={{ color: "#9ca3af", fontSize: 12, marginTop: 4 }} numberOfLines={2}>
-              {item.offer_description}
+          {/* PLAN NAME / DETAILS */}
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
+            <MaterialCommunityIcons name="shield-check" size={14} color="#e11d1d" />
+            <Text style={{ color: "#e11d1d", fontSize: 11, fontWeight: "900", marginLeft: 6, textTransform: "uppercase", letterSpacing: 1.5 }}>
+               {item.plan_name || "MEMBER SPECIAL"}
             </Text>
           </View>
-        </View>
 
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 16 }}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Ionicons name="time-outline" size={14} color="#666" />
-            <Text style={{ color: "#6b7280", fontSize: 10, marginLeft: 4, fontWeight: "bold", textTransform: "uppercase" }}>
-              Expires: {item.expiry_date || "Limited Time"}
+          <Text style={{ color: "#9ca3af", fontSize: 14, lineHeight: 20, marginBottom: 24 }} numberOfLines={3}>
+            {item.offer_description}
+          </Text>
+
+          {/* VALIDITY & CONTACT CONTAINER */}
+          <View style={{ backgroundColor: "#0a0a0a", padding: 16, borderRadius: 16, marginBottom: 24, borderWidth: 1, borderColor: "#1a1a1a" }}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+              <Ionicons name="calendar-outline" size={14} color="#e11d1d" />
+              <Text style={{ color: "#6b7280", fontSize: 13, marginLeft: 10 }}>
+                Expires: <Text style={{ color: "#fff", fontWeight: "600" }}>{item.expiry_date || "Jun 01, 2026"}</Text>
+              </Text>
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Ionicons name="call-outline" size={14} color="#e11d1d" />
+              <Text style={{ color: "#6b7280", fontSize: 13, marginLeft: 10 }}>
+                Contact: <Text style={{ color: "#fff", fontWeight: "600" }}>{item.contact || "8056870767"}</Text>
+              </Text>
+            </View>
+          </View>
+
+          {/* BUTTON */}
+          <Pressable
+            onPress={() => {
+              if (item.offer_type === "plan") router.push("/Pages/Pricing");
+              else router.push("/shop");
+            }}
+            style={({ pressed }) => ({
+              backgroundColor: pressed ? "#991b1b" : "#e11d1d",
+              paddingVertical: 16,
+              borderRadius: 16,
+              alignItems: "center",
+              justifyContent: "center",
+              shadowColor: "#e11d1d",
+              shadowOpacity: 0.4,
+              shadowRadius: 10,
+              elevation: 8,
+              transform: [{ scale: pressed ? 0.98 : 1 }]
+            })}
+          >
+            <Text style={{ color: "white", fontSize: 16, fontWeight: "900", letterSpacing: 2 }}>
+              {item.offer_type === "plan" ? "ACTIVATE NOW" : "CLAIM DEAL"}
             </Text>
-          </View>
-          <View style={{ backgroundColor: "rgba(225, 29, 29, 0.1)", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: "rgba(225, 29, 29, 0.2)" }}>
-            <Text style={{ color: "#ef4444", fontSize: 12, fontWeight: "900", textTransform: "uppercase" }}>View Deal</Text>
-          </View>
+          </Pressable>
         </View>
       </View>
-    </Pressable>
-  );
+    );
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: "black", paddingTop: Math.max(insets.top, 20) }}>
       <View style={{ flex: 1, paddingHorizontal: 16 }}>
         
         <View style={{ paddingVertical: 24 }}>
-          <Text style={{ color: "white", fontSize: 30, fontWeight: "900", letterSpacing: -0.5 }}>Promotions</Text>
-          <Text style={{ color: "#6b7280", fontSize: 12, textTransform: "uppercase", letterSpacing: 3, marginTop: 4 }}>Handpicked Deals For You</Text>
+          <Text style={{ color: "white", fontSize: 32, fontWeight: "900", letterSpacing: -0.5 }}>Promotions</Text>
+          <Text style={{ color: "#6b7280", fontSize: 12, textTransform: "uppercase", letterSpacing: 4, marginTop: 4 }}>Exclusive Deals For You</Text>
         </View>
 
-        <View style={{ flexDirection: "row", marginBottom: 24, backgroundColor: "#141414", padding: 6, borderRadius: 16, borderWidth: 1, borderColor: "#262626" }}>
+        <View style={{ flexDirection: "row", marginBottom: 24, backgroundColor: "#111", padding: 6, borderRadius: 18, borderWidth: 1, borderColor: "#222" }}>
           {[
-            { id: "offers", label: "Special Offers", icon: "gift-outline" },
-            { id: "products", label: "Offer Products", icon: "cart-outline" }
+            { id: "offers", label: "Special Offers", icon: "flash-outline" },
+            { id: "products", label: "Shop Offers", icon: "cart-outline" }
           ].map((tab) => (
             <Pressable
               key={tab.id}
@@ -135,8 +207,8 @@ export default function OffersScreen() {
               style={{
                 flex: 1,
                 flexDirection: "row",
-                paddingVertical: 12,
-                borderRadius: 12,
+                paddingVertical: 14,
+                borderRadius: 14,
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: activeTab === tab.id ? "#e11d1d" : "transparent",
@@ -165,7 +237,7 @@ export default function OffersScreen() {
 
         {loading ? (
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <ActivityIndicator size="large" color="#ef4444" />
+            <ActivityIndicator size="large" color="#e11d1d" />
           </View>
         ) : (
           <FlatList
@@ -175,13 +247,13 @@ export default function OffersScreen() {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 100 }}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ef4444" />
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e11d1d" />
             }
             ListEmptyComponent={
-              <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 80 }}>
-                <Ionicons name={activeTab === "offers" ? "gift-outline" : "pricetags-outline"} size={64} color="#222" />
-                <Text style={{ color: "#6b7280", marginTop: 16, fontWeight: "bold", fontSize: 18 }}>No active {activeTab} found</Text>
-                <Text style={{ color: "#4b5563", textAlign: "center", marginTop: 8, paddingHorizontal: 40 }}>Check back later for new seasonal promotions and handpicked deals.</Text>
+              <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 120 }}>
+                <Ionicons name="ticket-outline" size={80} color="#111" />
+                <Text style={{ color: "#333", marginTop: 24, fontWeight: "900", fontSize: 20 }}>NO ACTIVE DEALS</Text>
+                <Text style={{ color: "#222", textAlign: "center", marginTop: 8, paddingHorizontal: 40 }}>We're brewing some hot new offers. Check back in a few!</Text>
               </View>
             }
           />

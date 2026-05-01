@@ -1,6 +1,8 @@
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function ProductCard({ item, grid }) {
   const router = useRouter();
@@ -18,91 +20,111 @@ export default function ProductCard({ item, grid }) {
     oldPrice = Number(item.mrp || 0);
   }
 
-  const imageUrl = item.images?.[0] || "https://via.placeholder.com/150";
+  const imageUrl = item.images?.[0] || "https://via.placeholder.com/300x300?text=No+Image";
+  const hasDiscount = oldPrice > price;
 
   return (
     <TouchableOpacity
-      activeOpacity={0.92}
+      activeOpacity={0.9}
       onPress={() => router.push(`/Shop/${item.id}`)}
       style={{ 
-        width: grid ? "48%" : "100%", 
-        marginBottom: 24 
+        width: grid ? (SCREEN_WIDTH - 48) / 2 : "100%", 
+        marginBottom: 24,
       }}
     >
       <View
         style={{
-          borderRadius: 24,
+          borderRadius: 28,
           overflow: "hidden",
-          backgroundColor: "#111111",
-          borderWidth: 1,
-          borderColor: "#e11d1d",
+          backgroundColor: "#111",
+          borderWidth: 1.5,
+          borderColor: "#222",
           shadowColor: "#e11d1d",
-          shadowOpacity: 0.25,
+          shadowOpacity: 0.15,
           shadowRadius: 20,
           elevation: 10,
         }}
       >
-        {/* IMAGE */}
-        <View style={{ position: "relative" }}>
+        {/* IMAGE AREA */}
+        <View style={{ position: "relative", height: grid ? 160 : 200 }}>
           <Image
             source={{ uri: imageUrl }}
-            style={{ width: "100%", height: 160 }}
+            style={{ width: "100%", height: "100%" }}
             resizeMode="cover"
           />
-          <View style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.2)" }} />
+          {/* Subtle overlay for text readability */}
+          <View style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.1)" }} />
           
-          {/* CATEGORY */}
+          {/* CATEGORY TAG */}
           <View style={{ 
             position: "absolute", 
             top: 12, 
             left: 12, 
-            backgroundColor: "#0f0f0f", 
-            paddingHorizontal: 12, 
+            backgroundColor: "rgba(15, 15, 15, 0.8)", 
+            paddingHorizontal: 10, 
             paddingVertical: 4, 
-            borderRadius: 999, 
+            borderRadius: 12, 
             borderWidth: 1, 
-            borderColor: "#e11d1d" 
+            borderColor: "rgba(225, 29, 29, 0.4)" 
           }}>
-            <Text style={{ color: "#e11d1d", fontSize: 10, fontWeight: "600" }}>
+            <Text style={{ color: "#fff", fontSize: 9, fontWeight: "bold", textTransform: "uppercase", letterSpacing: 0.5 }}>
               {item.category}
             </Text>
           </View>
+
+          {/* DISCOUNT PERCENTAGE */}
+          {hasDiscount && (
+            <View style={{ 
+              position: "absolute", 
+              top: 12, 
+              right: 12, 
+              backgroundColor: "#e11d1d", 
+              paddingHorizontal: 8, 
+              paddingVertical: 4, 
+              borderRadius: 8,
+            }}>
+              <Text style={{ color: "white", fontSize: 10, fontWeight: "900" }}>
+                -{Math.round(((oldPrice - price) / oldPrice) * 100)}%
+              </Text>
+            </View>
+          )}
         </View>
 
-        {/* CONTENT */}
+        {/* CONTENT AREA */}
         <View style={{ padding: 16, backgroundColor: "#141414" }}>
           <Text
             numberOfLines={1}
-            ellipsizeMode="tail"
-            style={{ color: "white", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}
+            style={{ color: "white", fontSize: 15, fontWeight: "bold", marginBottom: 6, letterSpacing: 0.2 }}
           >
             {item.name}
           </Text>
 
           {/* RATING */}
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Ionicons
-                key={star}
-                name={star <= (item.rating || item.ratings || 0) ? "star" : "star-outline"}
-                size={14}
-                color="#e11d1d"
-                style={{ marginRight: 2 }}
-              />
-            ))}
-            <Text style={{ color: "#9ca3af", fontSize: 12, marginLeft: 8 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+            <View style={{ flexDirection: "row", marginRight: 6 }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Ionicons
+                  key={star}
+                  name={star <= (item.rating || item.ratings || 0) ? "star" : "star-outline"}
+                  size={12}
+                  color="#e11d1d"
+                  style={{ marginRight: 1 }}
+                />
+              ))}
+            </View>
+            <Text style={{ color: "#6b7280", fontSize: 11, fontWeight: "600" }}>
               {(item.rating || item.ratings || 0).toFixed ? (item.rating || item.ratings || 0).toFixed(1) : item.rating || item.ratings || 0}
             </Text>
           </View>
 
-          {/* PRICE */}
-          <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }}>
+          {/* PRICE & ACTION */}
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
             <View>
-              <Text style={{ color: "#e11d1d", fontSize: 18, fontWeight: "bold" }}>
+              <Text style={{ color: "#fff", fontSize: 18, fontWeight: "900" }}>
                 ₹ {price}
               </Text>
-              {oldPrice > price && (
-                <Text style={{ color: "#9ca3af", fontSize: 14, marginTop: 4, textDecorationLine: "line-through" }}>
+              {hasDiscount && (
+                <Text style={{ color: "#4b5563", fontSize: 12, marginTop: 2, textDecorationLine: "line-through" }}>
                   ₹ {oldPrice}
                 </Text>
               )}
@@ -112,15 +134,18 @@ export default function ProductCard({ item, grid }) {
               onPress={() => router.push(`/Shop/${item.id}`)}
               style={{
                 backgroundColor: "#e11d1d",
-                padding: 12,
-                borderRadius: 16,
-                shadowColor: "#ff3c00",
+                width: 40,
+                height: 40,
+                borderRadius: 14,
+                alignItems: "center",
+                justifyContent: "center",
+                shadowColor: "#e11d1d",
                 shadowOpacity: 0.4,
-                shadowRadius: 10,
-                elevation: 6,
+                shadowRadius: 8,
+                elevation: 4,
               }}
             >
-              <Ionicons name="eye" size={18} color="white" />
+              <Ionicons name="cart" size={20} color="white" />
             </TouchableOpacity>
           </View>
         </View>
