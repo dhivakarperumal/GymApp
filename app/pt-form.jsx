@@ -4,7 +4,6 @@ import {
     ActivityIndicator,
     ScrollView,
     Text,
-    TextInput,
     TouchableOpacity,
     View
 } from "react-native";
@@ -14,6 +13,9 @@ import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import BackButton from "./BackButton";
 import Header from "./Header";
+import EnquiryFormPage from "./pt-form-user/EnquiryFormPage";
+import HealthHistory2Page from "./pt-form-user/HealthHistory2Page";
+import HealthHistoryPage from "./pt-form-user/HealthHistoryPage";
 
 const tabs = [
   { key: "enquiry", label: "Enquiry Form" },
