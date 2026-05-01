@@ -92,41 +92,43 @@ const FlexibilityAndMeasurementsPage = ({ formData = {}, onNext, onPrevious }) =
           <View className="space-y-4 pt-4">
             <Text className="text-orange-500 font-bold text-sm uppercase tracking-wider">Measurements</Text>
 
-            <View className="border border-white/20 rounded-lg overflow-hidden">
-              {/* Header */}
-              <View className="flex-row bg-[#1a1a1a]">
-                <View className="flex-1 p-3 border-r border-white/20">
-                  <Text className="text-white/80 text-center">S.No</Text>
-                </View>
-                <View className="flex-2 p-3 border-r border-white/20">
-                  <Text className="text-white/80">Measurement</Text>
-                </View>
-                {[1, 2, 3, 4, 5].map((num) => (
-                  <View key={num} className="flex-1 p-3 border-r border-white/20 last:border-0">
-                    <Text className="text-orange-400 text-center">{num}</Text>
-                  </View>
-                ))}
-              </View>
-
-              {/* Rows */}
-              {measurementFields.map((field, rowIndex) => (
-                <View key={field.key} className="flex-row border-b border-white/10">
+            <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+              <View className="border border-white/20 rounded-lg overflow-hidden min-w-[900px]">
+                {/* Header */}
+                <View className="flex-row bg-[#1a1a1a]">
                   <View className="flex-1 p-3 border-r border-white/20">
-                    <Text className="text-white/70 text-center">{rowIndex + 1}</Text>
+                    <Text className="text-white/80 text-center">S.No</Text>
                   </View>
                   <View className="flex-2 p-3 border-r border-white/20">
-                    <Text className="text-white">{field.label}</Text>
+                    <Text className="text-white/80">Measurement</Text>
                   </View>
-                  {[0, 1, 2, 3, 4].map((colIndex) => (
-                    <View key={colIndex} className="flex-1 p-3 border-r border-white/20 last:border-0">
-                      <Text className="text-white text-center">
-                        {localFormData.measurements[colIndex]?.[field.key] || "-"}
-                      </Text>
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <View key={num} className="flex-1 p-3 border-r border-white/20 last:border-0">
+                      <Text className="text-orange-400 text-center">{num}</Text>
                     </View>
                   ))}
                 </View>
-              ))}
-            </View>
+
+                {/* Rows */}
+                {measurementFields.map((field, rowIndex) => (
+                  <View key={field.key} className="flex-row border-b border-white/10">
+                    <View className="flex-1 p-3 border-r border-white/20">
+                      <Text className="text-white/70 text-center">{rowIndex + 1}</Text>
+                    </View>
+                    <View className="flex-2 p-3 border-r border-white/20">
+                      <Text className="text-white">{field.label}</Text>
+                    </View>
+                    {[0, 1, 2, 3, 4].map((colIndex) => (
+                      <View key={colIndex} className="flex-1 p-3 border-r border-white/20 last:border-0">
+                        <Text className="text-white text-center">
+                          {localFormData.measurements[colIndex]?.[field.key] || "-"}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                ))}
+              </View>
+             </ScrollView> 
           </View>
         </View>
 
