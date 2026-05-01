@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
+import { Ionicons } from "@expo/vector-icons";
+
 const FitnessScreeningPage = ({ formData = {}, onNext, onPrevious }) => {
   const [localFormData, setLocalFormData] = useState({
     fs_height: "",
@@ -55,92 +57,104 @@ const FitnessScreeningPage = ({ formData = {}, onNext, onPrevious }) => {
     }
   }, [formData]);
 
-  const renderMuscleEnduranceRow = (label, namePrefix) => (
-    <View className="bg-[#1a1a1a] rounded-2xl p-4 mb-3">
-      <Text className="text-white/80 mb-2">{label}:</Text>
-      <View className="flex-row justify-between items-center">
-        <Text className="text-white">Count: {localFormData[`${namePrefix}_count`] || "-"}</Text>
-        <Text className="text-white">Level: {localFormData[`${namePrefix}_level`] || "-"}</Text>
+  const renderDataRow = (label, value, iconName, showBorder = true) => (
+    <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 16, borderBottomWidth: showBorder ? 1 : 0, borderBottomColor: "#1a1a1a" }}>
+      <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#111", alignItems: "center", justifyContent: "center", marginRight: 12, borderWidth: 1, borderColor: "#222" }}>
+        <Ionicons name={iconName} size={16} color="#e11d1d" />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text className="text-white/60 text-xs mb-1">{label}</Text>
+        <Text className="text-white font-semibold">{value || "-"}</Text>
+      </View>
+    </View>
+  );
+
+  const renderMuscleEnduranceRow = (label, namePrefix, showBorder = true) => (
+    <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 16, borderBottomWidth: showBorder ? 1 : 0, borderBottomColor: "#1a1a1a" }}>
+      <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#111", alignItems: "center", justifyContent: "center", marginRight: 12, borderWidth: 1, borderColor: "#222" }}>
+        <Ionicons name="barbell-outline" size={16} color="#e11d1d" />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text className="text-white/60 text-xs mb-1">{label}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text className="text-white font-semibold mr-3">Count: <Text style={{ color: "#aaa" }}>{localFormData[`${namePrefix}_count`] || "-"}</Text></Text>
+          <Text className="text-white font-semibold">Level: <Text style={{ color: "#aaa" }}>{localFormData[`${namePrefix}_level`] || "-"}</Text></Text>
+        </View>
       </View>
     </View>
   );
 
   return (
     <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-      <View className="p-6 space-y-5">
-        <Text className="text-orange-400 text-xl font-bold">Fitness Screening</Text>
+      <View className="pb-6" style={{ marginTop: 20 }}>
+        
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
+          <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "#111", alignItems: "center", justifyContent: "center", marginRight: 12, borderWidth: 1, borderColor: "#222" }}>
+            <Ionicons name="fitness-outline" size={20} color="#e11d1d" />
+          </View>
+          <Text className="text-white text-2xl font-bold">Fitness Screening</Text>
+        </View>
 
-        <View className="bg-[#111] rounded-3xl p-5 space-y-4">
+        <View className="bg-[#111] rounded-3xl p-5 border border-[#1a1a1a]" style={{ marginBottom: 20 }}>
+          
           {/* RESTING PARAMETERS */}
-          <View className="space-y-4">
-            <Text className="text-orange-500 font-bold text-sm uppercase tracking-wider">Resting Parameters</Text>
-            <View className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <View className="space-y-2">
-                <Text className="text-white/80">Height in cm:</Text>
-                <Text className="bg-[#1a1a1a] text-white p-4 rounded-2xl">{localFormData.fs_height || "-"}</Text>
-              </View>
-              <View className="space-y-2">
-                <Text className="text-white/80">Weight in KG:</Text>
-                <Text className="bg-[#1a1a1a] text-white p-4 rounded-2xl">{localFormData.fs_weight || "-"}</Text>
-              </View>
-              <View className="space-y-2">
-                <Text className="text-white/80">Resting HR:</Text>
-                <Text className="bg-[#1a1a1a] text-white p-4 rounded-2xl">{localFormData.fs_resting_hr || "-"}</Text>
-              </View>
+          <View style={{ marginBottom: 30 }}>
+            <Text className="text-[#e11d1d] font-bold text-xs uppercase tracking-widest mb-4">Resting Parameters</Text>
+            <View style={{ backgroundColor: "#0d0d0d", borderRadius: 20, borderWidth: 1, borderColor: "#1a1a1a", paddingHorizontal: 16 }}>
+              {renderDataRow("Height (cm)", localFormData.fs_height ? `${localFormData.fs_height} cm` : "", "resize-outline")}
+              {renderDataRow("Weight (KG)", localFormData.fs_weight ? `${localFormData.fs_weight} KG` : "", "scale-outline")}
+              {renderDataRow("Resting HR", localFormData.fs_resting_hr ? `${localFormData.fs_resting_hr} bpm` : "", "heart-outline", false)}
             </View>
           </View>
 
           {/* COMPOSITIONS */}
-          <View className="space-y-4">
-            <Text className="text-orange-500 font-bold text-sm uppercase tracking-wider">Compositions</Text>
-            <View className="space-y-4">
-              <View className="space-y-2">
-                <Text className="text-white/80">Fat% (BIA):</Text>
-                <Text className="bg-[#1a1a1a] text-white p-4 rounded-2xl">{localFormData.fs_fat_percentage || "-"}</Text>
-              </View>
-              <View className="space-y-2">
-                <Text className="text-white/80">Fat Level:</Text>
-                <Text className="bg-[#1a1a1a] text-white p-4 rounded-2xl">{localFormData.fs_fat_level || "-"}</Text>
-              </View>
+          <View style={{ marginBottom: 30 }}>
+            <Text className="text-[#e11d1d] font-bold text-xs uppercase tracking-widest mb-4">Compositions</Text>
+            <View style={{ backgroundColor: "#0d0d0d", borderRadius: 20, borderWidth: 1, borderColor: "#1a1a1a", paddingHorizontal: 16 }}>
+              {renderDataRow("Fat% (BIA)", localFormData.fs_fat_percentage ? `${localFormData.fs_fat_percentage}%` : "", "pie-chart-outline")}
+              {renderDataRow("Fat Level", localFormData.fs_fat_level, "speedometer-outline", false)}
             </View>
           </View>
 
           {/* CARDIORESPIRATORY FITNESS */}
-          <View className="space-y-4">
-            <Text className="text-orange-500 font-bold text-sm uppercase tracking-wider">Cardiorespiratory Fitness</Text>
-            <View className="flex-row gap-3">
-              <View className="flex-1 space-y-2">
-                <Text className="text-white/80">Speed in KM:</Text>
-                <Text className="bg-[#1a1a1a] text-white p-4 rounded-2xl">{localFormData.fs_speed_km || "-"}</Text>
-              </View>
-              <View className="flex-1 space-y-2">
-                <Text className="text-white/80">Heart rate:</Text>
-                <Text className="bg-[#1a1a1a] text-white p-4 rounded-2xl">{localFormData.fs_heart_rate || "-"}</Text>
-              </View>
+          <View style={{ marginBottom: 30 }}>
+            <Text className="text-[#e11d1d] font-bold text-xs uppercase tracking-widest mb-4">Cardiorespiratory Fitness</Text>
+            <View style={{ backgroundColor: "#0d0d0d", borderRadius: 20, borderWidth: 1, borderColor: "#1a1a1a", paddingHorizontal: 16 }}>
+              {renderDataRow("Speed in KM", localFormData.fs_speed_km ? `${localFormData.fs_speed_km} km/h` : "", "bicycle-outline")}
+              {renderDataRow("Heart Rate", localFormData.fs_heart_rate ? `${localFormData.fs_heart_rate} bpm` : "", "pulse-outline", false)}
             </View>
           </View>
 
           {/* MUSCLE ENDURANCE */}
-          <View className="space-y-4">
-            <Text className="text-orange-500 font-bold text-sm uppercase tracking-wider">Muscle Endurance</Text>
-            <View className="space-y-2">
+          <View style={{ marginBottom: 10 }}>
+            <Text className="text-[#e11d1d] font-bold text-xs uppercase tracking-widest mb-4">Muscle Endurance</Text>
+            <View style={{ backgroundColor: "#0d0d0d", borderRadius: 20, borderWidth: 1, borderColor: "#1a1a1a", paddingHorizontal: 16 }}>
               {renderMuscleEnduranceRow('Push-ups', 'fs_push_ups')}
               {renderMuscleEnduranceRow('Squats', 'fs_squats')}
               {renderMuscleEnduranceRow('Plank Hold', 'fs_plank_hold')}
               {renderMuscleEnduranceRow('Shoulder', 'fs_shoulder')}
               {renderMuscleEnduranceRow('Biceps', 'fs_biceps')}
               {renderMuscleEnduranceRow('Triceps', 'fs_triceps')}
-              {renderMuscleEnduranceRow('Curl ups', 'fs_curl_ups')}
+              {renderMuscleEnduranceRow('Curl ups', 'fs_curl_ups', false)}
             </View>
           </View>
         </View>
 
-        <View className="flex-row gap-3 mt-4">
-          <TouchableOpacity onPress={onPrevious} className="flex-1 bg-gray-700 rounded-2xl p-4">
-            <Text className="text-white text-center">Previous</Text>
+        <View className="flex-row gap-4 mt-2">
+          <TouchableOpacity 
+            onPress={onPrevious} 
+            className="flex-1 bg-[#111] rounded-2xl p-4 border border-[#222] flex-row justify-center items-center"
+          >
+            <Ionicons name="arrow-back" size={16} color="#aaa" style={{ marginRight: 8 }} />
+            <Text className="text-white font-semibold">Back</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => onNext(localFormData)} className="flex-1 bg-orange-600 rounded-2xl p-4">
-            <Text className="text-white text-center">Next</Text>
+          <TouchableOpacity 
+            onPress={() => onNext(localFormData)} 
+            className="flex-1 bg-[#e11d1d] rounded-2xl p-4 shadow-lg shadow-red-900/50 flex-row justify-center items-center"
+            style={{ shadowColor: "#e11d1d", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 }}
+          >
+            <Text className="text-white font-bold mr-2">Next</Text>
+            <Ionicons name="arrow-forward" size={18} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
