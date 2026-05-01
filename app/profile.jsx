@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  Alert,
   Modal,
   ScrollView,
   Text,
@@ -85,6 +86,24 @@ export default function Profile() {
     router.replace("/login");
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action is permanent and cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            // Perform deletion logic here if API exists
+            await handleLogout();
+          },
+        },
+      ]
+    );
+  };
+
   const userName = user?.username || "User";
   const phone = user?.mobile || "No phone number";
   const initial = userName.charAt(0).toUpperCase();
@@ -156,9 +175,17 @@ export default function Profile() {
         {/* LOGOUT */}
         <TouchableOpacity
           onPress={() => setLogoutVisible(true)}
-          className="bg-primary py-5 rounded-2xl items-center"
+          className="bg-primary py-5 rounded-2xl items-center mb-4"
         >
           <Text className="text-white font-bold text-lg">Logout</Text>
+        </TouchableOpacity>
+
+        {/* DELETE ACCOUNT */}
+        <TouchableOpacity
+          onPress={handleDeleteAccount}
+          className="bg-red-600/10 border border-red-600/20 py-5 rounded-2xl items-center"
+        >
+          <Text className="text-red-500 font-bold text-lg">Delete Account</Text>
         </TouchableOpacity>
       </ScrollView>
 
