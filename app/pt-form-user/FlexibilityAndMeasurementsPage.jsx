@@ -8,7 +8,7 @@ const FlexibilityAndMeasurementsPage = ({ formData = {}, onNext, onPrevious }) =
     flex_ymca_test: "",
     flex_knee_val: "",
     flex_knee_test: "",
-    measurements: Array(5).fill({
+    measurements: Array.from({ length: 5 }, () => ({
       date: "",
       height: "",
       weight: "",
@@ -23,18 +23,18 @@ const FlexibilityAndMeasurementsPage = ({ formData = {}, onNext, onPrevious }) =
       thigh: "",
       calf: "",
       lat: "",
-    })
+    }))
   });
 
   useEffect(() => {
     if (formData) {
       setLocalFormData((prev) => ({
         ...prev,
-        flex_apley_test: String(formData.flex_apley_test || "").trim(),
-        flex_ymca_val: formData.flex_ymca_val || "",
-        flex_ymca_test: String(formData.flex_ymca_test || "").trim(),
-        flex_knee_val: formData.flex_knee_val || "",
-        flex_knee_test: String(formData.flex_knee_test || "").trim(),
+        flex_apley_test: String(formData.flex_apley_test || formData.apley_test || "").trim(),
+        flex_ymca_val: formData.flex_ymca_val || formData.ymca_val || formData.ymca_value || "",
+        flex_ymca_test: String(formData.flex_ymca_test || formData.ymca_test || "").trim(),
+        flex_knee_val: formData.flex_knee_val || formData.knee_val || "",
+        flex_knee_test: String(formData.flex_knee_test || formData.knee_test || "").trim(),
         measurements: formData.measurements || prev.measurements
       }));
     }
