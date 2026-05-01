@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
-import { Redirect, Tabs, useRouter } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -19,8 +19,8 @@ import { getCart } from "../../services/api";
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const { user, logout, loading } = useAuth();
-
   const router = useRouter();
+
   const [cartCount, setCartCount] = useState(0);
   const [menuVisible, setMenuVisible] = useState(false);
   const [logoutVisible, setLogoutVisible] = useState(false);
@@ -30,35 +30,19 @@ export default function TabLayout() {
       const fetchCart = async () => {
         try {
           if (!user?.id) return;
-
           const data = await getCart(user.id);
           setCartCount(data?.length || 0);
         } catch (err) {
           console.log("Cart fetch error", err);
         }
       };
-
       fetchCart();
     }, [user])
   );
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/(auth)/login");
-    }
-  }, [user, loading]);
-
-  useEffect(() => {
-    const backAction = () => {
-      if (!user) return true;
-      return false;
-    };
-
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
-
+    const backAction = () => {};
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
     return () => backHandler.remove();
   }, [user]);
 
@@ -81,38 +65,52 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: true,
         headerTitle: "",
-        headerStyle: { backgroundColor: "#0f0f0f", paddingTop: insets.top },
-
+        headerStyle: { backgroundColor: "#0f0f0f", borderBottomWidth: 0, elevation: 0, shadowOpacity: 0 },
         tabBarActiveTintColor: "#e11d1d",
+        tabBarInactiveTintColor: "#666",
         tabBarStyle: {
           backgroundColor: "#0f0f0f",
           borderTopColor: "#222",
+          height: 60,
+          paddingBottom: 10,
         },
 
         headerLeft: () => (
-          <TouchableOpacity onPress={() => router.push("/")}>
+          <TouchableOpacity 
+            onPress={() => router.push("/")}
+            style={{ marginLeft: 16 }}
+          >
             <Image
               source={require("../../assets/images/logo_dark.png")}
-              className="w-20 h-11"
+              style={{ width: 80, height: 44 }}
               resizeMode="contain"
             />
           </TouchableOpacity>
         ),
 
         headerRight: () => (
-          <View className="flex-row items-center pr-4">
-
+          <View style={{ flexDirection: "row", alignItems: "center", paddingRight: 16 }}>
             {/* CART */}
             <TouchableOpacity
               onPress={() => router.push("/cart")}
-              className="mr-4"
+              style={{ marginRight: 16 }}
             >
-              <View>
-                <Ionicons name="cart-outline" size={22} color="white" />
-
+              <View style={{ position: "relative" }}>
+                <Ionicons name="cart-outline" size={24} color="white" />
                 {cartCount > 0 && (
-                  <View className="absolute -top-1.5 -right-2 bg-red-600 rounded-full min-w-[16px] h-4 items-center justify-center px-1">
-                    <Text className="text-white text-[10px] font-bold">
+                  <View style={{ 
+                    position: "absolute", 
+                    top: -6, 
+                    right: -8, 
+                    backgroundColor: "#e11d1d", 
+                    borderRadius: 10, 
+                    minWidth: 18, 
+                    height: 18, 
+                    alignItems: "center", 
+                    justifyContent: "center",
+                    paddingHorizontal: 2
+                  }}>
+                    <Text style={{ color: "white", fontSize: 10, fontWeight: "bold" }}>
                       {cartCount}
                     </Text>
                   </View>
@@ -123,15 +121,10 @@ export default function TabLayout() {
             {/* ORDERS */}
             <TouchableOpacity
               onPress={() => router.push("/Orders")}
-              className="mr-4"
+              style={{ marginRight: 16 }}
             >
-              <Ionicons name="cube-outline" size={22} color="white" />
+              <Ionicons name="cube-outline" size={24} color="white" />
             </TouchableOpacity>
-
-            {/* NOTIFICATION */}
-            {/* <TouchableOpacity className="mr-4">
-              <Ionicons name="notifications-outline" size={22} color="white" />
-            </TouchableOpacity> */}
 
             {/* AVATAR */}
             <TouchableOpacity
@@ -139,11 +132,17 @@ export default function TabLayout() {
                 if (!user) router.push("/(auth)/login");
                 else setMenuVisible(true);
               }}
-              className={`w-9 h-9 rounded-full items-center justify-center ${user ? "bg-red-600" : "bg-gray-700"
-                }`}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: user ? "#e11d1d" : "#374151"
+              }}
             >
               {user ? (
-                <Text className="text-white font-bold">
+                <Text style={{ color: "white", fontWeight: "bold" }}>
                   {user.username?.charAt(0)?.toUpperCase()}
                 </Text>
               ) : (
@@ -151,203 +150,82 @@ export default function TabLayout() {
               )}
             </TouchableOpacity>
 
-            {/* DROPDOWN MENU */}
-            <Modal
-              transparent
-              visible={user && menuVisible}
-              animationType="fade"
-              onRequestClose={() => setMenuVisible(false)}
-            >
-              <Pressable
-                className="flex-1"
-                onPress={() => setMenuVisible(false)}
-              >
-                <View className="absolute top-20 right-5 bg-[#1a1a1a] rounded-2xl p-4 w-[210px] border border-[#333]">
-
-                  {/* USER INFO */}
-                  <View className="mb-3">
-                    {user && (
-                      <>
-                        <Text className="text-white font-bold text-base">
-                          {user.username}
-                        </Text>
-                        <Text className="text-gray-400 text-xs">
-                          {user.role}
-                        </Text>
-                      </>
-                    )}
+            {/* MODALS */}
+            <Modal transparent visible={user && menuVisible} animationType="fade" onRequestClose={() => setMenuVisible(false)}>
+              <Pressable style={{ flex: 1 }} onPress={() => setMenuVisible(false)}>
+                <View style={{ 
+                  position: "absolute", 
+                  top: 60 + insets.top, 
+                  right: 16, 
+                  backgroundColor: "#1a1a1a", 
+                  borderRadius: 16, 
+                  padding: 16, 
+                  width: 200, 
+                  borderWidth: 1, 
+                  borderColor: "#333",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 10 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 20,
+                  elevation: 10
+                }}>
+                  <View style={{ marginBottom: 12 }}>
+                    <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>{user?.username}</Text>
+                    <Text style={{ color: "#9ca3af", fontSize: 12, textTransform: "capitalize" }}>{user?.role}</Text>
                   </View>
-
-                  <View className="h-[1px] bg-[#333] my-2" />
-
-                  {/* PROFILE */}
-                  <TouchableOpacity
-                    onPress={() => {
-                      setMenuVisible(false);
-                      router.push("/profile");
-                    }}
-                    className="py-2"
-                  >
-                    <Text className="text-white">My Profile</Text>
+                  <View style={{ height: 1, backgroundColor: "#333", marginVertical: 8 }} />
+                  
+                  <TouchableOpacity onPress={() => { setMenuVisible(false); router.push("/profile"); }} style={{ paddingVertical: 10 }}>
+                    <Text style={{ color: "white" }}>My Profile</Text>
                   </TouchableOpacity>
 
-                  {/* ADMIN */}
                   {user?.role === "admin" && (
-                    <TouchableOpacity
-                      onPress={() => {
-                        setMenuVisible(false);
-                        router.push("/(admin)");
-                      }}
-                      className="py-2"
-                    >
-                      <Text className="text-red-500 font-semibold">
-                        Admin Panel
-                      </Text>
+                    <TouchableOpacity onPress={() => { setMenuVisible(false); router.push("/(admin)"); }} style={{ paddingVertical: 10 }}>
+                      <Text style={{ color: "#ef4444", fontWeight: "600" }}>Admin Panel</Text>
                     </TouchableOpacity>
                   )}
 
-                  {/* TRAINER */}
                   {user?.role === "trainer" && (
-                    <TouchableOpacity
-                      onPress={() => {
-                        setMenuVisible(false);
-                        router.push("/(trainers)/dashboard");
-                      }}
-                      className="py-2"
-                    >
-                      <Text className="text-yellow-400 font-semibold">
-                        Trainer Panel
-                      </Text>
+                    <TouchableOpacity onPress={() => { setMenuVisible(false); router.push("/(trainers)/dashboard"); }} style={{ paddingVertical: 10 }}>
+                      <Text style={{ color: "#fbbf24", fontWeight: "600" }}>Trainer Panel</Text>
                     </TouchableOpacity>
                   )}
 
-                  <View className="h-[1px] bg-[#333] my-2" />
-
-                  {/* LOGOUT */}
-                  <TouchableOpacity
-                    onPress={() => {
-                      setMenuVisible(false);
-                      setLogoutVisible(true);
-                    }}
-                    className="py-2"
-                  >
-                    <Text className="text-red-600 font-bold">Logout</Text>
+                  <View style={{ height: 1, backgroundColor: "#333", marginVertical: 8 }} />
+                  <TouchableOpacity onPress={() => { setMenuVisible(false); setLogoutVisible(true); }} style={{ paddingVertical: 10 }}>
+                    <Text style={{ color: "#ef4444", fontWeight: "bold" }}>Logout</Text>
                   </TouchableOpacity>
                 </View>
               </Pressable>
             </Modal>
 
-            {/* LOGOUT CONFIRM */}
-            <Modal
-              transparent
-              visible={logoutVisible}
-              animationType="fade"
-              onRequestClose={() => setLogoutVisible(false)}
-            >
-              <View className="flex-1 bg-black/70 justify-center items-center px-5">
-                <View className="w-full bg-[#1a1a1a] rounded-3xl p-6 border border-[#333]">
-
-                  <Text className="text-white text-lg font-bold text-center">
-                    Confirm Logout
-                  </Text>
-
-                  <Text className="text-gray-400 text-center mt-2">
-                    Are you sure you want to logout?
-                  </Text>
-
-                  <View className="flex-row mt-5">
-                    <TouchableOpacity
-                      onPress={() => setLogoutVisible(false)}
-                      className="flex-1 bg-[#333] p-3 rounded-2xl mr-2.5 items-center"
-                    >
-                      <Text className="text-white">Cancel</Text>
+            <Modal transparent visible={logoutVisible} animationType="fade" onRequestClose={() => setLogoutVisible(false)}>
+              <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center", alignItems: "center", paddingHorizontal: 20 }}>
+                <View style={{ width: "100%", backgroundColor: "#1a1a1a", borderRadius: 24, padding: 24, borderWidth: 1, borderColor: "#333" }}>
+                  <Text style={{ color: "white", fontSize: 18, fontWeight: "bold", textAlign: "center" }}>Confirm Logout</Text>
+                  <Text style={{ color: "#9ca3af", textAlign: "center", marginTop: 8 }}>Are you sure you want to logout?</Text>
+                  <View style={{ flexDirection: "row", marginTop: 24 }}>
+                    <TouchableOpacity onPress={() => setLogoutVisible(false)} style={{ flex: 1, backgroundColor: "#333", padding: 14, borderRadius: 16, marginRight: 10, alignItems: "center" }}>
+                      <Text style={{ color: "white" }}>Cancel</Text>
                     </TouchableOpacity>
-
-                    <TouchableOpacity
-                      onPress={handleLogout}
-                      className="flex-1 bg-red-600 p-3 rounded-2xl items-center"
-                    >
-                      <Text className="text-white font-bold">Logout</Text>
+                    <TouchableOpacity onPress={handleLogout} style={{ flex: 1, backgroundColor: "#e11d1d", padding: 14, borderRadius: 16, alignItems: "center" }}>
+                      <Text style={{ color: "white", fontWeight: "bold" }}>Logout</Text>
                     </TouchableOpacity>
                   </View>
-
                 </View>
               </View>
             </Modal>
-
           </View>
         ),
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="workouts"
-        options={{
-          title: "Workouts",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="barbell" size={size} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="diet"
-        options={{
-          title: "Diet",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="nutrition" size={size} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="shop"
-        options={{
-          title: "Shop",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="cart" size={size} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="products"
-        options={{
-          title: "Products",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="pricetag" size={size} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="offers"
-        options={{
-          title: "Offers",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="gift" size={size} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="more"
-        options={{
-          title: "More",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="ellipsis-horizontal" size={size} color={color} />
-          ),
-        }}
-      />
+      <Tabs.Screen name="index" options={{ title: "Home", tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} /> }} />
+      <Tabs.Screen name="workouts" options={{ title: "Workouts", tabBarIcon: ({ color, size }) => <Ionicons name="barbell" size={size} color={color} /> }} />
+      <Tabs.Screen name="diet" options={{ title: "Diet", tabBarIcon: ({ color, size }) => <Ionicons name="nutrition" size={size} color={color} /> }} />
+      <Tabs.Screen name="shop" options={{ title: "Shop", tabBarIcon: ({ color, size }) => <Ionicons name="cart" size={size} color={color} /> }} />
+      <Tabs.Screen name="products" options={{ title: "Products", tabBarIcon: ({ color, size }) => <Ionicons name="pricetag" size={size} color={color} /> }} />
+      <Tabs.Screen name="offers" options={{ title: "Offers", tabBarIcon: ({ color, size }) => <Ionicons name="gift" size={size} color={color} /> }} />
+      <Tabs.Screen name="more" options={{ title: "More", tabBarIcon: ({ color, size }) => <Ionicons name="ellipsis-horizontal" size={size} color={color} /> }} />
     </Tabs>
   );
 }

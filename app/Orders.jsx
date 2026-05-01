@@ -15,7 +15,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../context/AuthContext";
 import { getUserOrders } from "../services/api";
 import BackButton from "./BackButton";
-import Header from "./Header";
 
 export default function Orders() {
   const { user } = useAuth();
@@ -187,22 +186,29 @@ export default function Orders() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
-      <Header />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+
+      {/* HEADER ROW */}
+      <View style={{
+        paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16,
+        backgroundColor: "#000", borderBottomWidth: 1, borderBottomColor: "#111",
+        flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+          <BackButton style={{ marginRight: 12 }} />
+          <View>
+            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "900", letterSpacing: -0.3 }}>My Orders</Text>
+            <Text style={{ color: "#4b5563", fontSize: 10, textTransform: "uppercase", letterSpacing: 2 }}>Order History</Text>
+          </View>
+        </View>
+        <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#e11d1d", alignItems: "center", justifyContent: "center", shadowColor: "#e11d1d", shadowOpacity: 0.4, shadowRadius: 10, elevation: 6 }}>
+          <Ionicons name="receipt-outline" size={20} color="#fff" />
+        </View>
+      </View>
+
       <View style={{ flex: 1, padding: 16 }}>
         <ScrollView showsVerticalScrollIndicator={false}>
-          <BackButton style={{ marginLeft: 4, marginTop: 20 }} />
-          <Text
-            style={{
-              color: "white",
-              fontSize: 28,
-              fontWeight: "bold",
-              marginBottom: 20,
-              marginTop: 20,
-            }}
-          >
-            My Orders
-          </Text>
+
 
           {loading && <Text style={{ color: "#aaa" }}>Loading orders...</Text>}
 

@@ -14,6 +14,7 @@ export function AuthProvider({ children }) {
       try {
         const storedToken = await AsyncStorage.getItem("token");
         const storedUser = await AsyncStorage.getItem("user");
+        console.log("RESTORE SESSION:", { storedToken: !!storedToken, storedUser: !!storedUser });
 
         if (storedToken && storedUser) {
           setToken(storedToken);

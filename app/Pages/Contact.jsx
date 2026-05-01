@@ -7,30 +7,41 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Header from "../Header";
 import BackButton from "../BackButton";
 
 export default function Contact() {
   return (
-    <SafeAreaView className="flex-1 bg-card">
-      {/* HEADER */}
-      <Header />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
 
-      <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
-        <BackButton style={{ marginTop: 20, marginBottom: 20 }} />
+      {/* HEADER ROW */}
+      <View style={{
+        paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16,
+        backgroundColor: "#000", borderBottomWidth: 1, borderBottomColor: "#111",
+        flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+          <BackButton style={{ marginRight: 12 }} />
+          <View>
+            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "900", letterSpacing: -0.3 }}>Contact Us</Text>
+            <Text style={{ color: "#4b5563", fontSize: 10, textTransform: "uppercase", letterSpacing: 2 }}>Get In Touch</Text>
+          </View>
+        </View>
+        <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#e11d1d", alignItems: "center", justifyContent: "center", shadowColor: "#e11d1d", shadowOpacity: 0.4, shadowRadius: 10, elevation: 6 }}>
+          <Ionicons name="call-outline" size={20} color="#fff" />
+        </View>
+      </View>
 
-        {/* TITLE */}
-        <Text className="text-primary text-sm font-semibold mb-2 mt-4">
-          CONTACT US
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 80 }} showsVerticalScrollIndicator={false}>
+
+        {/* SUBTITLE */}
+        <Text style={{ color: "#e11d1d", fontSize: 11, fontWeight: "700", textTransform: "uppercase", letterSpacing: 3, marginBottom: 8, marginTop: 8 }}>
+          Let's talk
         </Text>
-
-        <Text className="text-background text-3xl font-extrabold leading-tight mb-4">
-          Let’s talk about your{"\n"}fitness goals
+        <Text style={{ color: "#fff", fontSize: 26, fontWeight: "900", lineHeight: 34, marginBottom: 8 }}>
+          Talk about your{"\n"}fitness goals
         </Text>
-
-        <Text className="text-textSecondary text-sm mb-8 leading-6">
-          Reach out anytime. Our team is here to help you transform your body
-          with personalized training programs.
+        <Text style={{ color: "#6b7280", fontSize: 14, lineHeight: 22, marginBottom: 24 }}>
+          Reach out anytime. Our team is here to help you transform your body with personalized training programs.
         </Text>
 
         {/* CONTACT INFO */}

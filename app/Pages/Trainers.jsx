@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
-import { getAllStaffs } from "../../services/api"; // adjust path
+import { getAllStaffs } from "../../services/api";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Header from "../Header";
 import BackButton from "../BackButton";
 
 export default function Trainers() {
@@ -41,19 +41,30 @@ export default function Trainers() {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-darkBg">
-      <Header />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+
+      {/* HEADER ROW */}
+      <View style={{
+        paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16,
+        backgroundColor: "#000", borderBottomWidth: 1, borderBottomColor: "#111",
+        flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+          <BackButton style={{ marginRight: 12 }} />
+          <View>
+            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "900", letterSpacing: -0.3 }}>Elite Trainers</Text>
+            <Text style={{ color: "#4b5563", fontSize: 10, textTransform: "uppercase", letterSpacing: 2 }}>Certified Professionals</Text>
+          </View>
+        </View>
+        <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#e11d1d", alignItems: "center", justifyContent: "center", shadowColor: "#e11d1d", shadowOpacity: 0.4, shadowRadius: 10, elevation: 6 }}>
+          <Ionicons name="people-outline" size={20} color="#fff" />
+        </View>
+      </View>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
-        className="flex-1 bg-darkBg px-5"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40 }}
       >
-        <BackButton style={{ marginTop: 20, marginBottom: 20 }} />
-        <Text className="text-white text-3xl font-extrabold mb-2">
-          Elite Trainers
-        </Text>
-        <Text className="text-textSecondary mb-8 text-sm tracking-wide">
-          Train with certified professionals
-        </Text>
 
         {loading && <ActivityIndicator size="large" color="#ff3c00" />}
 

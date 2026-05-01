@@ -11,7 +11,6 @@ import { getAllFacilities } from "../../services/api";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Header from "../Header";
 import BackButton from "../BackButton";
 
 export default function Facilities() {
@@ -25,7 +24,6 @@ export default function Facilities() {
   const fetchFacilities = async () => {
     try {
       const data = await getAllFacilities();
-
       if (Array.isArray(data)) {
         setFacilities(data);
       } else {
@@ -38,20 +36,30 @@ export default function Facilities() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
-      <Header />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+
+      {/* HEADER ROW */}
+      <View style={{
+        paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16,
+        backgroundColor: "#000", borderBottomWidth: 1, borderBottomColor: "#111",
+        flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+          <BackButton style={{ marginRight: 12 }} />
+          <View>
+            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "900", letterSpacing: -0.3 }}>Our Facilities</Text>
+            <Text style={{ color: "#4b5563", fontSize: 10, textTransform: "uppercase", letterSpacing: 2 }}>Premium Workout Zones</Text>
+          </View>
+        </View>
+        <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#e11d1d", alignItems: "center", justifyContent: "center", shadowColor: "#e11d1d", shadowOpacity: 0.4, shadowRadius: 10, elevation: 6 }}>
+          <Ionicons name="barbell-outline" size={20} color="#fff" />
+        </View>
+      </View>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40, paddingTop: 20 }}
       >
-        <BackButton style={{ marginTop: 20, marginBottom: 20 }} />
-        {/* Header */}
-        <Text className="text-white text-3xl font-extrabold mb-2">
-          Our Facilities
-        </Text>
-        <Text className="text-gray-400 mb-8">
-          Train in world-class premium workout zones
-        </Text>
 
         {facilities.length === 0 && (
           <Text className="text-gray-400 text-center mt-10">
