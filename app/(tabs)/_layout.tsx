@@ -17,6 +17,7 @@ import { useAuth } from "../../context/AuthContext";
 import { getCart } from "../../services/api";
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
   const { user, logout, loading } = useAuth();
 
   const router = useRouter();
