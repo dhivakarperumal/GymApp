@@ -334,7 +334,7 @@ export default function TabLayout() {
         options={{
           title: "More",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="menu" size={size} color={color} />
+            <Ionicons name="ellipsis-horizontal" size={size} color={color} />
           ),
         }}
       />
