@@ -293,6 +293,14 @@ export default function Profile() {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => router.push("/pt-form")}
+            className="flex-row justify-between items-center py-4 border-b border-[#222]"
+          >
+            <Text className="text-white">PT Form</Text>
+            <Ionicons name="chevron-forward" size={18} color="#888" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
             onPress={() => router.push("/Orders")}
             className="flex-row justify-between items-center py-4 border-b border-[#222]"
           >
