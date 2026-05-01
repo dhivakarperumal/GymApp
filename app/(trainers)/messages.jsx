@@ -277,14 +277,16 @@ export default function MessagesScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safe} edges={["left", "right"]}>
+    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={20} color="white" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Messages</Text>
-        <View style={{ width: 40 }} />
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={styles.headerTitle}>Messages</Text>
+          <Text style={{ color: "#6b7280", fontSize: 10, textTransform: "uppercase", letterSpacing: 1.5 }}>Communicate with members</Text>
+        </View>
       </View>
 
       {/* TABS */}

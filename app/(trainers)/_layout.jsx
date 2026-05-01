@@ -92,7 +92,7 @@ function TrainerHeader() {
           className="mr-5"
           onPress={() => router.push("/(trainers)/messages")}
         >
-          <Ionicons name="chatbubble-ellipses-outline" size={22} color="white" />
+          <Ionicons name="paper-plane-outline" size={22} color="white" />
         </TouchableOpacity>
 
         {/* NOTIFICATION */}

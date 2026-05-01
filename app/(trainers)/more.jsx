@@ -62,18 +62,7 @@ const menuItems = [
     borderAccent: "#10b98130",
   },
 
-  {
-    id: "delete",
-    title: "Delete Account",
-    subtitle: "Permanently remove your account",
-    icon: "trash-outline",
-    route: null,
-    iconBg: "#dc2626",
-    glowBg: "#dc262618",
-    arrowBg: "#dc262620",
-    arrowColor: "#f87171",
-    borderAccent: "#dc262630",
-  },
+ 
 ];
 
 export default function MoreOptions() {
@@ -100,20 +89,13 @@ export default function MoreOptions() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["left", "right"]}>
+    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* HEADER */}
-        <View style={styles.header}>
-          <Text style={styles.headerEyebrow}>TRAINER APP</Text>
-          <Text style={styles.headerTitle}>More Options</Text>
-          <Text style={styles.headerSubtitle}>
-            All your tools, neatly organized
-          </Text>
-        </View>
+
 
         {/* CARDS */}
         {menuItems.map((item) => (
@@ -183,13 +165,14 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
+    paddingTop: 30,
     paddingBottom: 110,
   },
 
   /* ── Header ── */
   header: {
-    paddingTop: 32,
-    paddingBottom: 28,
+    paddingTop: 10,
+    paddingBottom: 18,
   },
   headerEyebrow: {
     color: "#ff3c00",
