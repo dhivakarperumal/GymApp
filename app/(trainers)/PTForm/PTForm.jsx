@@ -1,7 +1,8 @@
 import dayjs from 'dayjs';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { Alert, ScrollView, Text, View, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../context/AuthContext.js';
 import api from '../../../services/api';
 import FitnessScreening from './FitnessScreening';
@@ -287,13 +288,22 @@ const PTForm = ({ route, navigation }) => {
   return (
     <View className="flex-1 bg-[#0f0f0f]">
       {/* Header */}
-      <View className="bg-[#1a1a1a] px-4 py-4 border-b border-white/10">
-        <Text className="text-white text-lg font-bold text-center">
-          PT Form - Step {currentStep + 1} of {steps.length}
-        </Text>
-        <Text className="text-orange-400 text-sm text-center mt-1">
-          {steps[currentStep].title}
-        </Text>
+      <View className="bg-[#1a1a1a] px-4 py-4 border-b border-white/10 flex-row items-center">
+        <TouchableOpacity 
+          onPress={() => router.back()} 
+          className="w-8 h-8 bg-[#262626] rounded-full items-center justify-center mr-3 border border-white/5"
+        >
+          <Ionicons name="arrow-back" size={18} color="white" />
+        </TouchableOpacity>
+        <View className="flex-1">
+          <Text className="text-white text-lg font-bold text-center">
+            PT Form - Step {currentStep + 1} of {steps.length}
+          </Text>
+          <Text className="text-orange-400 text-sm text-center mt-1">
+            {steps[currentStep].title}
+          </Text>
+        </View>
+        <View className="w-8" /> {/* Placeholder to center text */}
       </View>
 
       {/* Progress Bar */}

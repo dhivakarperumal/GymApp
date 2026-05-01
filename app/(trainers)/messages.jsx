@@ -281,10 +281,10 @@ export default function MessagesScreen() {
       {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color="#f9fafb" />
+          <Ionicons name="arrow-back" size={20} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Messages</Text>
-        <View style={{ width: 32 }} />
+        <View style={{ width: 40 }} />
       </View>
 
       {/* TABS */}
@@ -367,12 +367,14 @@ const styles = StyleSheet.create({
     borderBottomColor: "#1a1a1a",
   },
   backBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: "#1f1f1f",
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   headerTitle: { color: "#ffffff", fontSize: 18, fontWeight: "700" },
 

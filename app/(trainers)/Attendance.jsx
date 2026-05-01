@@ -11,6 +11,7 @@ import {
   Platform,
 } from "react-native";
 
+import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import dayjs from "dayjs";
@@ -45,6 +46,7 @@ const getDistance = (lat1, lon1, lat2, lon2) => {
 
 export default function Attendance() {
   const { user } = useAuth();
+  const router = useRouter();
 
   const trainerId = user?.id;
 
@@ -252,10 +254,19 @@ export default function Attendance() {
           contentContainerStyle={{ paddingBottom: 250 }}
         >
           {/* HEADER */}
-
-          <Text className="text-white text-3xl font-bold mb-2">
-            Member's Attendance
-          </Text>
+          <View className="flex-row items-center mb-4">
+            <TouchableOpacity 
+              onPress={() => router.back()} 
+              className="w-10 h-10 bg-[#1a1a1a] rounded-full items-center justify-center mr-4 border border-white/10"
+            >
+              <Ionicons name="arrow-back" size={20} color="white" />
+            </TouchableOpacity>
+            <View>
+              <Text className="text-white text-3xl font-bold">
+                Member's Attendance
+              </Text>
+            </View>
+          </View>
 
           <Text className="text-gray-400 mb-6">
             {dayjs(date).format("DD MMM YYYY")}

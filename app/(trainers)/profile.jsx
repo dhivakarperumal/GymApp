@@ -78,9 +78,13 @@ export default function Profile() {
       className="flex-1 bg-black"
       contentContainerStyle={{ paddingBottom: 40 }}
     >
-      {/* HEADER */}
-
-      <View className="bg-[#111] pt-16 pb-10 px-6 rounded-b-[40px]">
+      <View className="bg-[#111] pt-12 pb-10 px-6 rounded-b-[40px]">
+        <TouchableOpacity 
+          onPress={() => router.back()} 
+          className="w-10 h-10 bg-[#1a1a1a] rounded-full items-center justify-center mb-4 border border-white/10"
+        >
+          <Ionicons name="arrow-back" size={20} color="white" />
+        </TouchableOpacity>
         <View className="items-center">
           <View className="shadow-lg shadow-black">
             <Image

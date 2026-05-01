@@ -33,6 +33,7 @@ import {
   Info,
 } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import dayjs from "dayjs";
 import * as XLSX from "xlsx";
 import * as DocumentPicker from "expo-document-picker";
@@ -54,6 +55,7 @@ import { useAuth } from "../../context/AuthContext";
 
 export default function FollowupEnquiry() {
   const { user, role } = useAuth();
+  const router = useRouter();
   const [enquiries, setEnquiries] = useState([]);
   const [followups, setFollowups] = useState([]);
   const [plans, setPlans] = useState([]);
@@ -373,10 +375,16 @@ export default function FollowupEnquiry() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={["left", "right"]}>
+    <SafeAreaView className="flex-1 bg-black" edges={["top", "left", "right"]}>
       <View className="flex-1 px-4 pt-4">
-        <View className="flex-row justify-between items-center mb-6">
-          <Text className="text-white text-2xl font-bold">Follow-up Enquiry</Text>
+        <View className="flex-row items-center mb-6">
+          <TouchableOpacity 
+            onPress={() => router.back()} 
+            className="w-10 h-10 bg-[#1a1a1a] rounded-full items-center justify-center mr-3 border border-white/10"
+          >
+            <ChevronLeft size={24} color="white" />
+          </TouchableOpacity>
+          <Text className="text-white text-2xl font-bold flex-1">Follow-up Enquiry</Text>
           <View className="flex-row gap-2">
              <TouchableOpacity
               onPress={handleExcelImport}

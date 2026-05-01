@@ -141,7 +141,7 @@ export default function TrainerPricing() {
         {/* ── HEADER ── */}
         <View style={s.header}>
           <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-            <Ionicons name="chevron-back" size={20} color="#f97316" />
+            <Ionicons name="arrow-back" size={20} color="white" />
           </TouchableOpacity>
           <View style={s.headerTextBlock}>
             <Text style={s.eyebrow}>MEMBERSHIP</Text>
@@ -400,7 +400,7 @@ const s = StyleSheet.create({
 
   /* Header */
   header:          { paddingTop: 28, paddingBottom: 20, flexDirection: "row", alignItems: "flex-start", gap: 12 },
-  backBtn:         { marginTop: 6, width: 34, height: 34, borderRadius: 10, backgroundColor: "#1a1a1a", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#2a2a2a" },
+  backBtn:         { marginTop: 6, width: 40, height: 40, borderRadius: 20, backgroundColor: "#1a1a1a", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
   headerTextBlock: { flex: 1 },
   eyebrow:         { color: "#f97316", fontSize: 10, fontWeight: "700", letterSpacing: 3, marginBottom: 4 },
   headerTitle:     { color: "#ffffff", fontSize: 28, fontWeight: "800" },

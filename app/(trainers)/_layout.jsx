@@ -362,11 +362,11 @@ export default function TrainersLayout() {
       />
 
       {/* Hidden screens — accessible via router but not in tab bar */}
-      <Tabs.Screen name="Attendance"       options={{ href: null }} />
-      <Tabs.Screen name="profile"          options={{ href: null }} />
-      <Tabs.Screen name="follow-up-enquiry" options={{ href: null }} />
-      <Tabs.Screen name="pricing"          options={{ href: null }} />
-      <Tabs.Screen name="messages"         options={{ href: null }} />
+      <Tabs.Screen name="Attendance"       options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="profile"          options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="follow-up-enquiry" options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="pricing"          options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="messages"         options={{ href: null, headerShown: false }} />
 
       {/* Hide all PTForm components */}
       <Tabs.Screen
@@ -443,6 +443,7 @@ export default function TrainersLayout() {
         name="pt-form"
         options={{
           href: null,
+          headerShown: false
         }}
       />
     </Tabs>
