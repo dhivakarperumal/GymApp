@@ -1,48 +1,47 @@
-import { Ionicons } from "@expo/vector-icons";
-import dayjs from "dayjs";
-import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   Image,
   RefreshControl,
-  ScrollView,
   Text,
-  TouchableOpacity,
-  View
+  Pressable,
+  View,
 } from "react-native";
-import { getAllPlans, getAllProducts, getOffers } from "../../services/api";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { getAllProducts, getOffers } from "../../services/api";
+import ProductCard from "../ProductCard";
 
-const OFFERS_IMAGE_BASE = "https://mygym.qtechx.com"; // Assuming images are hosted here like staff photos
+const OFFERS_IMAGE_BASE = "https://dap.qtechx.com";
 
 export default function OffersScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  
+  const [activeTab, setActiveTab] = useState("offers"); 
   const [offers, setOffers] = useState([]);
-  const [plans, setPlans] = useState([]);
-  const [products, setProducts] = useState([]);
+  const [offerProducts, setOfferProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState("all"); // all | plan | product
 
   const fetchData = async () => {
+    setLoading(true);
     try {
-      const [offersRes, plansRes, productsRes] = await Promise.all([
+      const [offersRes, productsRes] = await Promise.all([
         getOffers(),
-        getAllPlans(),
         getAllProducts(),
       ]);
-      
-      // Handle different response shapes if necessary
-      const offersData = Array.isArray(offersRes) ? offersRes : offersRes.data || [];
-      const plansData = Array.isArray(plansRes) ? plansRes : plansRes.data || [];
-      const productsData = Array.isArray(productsRes) ? productsRes : productsRes.data || [];
-
-      setOffers(offersData);
-      setPlans(plansData);
-      setProducts(productsData);
+      setOffers(offersRes || []);
+      const discounted = (productsRes || []).filter(p => {
+        const mrp = Number(p.mrp || 0);
+        const offerPrice = Number(p.offer_price || p.offerPrice || 0);
+        return offerPrice > 0 && offerPrice < mrp;
+      });
+      setOfferProducts(discounted);
     } catch (err) {
-      console.error("Failed to load offers:", err);
+      console.log("Fetch error:", err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -58,170 +57,131 @@ export default function OffersScreen() {
     fetchData();
   };
 
-  const getTarget = (o) => {
-    const list = o.offer_type === "plan" ? plans : products;
-    return list.find((t) => t.id == o.target_id);
-  };
+  const renderOfferItem = ({ item }) => (
+    <Pressable
+      onPress={() => {
+        if (item.offer_type === "plan") router.push("/Pages/Pricing");
+        else router.push("/shop");
+      }}
+      style={{
+        marginBottom: 24,
+        borderRadius: 24,
+        overflow: "hidden",
+        backgroundColor: "#111",
+        borderWidth: 1,
+        borderColor: "#222",
+      }}
+    >
+      <View style={{ height: 192, position: "relative" }}>
+        <Image
+          source={{
+            uri: (item.offer_image?.startsWith("http") || item.offer_image?.startsWith("data:"))
+              ? item.offer_image
+              : `${OFFERS_IMAGE_BASE}${item.offer_image?.startsWith("/") ? "" : "/"}${item.offer_image}`,
+          }}
+          style={{ width: "100%", height: "100%" }}
+          resizeMode="cover"
+        />
+        <View style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.3)" }} />
+        <View style={{ position: "absolute", top: 16, right: 16, backgroundColor: "#e11d1d", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 }}>
+          <Text style={{ color: "white", fontSize: 10, fontWeight: "900", textTransform: "uppercase", letterSpacing: 1 }}>
+            {item.offer_percentage}% OFF
+          </Text>
+        </View>
+      </View>
 
-  const filteredOffers = offers.filter((o) => {
-    if (!o.active) return false;
-    if (activeTab === "all") return true;
-    return o.offer_type === activeTab;
-  });
-
-  const renderOfferItem = ({ item, index }) => {
-    const target = getTarget(item);
-    const daysLeft = item.end_date ? dayjs(item.end_date).diff(dayjs(), "day") : null;
-    const isExpiringSoon = daysLeft !== null && daysLeft <= 7 && daysLeft >= 0;
-    const isExpired = item.end_date && dayjs(item.end_date).isBefore(dayjs(), "day");
-
-    return (
-      <View 
-        className="bg-[#141414] border border-[#262626] rounded-3xl mb-5 overflow-hidden shadow-lg shadow-black/40"
-      >
-        {/* IMAGE SECTION */}
-        <View className="relative h-44">
-          {item.offer_image ? (
-            <Image
-              source={{ uri: item.offer_image.startsWith('http') ? item.offer_image : `${OFFERS_IMAGE_BASE}${item.offer_image}` }}
-              className="w-full h-full"
-              resizeMode="cover"
-            />
-          ) : (
-            <View className="w-full h-full bg-red-900/10 items-center justify-center">
-              <Ionicons name="pricetag" size={60} color="#333" />
-            </View>
-          )}
-          
-          {/* OVERLAY GRADIENT EFFECT */}
-          <View className="absolute inset-0 bg-black/30" />
-
-          {/* DISCOUNT BADGE */}
-          <View className="absolute bottom-3 left-3 bg-red-600 px-3 py-1.5 rounded-xl shadow-lg shadow-red-600/50">
-            <Text className="text-white font-black text-lg">
-              {item.discount_percentage}% OFF
-            </Text>
-          </View>
-
-          {/* EXPIRY TAG */}
-          {isExpiringSoon && !isExpired && (
-            <View className="absolute top-3 right-3 bg-orange-500 px-3 py-1 rounded-full">
-              <Text className="text-white text-[10px] font-bold uppercase tracking-widest">
-                ⏰ {daysLeft}d left
-              </Text>
-            </View>
-          )}
-          
-          {/* TYPE TAG */}
-          <View className="absolute top-3 left-3 bg-black/60 border border-white/10 px-3 py-1 rounded-full">
-            <Text className="text-white text-[10px] font-bold uppercase tracking-widest">
-              {item.offer_type}
+      <View style={{ padding: 20 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: "white", fontSize: 20, fontWeight: "bold" }}>{item.offer_name}</Text>
+            <Text style={{ color: "#9ca3af", fontSize: 12, marginTop: 4 }} numberOfLines={2}>
+              {item.offer_description}
             </Text>
           </View>
         </View>
 
-        {/* CONTENT SECTION */}
-        <View className="p-5">
-          <Text className="text-white text-xl font-bold mb-1">{item.offer_name}</Text>
-          
-          {target && (
-            <View className="flex-row items-center mb-3">
-              <Ionicons 
-                name={item.offer_type === "plan" ? "list" : "cube"} 
-                size={14} 
-                color="#666" 
-              />
-              <Text className="text-gray-400 text-xs font-semibold uppercase tracking-widest ml-2">
-                {target.name}
-              </Text>
-            </View>
-          )}
-
-          {item.description && (
-            <Text className="text-gray-400 text-sm mb-4 leading-5" numberOfLines={3}>
-              {item.description}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 16 }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Ionicons name="time-outline" size={14} color="#666" />
+            <Text style={{ color: "#6b7280", fontSize: 10, marginLeft: 4, fontWeight: "bold", textTransform: "uppercase" }}>
+              Expires: {item.expiry_date || "Limited Time"}
             </Text>
-          )}
-
-          {/* DATE & CONTACT */}
-          <View className="border-t border-[#262626] pt-4 mt-2">
-            <View className="flex-row items-center justify-between">
-              <View>
-                <Text className="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">Validity</Text>
-                <Text className="text-white text-xs font-medium">
-                  {dayjs(item.start_date).format("MMM DD")} - {dayjs(item.end_date).format("MMM DD, YYYY")}
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                onPress={() => {
-                  if (item.offer_type === "plan") router.push("/pricing");
-                  else router.push("/(tabs)/shop");
-                }}
-                className="bg-red-600 px-5 py-2 rounded-full"
-              >
-                <Text className="text-white text-xs font-bold uppercase tracking-widest">
-                  View
-                </Text>
-              </TouchableOpacity>
-            </View>
+          </View>
+          <View style={{ backgroundColor: "rgba(225, 29, 29, 0.1)", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: "rgba(225, 29, 29, 0.2)" }}>
+            <Text style={{ color: "#ef4444", fontSize: 12, fontWeight: "900", textTransform: "uppercase" }}>View Deal</Text>
           </View>
         </View>
       </View>
-    );
-  };
+    </Pressable>
+  );
 
   return (
-    <View className="flex-1 bg-black pt-12">
-      <View className="flex-1 px-4">
+    <View style={{ flex: 1, backgroundColor: "black", paddingTop: Math.max(insets.top, 20) }}>
+      <View style={{ flex: 1, paddingHorizontal: 16 }}>
         
-        {/* HEADER */}
-        <View className="py-6">
-          <Text className="text-white text-3xl font-black tracking-tight">Special Offers</Text>
-          <Text className="text-gray-500 text-xs uppercase tracking-[3px] mt-1">Exclusive Promotions</Text>
+        <View style={{ paddingVertical: 24 }}>
+          <Text style={{ color: "white", fontSize: 30, fontWeight: "900", letterSpacing: -0.5 }}>Promotions</Text>
+          <Text style={{ color: "#6b7280", fontSize: 12, textTransform: "uppercase", letterSpacing: 3, marginTop: 4 }}>Handpicked Deals For You</Text>
         </View>
 
-        {/* TABS */}
-        <View className="flex-row mb-6 bg-[#141414] p-1.5 rounded-2xl border border-[#262626]">
-          {["all", "plan", "product"].map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              onPress={() => setActiveTab(tab)}
-              className={`flex-1 py-2.5 rounded-xl items-center ${
-                activeTab === tab ? "bg-red-600 shadow-md shadow-red-600/30" : ""
-              }`}
+        <View style={{ flexDirection: "row", marginBottom: 24, backgroundColor: "#141414", padding: 6, borderRadius: 16, borderWidth: 1, borderColor: "#262626" }}>
+          {[
+            { id: "offers", label: "Special Offers", icon: "gift-outline" },
+            { id: "products", label: "Offer Products", icon: "cart-outline" }
+          ].map((tab) => (
+            <Pressable
+              key={tab.id}
+              onPress={() => setActiveTab(tab.id)}
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                paddingVertical: 12,
+                borderRadius: 12,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: activeTab === tab.id ? "#e11d1d" : "transparent",
+              }}
             >
+              <Ionicons 
+                name={tab.icon} 
+                size={16} 
+                color={activeTab === tab.id ? "white" : "#666"} 
+                style={{ marginRight: 8 }}
+              />
               <Text 
-                className={`text-[10px] font-black uppercase tracking-widest ${
-                  activeTab === tab ? "text-white" : "text-gray-500"
-                }`}
+                style={{
+                  fontSize: 10,
+                  fontWeight: "900",
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                  color: activeTab === tab.id ? "white" : "#6b7280",
+                }}
               >
-                {tab}
+                {tab.label}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
 
-        {/* LIST */}
         {loading ? (
-          <View className="flex-1 justify-center items-center">
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
             <ActivityIndicator size="large" color="#ef4444" />
           </View>
         ) : (
           <FlatList
-            data={filteredOffers}
+            data={activeTab === "offers" ? offers : offerProducts}
             keyExtractor={(item) => item.id.toString()}
-            renderItem={renderOfferItem}
+            renderItem={activeTab === "offers" ? renderOfferItem : ({ item }) => <ProductCard item={item} grid={false} />}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 100 }}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ef4444" />
             }
             ListEmptyComponent={
-              <View className="flex-1 items-center justify-center py-20">
-                <Ionicons name="pricetag-outline" size={64} color="#222" />
-                <Text className="text-gray-500 mt-4 font-bold text-lg">No active offers found</Text>
-                <Text className="text-gray-600 text-center mt-2 px-10">Check back later for new seasonal promotions and handpicked deals.</Text>
+              <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 80 }}>
+                <Ionicons name={activeTab === "offers" ? "gift-outline" : "pricetags-outline"} size={64} color="#222" />
+                <Text style={{ color: "#6b7280", marginTop: 16, fontWeight: "bold", fontSize: 18 }}>No active {activeTab} found</Text>
+                <Text style={{ color: "#4b5563", textAlign: "center", marginTop: 8, paddingHorizontal: 40 }}>Check back later for new seasonal promotions and handpicked deals.</Text>
               </View>
             }
           />
