@@ -1,44 +1,44 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   ScrollView,
-  View,
   Text,
   TextInput,
   TouchableOpacity,
+  View,
 } from "react-native";
 
 const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
   const [form, setForm] = useState({
-    fs_height: "",
-    fs_weight: "",
-    fs_resting_hr: "",
+    height: "",
+    weight: "",
+    resting_hr: "",
 
-    fs_fat_percentage: "",
-    fs_fat_level: "",
+    fat_percentage: "",
+    fat_level: "",
 
-    fs_speed_km: "",
-    fs_heart_rate: "",
+    speed_km: "",
+    heart_rate: "",
 
-    fs_push_ups_count: "",
-    fs_push_ups_level: "",
+    push_ups_count: "",
+    push_ups_level: "",
 
-    fs_squats_count: "",
-    fs_squats_level: "",
+    squats_count: "",
+    squats_level: "",
 
-    fs_plank_hold_count: "",
-    fs_plank_hold_level: "",
+    plank_hold_count: "",
+    plank_hold_level: "",
 
-    fs_shoulder_count: "",
-    fs_shoulder_level: "",
+    shoulder_count: "",
+    shoulder_level: "",
 
-    fs_biceps_count: "",
-    fs_biceps_level: "",
+    biceps_count: "",
+    biceps_level: "",
 
-    fs_triceps_count: "",
-    fs_triceps_level: "",
+    triceps_count: "",
+    triceps_level: "",
 
-    fs_curl_ups_count: "",
-    fs_curl_ups_level: "",
+    curl_ups_count: "",
+    curl_ups_level: "",
   });
 
   const [manualFat, setManualFat] = useState(false);
@@ -55,23 +55,31 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
   useEffect(() => {
     if (manualFat) return;
 
-    const fat = parseFloat(form.fs_fat_percentage);
+    const fat = parseFloat(form.fat_percentage);
     if (isNaN(fat)) return;
 
+    const gender = initialData?.gender || "Male";
     let level = "";
 
-    if (fat < 8) level = "Low";
-    else if (fat <= 19) level = "Healthy";
-    else if (fat <= 25) level = "Overweight";
-    else level = "Obese";
+    if (gender === "Male") {
+      if (fat < 8) level = "Low";
+      else if (fat <= 19) level = "Healthy";
+      else if (fat <= 25) level = "Overweight";
+      else level = "Obese";
+    } else {
+      if (fat < 21) level = "Low";
+      else if (fat <= 33) level = "Healthy";
+      else if (fat <= 39) level = "Overweight";
+      else level = "Obese";
+    }
 
-    setForm(prev => ({ ...prev, fs_fat_level: level }));
-  }, [form.fs_fat_percentage]);
+    setForm(prev => ({ ...prev, fat_level: level }));
+  }, [form.fat_percentage, initialData?.gender]);
 
   const Radio = ({ label, value, name }) => (
     <TouchableOpacity
       onPress={() => {
-        if (name === "fs_fat_level") setManualFat(true);
+        if (name === "fat_level") setManualFat(true);
         handleChange(name, value);
       }}
       style={{ flexDirection: "row", alignItems: "center", marginRight: 12 }}
@@ -121,24 +129,24 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
         <TextInput
           placeholder="Height (cm)"
           placeholderTextColor="#777"
-          value={form.fs_height}
-          onChangeText={(t) => handleChange("fs_height", t)}
+          value={form.height}
+          onChangeText={(t) => handleChange("height", t)}
           style={input}
         />
 
         <TextInput
           placeholder="Weight (kg)"
           placeholderTextColor="#777"
-          value={form.fs_weight}
-          onChangeText={(t) => handleChange("fs_weight", t)}
+          value={form.weight}
+          onChangeText={(t) => handleChange("weight", t)}
           style={input}
         />
 
         <TextInput
           placeholder="Resting HR"
           placeholderTextColor="#777"
-          value={form.fs_resting_hr}
-          onChangeText={(t) => handleChange("fs_resting_hr", t)}
+          value={form.resting_hr}
+          onChangeText={(t) => handleChange("resting_hr", t)}
           style={input}
         />
 
@@ -148,16 +156,16 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
         <TextInput
           placeholder="Fat %"
           placeholderTextColor="#777"
-          value={form.fs_fat_percentage}
-          onChangeText={(t) => handleChange("fs_fat_percentage", t)}
+          value={form.fat_percentage}
+          onChangeText={(t) => handleChange("fat_percentage", t)}
           style={input}
         />
 
         <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-          <Radio label="Low" value="Low" name="fs_fat_level" />
-          <Radio label="Healthy" value="Healthy" name="fs_fat_level" />
-          <Radio label="Overweight" value="Overweight" name="fs_fat_level" />
-          <Radio label="Obese" value="Obese" name="fs_fat_level" />
+          <Radio label="Low" value="Low" name="fat_level" />
+          <Radio label="Healthy" value="Healthy" name="fat_level" />
+          <Radio label="Overweight" value="Overweight" name="fat_level" />
+          <Radio label="Obese" value="Obese" name="fat_level" />
         </View>
 
         {/* CARDIO */}
@@ -166,29 +174,29 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
         <TextInput
           placeholder="Speed (km)"
           placeholderTextColor="#777"
-          value={form.fs_speed_km}
-          onChangeText={(t) => handleChange("fs_speed_km", t)}
+          value={form.speed_km}
+          onChangeText={(t) => handleChange("speed_km", t)}
           style={input}
         />
 
         <TextInput
           placeholder="Heart Rate"
           placeholderTextColor="#777"
-          value={form.fs_heart_rate}
-          onChangeText={(t) => handleChange("fs_heart_rate", t)}
+          value={form.heart_rate}
+          onChangeText={(t) => handleChange("heart_rate", t)}
           style={input}
         />
 
         {/* MUSCLE */}
         <Text style={title}>Muscle Endurance</Text>
 
-        {MuscleRow("Push Ups", "fs_push_ups")}
-        {MuscleRow("Squats", "fs_squats")}
-        {MuscleRow("Plank Hold", "fs_plank_hold")}
-        {MuscleRow("Shoulder", "fs_shoulder")}
-        {MuscleRow("Biceps", "fs_biceps")}
-        {MuscleRow("Triceps", "fs_triceps")}
-        {MuscleRow("Curl Ups", "fs_curl_ups")}
+        {MuscleRow("Push Ups", "push_ups")}
+        {MuscleRow("Squats", "squats")}
+        {MuscleRow("Plank Hold", "plank_hold")}
+        {MuscleRow("Shoulder", "shoulder")}
+        {MuscleRow("Biceps", "biceps")}
+        {MuscleRow("Triceps", "triceps")}
+        {MuscleRow("Curl Ups", "curl_ups")}
 
         {/* BUTTONS */}
         <View style={{ flexDirection: "row", marginTop: 20 }}>
