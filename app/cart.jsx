@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -9,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import { useAuth } from "../context/AuthContext";
 import {
   deleteCartApi,
@@ -16,11 +18,8 @@ import {
   getCart,
   updateCartApi,
 } from "../services/api";
-import Header from "./Header";
 import BackButton from "./BackButton";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
-import Toast from "react-native-toast-message";
+import Header from "./Header";
 
 export default function Cart() {
 
@@ -48,28 +47,28 @@ export default function Cart() {
       // console.log("CART API RESPONSE 👉", data);
 
       const correctedCart = await Promise.all(
-  data.map(async (item) => {
-    const product = products.find(p => p.id === item.productId);
+        data.map(async (item) => {
+          const product = products.find(p => p.id === item.productId);
 
-    if (!product) return item;
+          if (!product) return item;
 
-    const variantKey =
-      item.variant ||
-      item.weight ||
-      `${item.size}-${item.gender}`;
+          const variantKey =
+            item.variant ||
+            item.weight ||
+            `${item.size}-${item.gender}`;
 
-    const stock = product.stock?.[variantKey]?.qty || 0;
+          const stock = product.stock?.[variantKey]?.qty || 0;
 
-    if (item.quantity > stock && stock > 0) {
-      await updateCartApi(item.id, stock);
-      return { ...item, quantity: stock };
-    }
+          if (item.quantity > stock && stock > 0) {
+            await updateCartApi(item.id, stock);
+            return { ...item, quantity: stock };
+          }
 
-    return item;
-  })
-);
+          return item;
+        })
+      );
 
-setCartItems(correctedCart);
+      setCartItems(correctedCart);
     } catch (err) {
       // console.log("Cart fetch error:", err);
     } finally {
@@ -184,7 +183,7 @@ setCartItems(correctedCart);
 
             stock = product.stock?.[variantKey]?.qty || 0;
           }
-       
+
 
           return (
             <View

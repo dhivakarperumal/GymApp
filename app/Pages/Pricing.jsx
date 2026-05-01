@@ -79,7 +79,6 @@ export default function Pricing() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#0f0f0f]">
-      <Header />
       <ScrollView
         showsVerticalScrollIndicator={false}
         className="flex-1 bg-[#090909] px-5"
