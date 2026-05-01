@@ -40,8 +40,6 @@ const FlexibilityAndMeasurementsPage = ({ formData = {}, onNext, onPrevious }) =
     }
   }, [formData]);
 
-  const normalizeValue = (value) => String(value || "").trim().toLowerCase();
-
   const measurementFields = [
     { label: "Date", key: "date" },
     { label: "Height (cms)", key: "height" },
@@ -71,7 +69,7 @@ const FlexibilityAndMeasurementsPage = ({ formData = {}, onNext, onPrevious }) =
 
             {/* Apley's Scratch test */}
             <View className="bg-[#1a1a1a] rounded-2xl p-4">
-              <Text className="text-white/80 mb-2">Apley's Scratch test:</Text>
+              <Text className="text-white/80 mb-2">Apley&apos;s Scratch test:</Text>
               <Text className="text-white">{localFormData.flex_apley_test || "-"}</Text>
             </View>
 

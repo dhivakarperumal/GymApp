@@ -14,9 +14,10 @@ import api from "../services/api";
 import BackButton from "./BackButton";
 import Header from "./Header";
 import EnquiryFormPage from "./pt-form-user/EnquiryFormPage";
+import FitnessScreeningPage from "./pt-form-user/FitnessScreeningPage";
+import FlexibilityAndMeasurementsPage from "./pt-form-user/FlexibilityAndMeasurementsPage";
 import HealthHistory2Page from "./pt-form-user/HealthHistory2Page";
 import HealthHistoryPage from "./pt-form-user/HealthHistoryPage";
-
 const tabs = [
   { key: "enquiry", label: "Enquiry Form" },
   { key: "health1", label: "Health History" },

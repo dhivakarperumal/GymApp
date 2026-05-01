@@ -55,8 +55,6 @@ const FitnessScreeningPage = ({ formData = {}, onNext, onPrevious }) => {
     }
   }, [formData]);
 
-  const normalizeValue = (value) => String(value || "").trim().toLowerCase();
-
   const renderMuscleEnduranceRow = (label, namePrefix) => (
     <View className="bg-[#1a1a1a] rounded-2xl p-4 mb-3">
       <Text className="text-white/80 mb-2">{label}:</Text>
