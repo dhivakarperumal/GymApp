@@ -78,7 +78,7 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
       }
       setForm(prev => ({ ...prev, ...mappedData }));
     }
-  }, []);
+  }, [initialData]);
 
   const handleChange = useCallback((name, value) => {
     setForm(prev => ({ ...prev, [name]: value }));
@@ -153,7 +153,31 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
   ), [form, handleChange, handleRadioPress]);
 
   const handleNextPress = useCallback(() => {
-    onNext(form);
+    const normalizedForm = {
+      ...form,
+      fs_height: form.height,
+      fs_weight: form.weight,
+      fs_resting_hr: form.resting_hr,
+      fs_fat_percentage: form.fat_percentage,
+      fs_fat_level: form.fat_level,
+      fs_speed_km: form.speed_km,
+      fs_heart_rate: form.heart_rate,
+      fs_push_ups_count: form.push_ups_count,
+      fs_push_ups_level: form.push_ups_level,
+      fs_squats_count: form.squats_count,
+      fs_squats_level: form.squats_level,
+      fs_plank_hold_count: form.plank_hold_count,
+      fs_plank_hold_level: form.plank_hold_level,
+      fs_shoulder_count: form.shoulder_count,
+      fs_shoulder_level: form.shoulder_level,
+      fs_biceps_count: form.biceps_count,
+      fs_biceps_level: form.biceps_level,
+      fs_triceps_count: form.triceps_count,
+      fs_triceps_level: form.triceps_level,
+      fs_curl_ups_count: form.curl_ups_count,
+      fs_curl_ups_level: form.curl_ups_level,
+    };
+    onNext(normalizedForm);
   }, [onNext, form]);
 
   return (
