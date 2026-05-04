@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -14,8 +14,10 @@ import api from "../services/api";
 import BackButton from "./BackButton";
 import EnquiryFormPage from "./pt-form-user/EnquiryFormPage";
 import FitnessScreeningPage from "./pt-form-user/FitnessScreeningPage";
+import FlexibilityAndMeasurementsPage from "./pt-form-user/FlexibilityAndMeasurementsPage";
 import HealthHistory2Page from "./pt-form-user/HealthHistory2Page";
 import HealthHistoryPage from "./pt-form-user/HealthHistoryPage";
+import SessionTrackerPage from "./pt-form-user/SessionTrackerPage";
 const tabs = [
   { key: "enquiry", label: "Enquiry Form" },
   { key: "health1", label: "Health History" },
@@ -113,9 +115,9 @@ export default function PTFormUser() {
 
   useEffect(() => {
     fetchUserFormData();
-  }, [user]);
+  }, [fetchUserFormData]);
 
-  const fetchUserFormData = async () => {
+  const fetchUserFormData = useCallback(async () => {
     if (!user?.id) {
       setLoading(false);
       return;
@@ -164,7 +166,7 @@ export default function PTFormUser() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, hasEnquiry]);
 
   const savePtForm = async (updatedData) => {
     if (!member?.id) {
@@ -241,13 +243,23 @@ export default function PTFormUser() {
     setActiveTab("sessions");
   };
 
-  const handleSessionSaved = (updated) => {
-    setFormData(updated);
-    Toast.show({
-      type: "success",
-      text1: "Sessions Updated",
-      text2: "Session tracker was saved successfully.",
-    });
+  const handleSessionSaved = async (updated) => {
+    try {
+      await savePtForm(updated);
+      setFormData(updated);
+      Toast.show({
+        type: "success",
+        text1: "Sessions Updated",
+        text2: "Session tracker was saved successfully.",
+      });
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Save Failed",
+        text2: "Unable to save session updates.",
+      });
+      console.error("Failed to save session tracker", error);
+    }
   };
 
   return (
@@ -363,7 +375,7 @@ export default function PTFormUser() {
           }}>
             <Text style={{ fontSize: 18 }}>⚠️</Text>
             <Text style={{ color: "#fcd34d", fontSize: 13, flex: 1, lineHeight: 20 }}>
-              Your account is not linked to a gym member record yet. PT form will load but save actions may not complete until you're linked.
+              Your account is not linked to a gym member record yet. PT form will load but save actions may not complete until you&apos;re linked.
             </Text>
           </View>
         )}
@@ -434,233 +446,5 @@ export default function PTFormUser() {
 }
 
 
-const FlexibilityAndMeasurementsPage = ({ formData = {}, onNext, onPrevious }) => {
-  const [localFormData, setLocalFormData] = useState({
-    flex_apley_test: "",
-    flex_ymca_val: "",
-    flex_ymca_test: "",
-    flex_knee_val: "",
-    flex_knee_test: "",
-    measurements: Array(5).fill({
-      date: "",
-      height: "",
-      weight: "",
-      neck: "",
-      shoulder: "",
-      arm: "",
-      chest_normal: "",
-      chest_expanded: "",
-      waist: "",
-      abdomen: "",
-      hip: "",
-      thigh: "",
-      calf: "",
-      lat: "",
-    })
-  });
 
-  useEffect(() => {
-    if (formData) {
-      setLocalFormData((prev) => ({
-        ...prev,
-        flex_apley_test: String(formData.flex_apley_test || "").trim(),
-        flex_ymca_val: formData.flex_ymca_val || "",
-        flex_ymca_test: String(formData.flex_ymca_test || "").trim(),
-        flex_knee_val: formData.flex_knee_val || "",
-        flex_knee_test: String(formData.flex_knee_test || "").trim(),
-        measurements: formData.measurements || prev.measurements
-      }));
-    }
-  }, [formData]);
 
-  const measurementFields = [
-    { label: "Date", key: "date" },
-    { label: "Height (cms)", key: "height" },
-    { label: "Weight", key: "weight" },
-    { label: "Neck", key: "neck" },
-    { label: "Shoulder (cms)", key: "shoulder" },
-    { label: "Arm", key: "arm" },
-    { label: "Chest (Normal)", key: "chest_normal" },
-    { label: "Chest (Expanded)", key: "chest_expanded" },
-    { label: "Waist", key: "waist" },
-    { label: "Abdomen", key: "abdomen" },
-    { label: "Hip", key: "hip" },
-    { label: "Thigh", key: "thigh" },
-    { label: "Calf", key: "calf" },
-    { label: "Lat", key: "lat" },
-  ];
-
-  return (
-    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-      <View className="p-6 space-y-5">
-        <Text className="text-orange-400 text-xl font-bold">Flexibility & Measurements</Text>
-
-        <View className="bg-[#111] rounded-3xl p-5 space-y-4">
-          {/* FLEXIBILITY */}
-          <View className="space-y-4">
-            <Text className="text-orange-500 font-bold text-sm uppercase tracking-wider">Flexibility</Text>
-
-            {/* Apley's Scratch test */}
-            <View className="bg-[#1a1a1a] rounded-2xl p-4">
-              <Text className="text-white/80 mb-2">Apley&apos;s Scratch test:</Text>
-              <Text className="text-white">{localFormData.flex_apley_test || "-"}</Text>
-            </View>
-
-            {/* YMCA sit & Reach test */}
-            <View className="bg-[#1a1a1a] rounded-2xl p-4">
-              <Text className="text-white/80 mb-2">YMCA sit & Reach test (normal/back saver):</Text>
-              <Text className="text-white">Value: {localFormData.flex_ymca_val || "-"}</Text>
-              <Text className="text-white">Result: {localFormData.flex_ymca_test || "-"}</Text>
-            </View>
-
-            {/* Knee to Wall Lunge test */}
-            <View className="bg-[#1a1a1a] rounded-2xl p-4">
-              <Text className="text-white/80 mb-2">Knee to Wall Lunge test:</Text>
-              <Text className="text-white">Value: {localFormData.flex_knee_val || "-"}</Text>
-              <Text className="text-white">Result: {localFormData.flex_knee_test || "-"}</Text>
-            </View>
-          </View>
-
-          {/* MEASUREMENTS TABLE */}
-          <View className="space-y-4 pt-4">
-            <Text className="text-orange-500 font-bold text-sm uppercase tracking-wider">Measurements</Text>
-
-            <View className="border border-white/20 rounded-lg overflow-hidden">
-              {/* Header */}
-              <View className="flex-row bg-[#1a1a1a]">
-                <View className="flex-1 p-3 border-r border-white/20">
-                  <Text className="text-white/80 text-center">S.No</Text>
-                </View>
-                <View className="flex-2 p-3 border-r border-white/20">
-                  <Text className="text-white/80">Measurement</Text>
-                </View>
-                {[1, 2, 3, 4, 5].map((num) => (
-                  <View key={num} className="flex-1 p-3 border-r border-white/20 last:border-0">
-                    <Text className="text-orange-400 text-center">{num}</Text>
-                  </View>
-                ))}
-              </View>
-
-              {/* Rows */}
-              {measurementFields.map((field, rowIndex) => (
-                <View key={field.key} className="flex-row border-b border-white/10">
-                  <View className="flex-1 p-3 border-r border-white/20">
-                    <Text className="text-white/70 text-center">{rowIndex + 1}</Text>
-                  </View>
-                  <View className="flex-2 p-3 border-r border-white/20">
-                    <Text className="text-white">{field.label}</Text>
-                  </View>
-                  {[0, 1, 2, 3, 4].map((colIndex) => (
-                    <View key={colIndex} className="flex-1 p-3 border-r border-white/20 last:border-0">
-                      <Text className="text-white text-center">
-                        {localFormData.measurements[colIndex]?.[field.key] || "-"}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              ))}
-            </View>
-          </View>
-        </View>
-
-        <View className="flex-row gap-3 mt-4">
-          <TouchableOpacity onPress={onPrevious} className="flex-1 bg-gray-700 rounded-2xl p-4">
-            <Text className="text-white text-center">Previous</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => onNext(localFormData)} className="flex-1 bg-orange-600 rounded-2xl p-4">
-            <Text className="text-white text-center">Next</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ScrollView>
-  );
-};
-
-const SessionTrackerPage = ({ formData = {}, onPrevious, onSaved }) => {
-  const { user } = useAuth();
-  const username = user?.username || user?.name || "User";
-  const [sessions, setSessions] = useState(
-    formData.sessions?.length > 0
-      ? formData.sessions
-      : [
-          {
-            session_no: 1,
-            date: "",
-            workout: "",
-            status: "Completed",
-            client_sign: username,
-            trainer_sign: username,
-          },
-        ]
-  );
-
-  useEffect(() => {
-    if (formData.sessions?.length > 0) {
-      setSessions(formData.sessions.map((session) => ({
-        ...session,
-        client_sign: session.client_sign || username,
-        trainer_sign: session.trainer_sign || username,
-      })));
-    }
-  }, [formData.sessions, username]);
-
-  const markCompleted = (index) => {
-    const nextSessions = [...sessions];
-    nextSessions[index] = {
-      ...nextSessions[index],
-      status: "Completed",
-      client_sign: username,
-      trainer_sign: username,
-    };
-    setSessions(nextSessions);
-  };
-
-  const handleSave = () => {
-    const updated = { ...formData, sessions };
-    onSaved(updated);
-  };
-
-  return (
-    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-      <View className="p-6 space-y-5">
-        <Text className="text-orange-400 text-xl font-bold">Session Tracker</Text>
-
-        <View className="bg-[#111] rounded-3xl p-5 space-y-4">
-          {sessions.map((session, index) => (
-            <View key={index} className="bg-[#1a1a1a] rounded-3xl p-4 space-y-3">
-              <Text className="text-white font-semibold">Session {session.session_no}</Text>
-              <View className="space-y-2">
-                <Text className="text-white/80">Status</Text>
-                <Text className="bg-[#000] text-white p-3 rounded-2xl">{session.status}</Text>
-              </View>
-              <View className="space-y-2">
-                <Text className="text-white/80">Client Sign</Text>
-                <Text className="bg-[#000] text-white p-3 rounded-2xl">{session.client_sign || username}</Text>
-              </View>
-              <View className="space-y-2">
-                <Text className="text-white/80">Trainer Sign</Text>
-                <Text className="bg-[#000] text-white p-3 rounded-2xl">{session.trainer_sign || username}</Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => markCompleted(index)}
-                className={`px-4 py-3 rounded-2xl ${session.status === 'Completed' ? 'bg-green-600' : 'bg-orange-600'}`}>
-                <Text className="text-white text-center">
-                  {session.status === 'Completed' ? 'Completed' : 'Mark Completed'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-
-        <View className="flex-row gap-3 mt-4">
-          <TouchableOpacity onPress={onPrevious} className="flex-1 bg-gray-700 rounded-2xl p-4">
-            <Text className="text-white text-center">Previous</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleSave} className="flex-1 bg-orange-600 rounded-2xl p-4">
-            <Text className="text-white text-center">Save Sessions</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ScrollView>
-  );
-};
