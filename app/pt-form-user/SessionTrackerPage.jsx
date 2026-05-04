@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 
 const SessionTrackerPage = ({ formData = {}, onPrevious, onSaved }) => {
@@ -87,58 +88,71 @@ const SessionTrackerPage = ({ formData = {}, onPrevious, onSaved }) => {
 
   return (
     <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-      <View className="p-6 space-y-5">
-        <Text className="text-orange-400 text-xl font-bold">Session Tracker</Text>
-
-        <View className="bg-[#111] rounded-3xl p-5 space-y-4">
-          <View className="space-y-2">
-            <Text className="text-white/80">Complete each session and mark it as completed to record the final client sign.</Text>
-            <Text className="text-white/80">Pending sessions keep the client signature blank until completion.</Text>
+      <View className="px-4 pb-6" style={{ marginTop: 20 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
+          <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "#111", alignItems: "center", justifyContent: "center", marginRight: 12, borderWidth: 1, borderColor: "#222" }}>
+            <Ionicons name="calendar-outline" size={20} color="#e11d1d" />
           </View>
+          <Text className="text-white text-2xl font-bold">Session Tracker</Text>
+        </View>
 
+        <View className="bg-[#111] rounded-3xl p-5 border border-[#1a1a1a]" style={{ marginBottom: 20 }}>
+          <View className="space-y-2 mb-6">
+            <Text className="text-white/80 text-sm">Complete each session and mark it as completed to record the final client sign.</Text>
+            <Text className="text-white/80 text-sm">Pending sessions keep the client signature blank until completion.</Text>
+          </View>
           {sessions.map((session, index) => (
-            <View key={session.session_no || index} className="bg-[#1a1a1a] rounded-3xl p-4 space-y-4">
-              <View className="flex-row justify-between items-center">
-                <Text className="text-white font-semibold">Session {session.session_no}</Text>
+            <View key={session.session_no || index} className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-3xl p-4 mb-4">
+              <View className="flex-row justify-between items-center mb-4">
+                <Text className="text-[#e11d1d] font-bold">SESSION {session.session_no}</Text>
                 <TouchableOpacity
                   onPress={() => handleMarkCompleted(index)}
-                  className={`px-4 py-2 rounded-full ${session.status === "Completed" ? "bg-green-600" : "bg-orange-600"}`}>
-                  <Text className="text-white text-xs uppercase tracking-wider">
+                  className={`px-4 py-2 rounded-full ${session.status === "Completed" ? "bg-green-600" : "bg-[#e11d1d]"}`}>
+                  <Text className="text-white text-xs uppercase tracking-wider font-bold">
                     {session.status === "Completed" ? "Completed" : "Mark Completed"}
                   </Text>
                 </TouchableOpacity>
               </View>
 
-              <View>
-                <Text className="text-white/80 mb-2">Date</Text>
-                <Text className="bg-[#000] text-white rounded-2xl p-4">{session.date || "-"}</Text>
+              <View className="mb-4">
+                <Text className="text-white/60 text-xs mb-2">Date</Text>
+                <Text className="bg-[#111] border border-[#222] text-white rounded-2xl p-4">{session.date || "-"}</Text>
               </View>
 
-              <View>
-                <Text className="text-white/80 mb-2">Workout</Text>
-                <Text className="bg-[#000] text-white rounded-2xl p-4">{session.workout || "-"}</Text>
+              <View className="mb-4">
+                <Text className="text-white/60 text-xs mb-2">Workout</Text>
+                <Text className="bg-[#111] border border-[#222] text-white rounded-2xl p-4">{session.workout || "-"}</Text>
               </View>
 
               <View className="flex-row gap-4">
                 <View className="flex-1">
-                  <Text className="text-white/80 mb-2">Client Sign</Text>
-                  <Text className="bg-[#000] text-white rounded-2xl p-4">{session.client_sign || "-"}</Text>
+                  <Text className="text-white/60 text-xs mb-2">Client Sign</Text>
+                  <Text className="bg-[#111] border border-[#222] text-white rounded-2xl p-4">{session.client_sign || "-"}</Text>
                 </View>
                 <View className="flex-1">
-                  <Text className="text-white/80 mb-2">Trainer Sign</Text>
-                  <Text className="bg-[#000] text-white rounded-2xl p-4">{session.trainer_sign || trainerName || "-"}</Text>
+                  <Text className="text-white/60 text-xs mb-2">Trainer Sign</Text>
+                  <Text className="bg-[#111] border border-[#222] text-white rounded-2xl p-4">{session.trainer_sign || trainerName || "-"}</Text>
                 </View>
               </View>
             </View>
           ))}
         </View>
 
-        <View className="flex-row gap-3 mt-4">
-          <TouchableOpacity onPress={onPrevious} className="flex-1 bg-gray-700 rounded-2xl p-4">
-            <Text className="text-white text-center">Previous</Text>
+        <View className="flex-row gap-4 mt-2">
+          <TouchableOpacity 
+            onPress={onPrevious} 
+            className="flex-1 bg-[#111] rounded-2xl p-4 border border-[#222] flex-row justify-center items-center"
+          >
+            <Ionicons name="arrow-back" size={16} color="#aaa" style={{ marginRight: 8 }} />
+            <Text className="text-white font-semibold">Back</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleSave} className="flex-1 bg-orange-600 rounded-2xl p-4">
-            <Text className="text-white text-center">Save Sessions</Text>
+          <TouchableOpacity 
+            onPress={handleSave} 
+            className="flex-1 bg-[#e11d1d] rounded-2xl p-4 shadow-lg flex-row justify-center items-center"
+            style={{ shadowColor: "#e11d1d", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 }}
+          >
+            <Text className="text-white font-bold mr-2">Save Sessions</Text>
+            <Ionicons name="save-outline" size={18} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>

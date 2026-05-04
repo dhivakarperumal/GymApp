@@ -86,7 +86,7 @@ const FitnessScreeningPage = ({ formData = {}, onNext, onPrevious }) => {
 
   return (
     <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-      <View className="pb-6" style={{ marginTop: 20 }}>
+      <View className="pb-6 px-4" style={{ marginTop: 20 }}>
         
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
           <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "#111", alignItems: "center", justifyContent: "center", marginRight: 12, borderWidth: 1, borderColor: "#222" }}>
