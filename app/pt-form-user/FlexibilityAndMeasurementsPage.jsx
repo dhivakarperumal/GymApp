@@ -59,7 +59,7 @@ const FlexibilityAndMeasurementsPage = ({ formData = {}, onNext, onPrevious }) =
   ];
 
   return (
-    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+    <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
       <View className="px-4 pb-6" style={{ marginTop: 20 }}>
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
           <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "#111", alignItems: "center", justifyContent: "center", marginRight: 12, borderWidth: 1, borderColor: "#222" }}>
@@ -97,6 +97,8 @@ const FlexibilityAndMeasurementsPage = ({ formData = {}, onNext, onPrevious }) =
           {/* MEASUREMENTS TABLE */}
           <View style={{ marginBottom: 10 }}>
             <Text className="text-[#e11d1d] font-bold text-xs uppercase tracking-widest mb-4">Measurements</Text>
+          <View className="space-y-4 pt-4 ">
+            <Text className="text-orange-500 font-bold text-sm uppercase tracking-wider">Measurements</Text>
 
             <View className="border border-white/20 rounded-lg overflow-hidden">
               {/* Header */}
@@ -114,25 +116,35 @@ const FlexibilityAndMeasurementsPage = ({ formData = {}, onNext, onPrevious }) =
                 ))}
               </View>
 
-              {/* Rows */}
-              {measurementFields.map((field, rowIndex) => (
-                <View key={field.key} className="flex-row border-b border-white/10">
-                  <View className="flex-1 p-3 border-r border-white/20">
-                    <Text className="text-white/70 text-center">{rowIndex + 1}</Text>
-                  </View>
-                  <View className="flex-2 p-3 border-r border-white/20">
-                    <Text className="text-white">{field.label}</Text>
-                  </View>
-                  {[0, 1, 2, 3, 4].map((colIndex) => (
-                    <View key={colIndex} className="flex-1 p-3 border-r border-white/20 last:border-0">
-                      <Text className="text-white text-center">
-                        {localFormData.measurements[colIndex]?.[field.key] || "-"}
+                {/* Rows */}
+                {measurementFields.map((field, rowIndex) => (
+                  <View key={field.key} style={{ flexDirection: "row" }}>
+
+                    <View style={{ width: 60, padding: 12 }}>
+                      <Text style={{ color: "#aaa", textAlign: "center" }}>
+                        {rowIndex + 1}
                       </Text>
                     </View>
-                  ))}
-                </View>
-              ))}
-            </View>
+
+                    <View style={{ width: 180, padding: 12 }}>
+                      <Text style={{ color: "#fff" }} numberOfLines={1}>
+                        {field.label}
+                      </Text>
+                    </View>
+
+                    {[0, 1, 2, 3, 4].map((colIndex) => (
+                      <View key={colIndex} style={{ width: 100, padding: 12 }}>
+                        <Text numberOfLines={1}
+                          ellipsizeMode="tail" style={{ color: "#fff", textAlign: "center" }}>
+                          {localFormData.measurements[colIndex]?.[field.key] || "-"}
+                        </Text>
+                      </View>
+                    ))}
+
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
           </View>
         </View>
 
