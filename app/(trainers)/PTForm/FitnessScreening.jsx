@@ -1,11 +1,32 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
+
+// Radio component moved outside to prevent recreation on every render
+const RadioButton = ({ label, value, isSelected, onPress }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={{ flexDirection: "row", alignItems: "center", marginRight: 12, marginVertical: 4 }}
+  >
+    <View
+      style={{
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        borderWidth: 2,
+        borderColor: isSelected ? "#f97316" : "#aaa",
+        backgroundColor: isSelected ? "#f97316" : "transparent",
+        marginRight: 6,
+      }}
+    />
+    <Text style={{ color: "white" }}>{label}</Text>
+  </TouchableOpacity>
+);
 
 const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
   const [form, setForm] = useState({
@@ -43,29 +64,32 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
 
   const [manualFat, setManualFat] = useState(false);
 
+  // Initialize form with data from initialData
   useEffect(() => {
-    const mappedData = {};
-    for (const key in initialData) {
-      if (key.startsWith('fs_')) {
-        const newKey = key.slice(3); // remove 'fs_'
-        mappedData[newKey] = initialData[key];
-      } else {
-        mappedData[key] = initialData[key];
+    if (Object.keys(initialData).length > 0) {
+      const mappedData = {};
+      for (const key in initialData) {
+        if (key.startsWith('fs_')) {
+          const newKey = key.slice(3); // remove 'fs_'
+          mappedData[newKey] = initialData[key];
+        } else if (!key.startsWith('fs_') && form.hasOwnProperty(key)) {
+          mappedData[key] = initialData[key];
+        }
       }
+      setForm(prev => ({ ...prev, ...mappedData }));
     }
-    setForm(prev => ({ ...prev, ...mappedData }));
-  }, [initialData]);
+  }, []);
 
-  const handleChange = (name, value) => {
+  const handleChange = useCallback((name, value) => {
     setForm(prev => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  // ✅ AUTO FAT LEVEL LOGIC (same as web)
+  // ✅ AUTO FAT LEVEL LOGIC
   useEffect(() => {
     if (manualFat) return;
 
     const fat = parseFloat(form.fat_percentage);
-    if (isNaN(fat)) return;
+    if (isNaN(fat) || fat === "") return;
 
     const gender = initialData?.gender || "Male";
     let level = "";
@@ -82,38 +106,19 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
       else level = "Obese";
     }
 
-    setForm(prev => ({ ...prev, fat_level: level }));
-  }, [form.fat_percentage, initialData?.gender]);
+    if (form.fat_level !== level && level !== "") {
+      setForm(prev => ({ ...prev, fat_level: level }));
+    }
+  }, [form.fat_percentage, initialData?.gender, form.fat_level, manualFat]);
 
-  const Radio = ({ label, value, name }) => {
-    const isSelected = form[name] === value;
-    return (
-      <TouchableOpacity
-        onPress={() => {
-          if (name === "fat_level") setManualFat(true);
-          handleChange(name, value);
-        }}
-        style={{ flexDirection: "row", alignItems: "center", marginRight: 12 }}
-      >
-        <View
-          style={{
-            width: 16,
-            height: 16,
-            borderRadius: 8,
-            borderWidth: 2,
-            borderColor: isSelected ? "#f97316" : "#aaa",
-            backgroundColor: isSelected ? "#f97316" : "transparent",
-            marginRight: 6,
-          }}
-        />
-        <Text style={{ color: "white" }}>{label}</Text>
-      </TouchableOpacity>
-    );
-  };
+  const handleRadioPress = useCallback((name, value) => {
+    if (name === "fat_level") setManualFat(true);
+    handleChange(name, value);
+  }, [handleChange]);
 
-  const MuscleRow = (label, prefix) => (
+  const MuscleRow = useCallback((label, prefix) => (
     <View style={{ marginBottom: 16 }}>
-      <Text style={{ color: "#ccc", marginBottom: 6 }}>{label}</Text>
+      <Text style={{ color: "#ccc", marginBottom: 6, fontWeight: "500" }}>{label}</Text>
 
       <TextInput
         placeholder="Count"
@@ -121,15 +126,35 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
         value={form[`${prefix}_count`]}
         onChangeText={(t) => handleChange(`${prefix}_count`, t)}
         style={input}
+        keyboardType="numeric"
       />
 
-      <View style={{ flexDirection: "row", marginTop: 8 }}>
-        <Radio label="Superior" value="Superior" name={`${prefix}_level`} />
-        <Radio label="Good" value="Good" name={`${prefix}_level`} />
-        <Radio label="Poor" value="Poor" name={`${prefix}_level`} />
+      <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 8 }}>
+        <RadioButton 
+          label="Superior" 
+          value="Superior" 
+          isSelected={form[`${prefix}_level`] === "Superior"}
+          onPress={() => handleRadioPress(`${prefix}_level`, "Superior")}
+        />
+        <RadioButton 
+          label="Good" 
+          value="Good" 
+          isSelected={form[`${prefix}_level`] === "Good"}
+          onPress={() => handleRadioPress(`${prefix}_level`, "Good")}
+        />
+        <RadioButton 
+          label="Poor" 
+          value="Poor" 
+          isSelected={form[`${prefix}_level`] === "Poor"}
+          onPress={() => handleRadioPress(`${prefix}_level`, "Poor")}
+        />
       </View>
     </View>
-  );
+  ), [form, handleChange, handleRadioPress]);
+
+  const handleNextPress = useCallback(() => {
+    onNext(form);
+  }, [onNext, form]);
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "black" }}>
@@ -144,6 +169,7 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
           value={form.height}
           onChangeText={(t) => handleChange("height", t)}
           style={input}
+          keyboardType="numeric"
         />
 
         <TextInput
@@ -152,14 +178,16 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
           value={form.weight}
           onChangeText={(t) => handleChange("weight", t)}
           style={input}
+          keyboardType="numeric"
         />
 
         <TextInput
-          placeholder="Resting HR"
+          placeholder="Resting HR (bpm)"
           placeholderTextColor="#777"
           value={form.resting_hr}
           onChangeText={(t) => handleChange("resting_hr", t)}
           style={input}
+          keyboardType="numeric"
         />
 
         {/* FAT */}
@@ -171,13 +199,36 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
           value={form.fat_percentage}
           onChangeText={(t) => handleChange("fat_percentage", t)}
           style={input}
+          keyboardType="decimal-pad"
         />
 
+        <View style={{ flexDirection: "row", flexWrap: "wrap", marginVertical: 10 }}>
+          <RadioButton 
+            label="Low" 
+            value="Low" 
+            isSelected={form.fat_level === "Low"}
+            onPress={() => handleRadioPress("fat_level", "Low")}
+          />
+          <RadioButton 
+            label="Healthy" 
+            value="Healthy" 
+            isSelected={form.fat_level === "Healthy"}
+            onPress={() => handleRadioPress("fat_level", "Healthy")}
+          />
+        </View>
         <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-          <Radio label="Low" value="Low" name="fat_level" />
-          <Radio label="Healthy" value="Healthy" name="fat_level" />
-          <Radio label="Overweight" value="Overweight" name="fat_level" />
-          <Radio label="Obese" value="Obese" name="fat_level" />
+          <RadioButton 
+            label="Overweight" 
+            value="Overweight" 
+            isSelected={form.fat_level === "Overweight"}
+            onPress={() => handleRadioPress("fat_level", "Overweight")}
+          />
+          <RadioButton 
+            label="Obese" 
+            value="Obese" 
+            isSelected={form.fat_level === "Obese"}
+            onPress={() => handleRadioPress("fat_level", "Obese")}
+          />
         </View>
 
         {/* CARDIO */}
@@ -189,14 +240,16 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
           value={form.speed_km}
           onChangeText={(t) => handleChange("speed_km", t)}
           style={input}
+          keyboardType="decimal-pad"
         />
 
         <TextInput
-          placeholder="Heart Rate"
+          placeholder="Heart Rate (bpm)"
           placeholderTextColor="#777"
           value={form.heart_rate}
           onChangeText={(t) => handleChange("heart_rate", t)}
           style={input}
+          keyboardType="numeric"
         />
 
         {/* MUSCLE */}
@@ -211,12 +264,12 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
         {MuscleRow("Curl Ups", "curl_ups")}
 
         {/* BUTTONS */}
-        <View style={{ flexDirection: "row", marginTop: 20 }}>
+        <View style={{ flexDirection: "row", marginTop: 20, marginBottom: 40 }}>
           <TouchableOpacity style={btnGray} onPress={onPrevious}>
             <Text style={btnText}>Previous</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={btnOrange} onPress={() => onNext(form)}>
+          <TouchableOpacity style={btnOrange} onPress={handleNextPress}>
             <Text style={btnText}>Next</Text>
           </TouchableOpacity>
         </View>
