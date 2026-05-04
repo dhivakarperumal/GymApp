@@ -303,7 +303,7 @@ export default function TrainerDashboard() {
                         </Text>
                       </TouchableOpacity>
 
-                      {m.ptFormCompleted && (
+                      {m.ptFormCompleted ? (
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
                           {/* <TouchableOpacity
                             onPress={() => {
@@ -341,7 +341,7 @@ export default function TrainerDashboard() {
                             <Ionicons name="pencil-outline" size={16} color="#f59e0b" />
                           </TouchableOpacity>
                         </View>
-                      )}
+                      ) : null}
                     </View>
                   </View>
                 </View>
