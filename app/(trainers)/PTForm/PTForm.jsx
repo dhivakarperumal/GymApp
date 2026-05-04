@@ -121,6 +121,7 @@ const PTForm = ({ route, navigation }) => {
         }
       };
       fetchMember();
+      setCurrentStep(0);
     }
   }, [memberId]);
 
@@ -181,6 +182,7 @@ const PTForm = ({ route, navigation }) => {
       };
 
       setFormData(memberPrefill);
+      setCurrentStep(0);
 
       try {
         const ptRes = await api.get(`/pt-forms/${memberId}`);
@@ -258,7 +260,11 @@ const PTForm = ({ route, navigation }) => {
         [
           {
             text: 'OK',
-            onPress: () => router.back()
+            onPress: () => {
+              setFormData({});
+              setCurrentStep(0);
+              router.back();
+            }
           }
         ]
       );
@@ -333,7 +339,7 @@ const PTForm = ({ route, navigation }) => {
       </View>
 
       {/* Form Content */}
-      <ScrollView className="flex-1 px-2">
+      <ScrollView className="flex-1 px-2" key={formData.member_id || 'new'}>
         <CurrentStepComponent
           onNext={handleNext}
           onPrevious={handlePrevious}

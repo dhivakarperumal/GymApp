@@ -59,8 +59,8 @@ const HealthHistoy = ({ onNext, onPrevious, formData, isFirstStep }) => {
   );
 
   return (
-    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-      <View className="p-6">
+    <View className="flex-1">
+      <View className="py-4">
         <Text className="text-orange-500 font-bold border-b border-white/10 pb-2 uppercase tracking-wider mb-6">
           Health History Questionnaire
         </Text>
@@ -416,7 +416,7 @@ const HealthHistoy = ({ onNext, onPrevious, formData, isFirstStep }) => {
           </TouchableOpacity>
         </View>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 

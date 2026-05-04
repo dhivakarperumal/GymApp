@@ -93,8 +93,8 @@ const SessionTracker = ({
   };
 
   return (
-    <ScrollView className="flex-1 bg-black">
-      <View className="p-6">
+    <View className="flex-1 bg-black">
+      <View className="py-4">
 
         {/* TITLE */}
         <Text className="text-white text-xl font-bold text-center mb-2">
@@ -200,7 +200,7 @@ const SessionTracker = ({
         </View>
 
       </View>
-    </ScrollView>
+    </View>
   );
 };
 

@@ -84,8 +84,8 @@ const FlexibilityAndMeasurements = ({
   ];
 
   return (
-    <ScrollView className="flex-1 bg-black">
-      <View className="p-6">
+    <View className="flex-1 bg-black">
+      <View className="py-4">
 
         {/* FLEXIBILITY */}
         <Text className="text-orange-500 font-bold mb-4 uppercase">
@@ -187,7 +187,7 @@ const FlexibilityAndMeasurements = ({
         )}
 
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
