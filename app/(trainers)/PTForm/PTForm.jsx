@@ -1,8 +1,8 @@
+import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, View, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../context/AuthContext.js';
 import api from '../../../services/api';
@@ -339,6 +339,7 @@ const PTForm = ({ route, navigation }) => {
           onPrevious={handlePrevious}
           onSelectMember={handleMemberSelected}
           formData={formData}
+          initialData={formData}
           isFirstStep={currentStep === 0}
           isLastStep={currentStep === steps.length - 1}
         />
