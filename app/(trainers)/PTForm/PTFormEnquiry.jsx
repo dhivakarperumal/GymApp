@@ -14,7 +14,8 @@ const PTFormEnquiry = ({
   isLastStep,
   isModal = false
 }) => {
-  const { user, role } = useAuth();
+  const { user } = useAuth();
+  const role = user?.role;
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -89,16 +90,31 @@ const PTFormEnquiry = ({
       if (role === 'trainer') {
         // Fetch only members assigned to this trainer
         const res = await api.get(`/assignments?trainerUserId=${user.id}`);
-        const assignments = Array.isArray(res.data) ? res.data : (res.data?.data || []);
-        data = assignments.map(a => ({
-          id: a.gymMemberId,
-          u_id: a.userId,
-          name: a.username,
-          email: a.userEmail,
-          phone: a.userMobile,
-          plan: a.planName,
-          pt_form_completed: a.ptFormCompleted
-        })).filter(m => m.id); // ensure we have a valid gymMemberId
+        const raw = res.data || [];
+        const assignments = Array.isArray(raw) ? raw : (raw.data || raw.assignments || []);
+
+        // Filter active members and deduplicate by userId (sync with dashboard logic)
+        const activeAssignments = assignments.filter(
+          (a) => !a.status || (a.status || "").toLowerCase() === "active"
+        );
+
+        const seen = new Set();
+        data = [];
+        for (const a of activeAssignments) {
+          const uid = String(a.userId || a.user_id || "");
+          if (uid && !seen.has(uid)) {
+            seen.add(uid);
+            data.push({
+              id: a.gymMemberId || a.id || a.userId,
+              u_id: a.userId || a.user_id,
+              name: a.username || a.user_name,
+              email: a.userEmail || a.user_email,
+              phone: a.userMobile || a.user_mobile,
+              plan: a.planName || a.plan_name,
+              pt_form_completed: a.ptFormCompleted
+            });
+          }
+        }
       } else {
         const response = await api.get('/members');
         data = Array.isArray(response.data) ? response.data : [];
@@ -154,7 +170,7 @@ const PTFormEnquiry = ({
       member.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.email?.toLowerCase().includes(searchTerm.toLowerCase())
     )
-  ).slice(0, 20); // Limit to 20 suggestions for better selection
+  );
 
   if (loading) {
     return (
@@ -174,8 +190,8 @@ const PTFormEnquiry = ({
   }
 
   return (
-    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-      <View className="p-6">
+    <View className="flex-1">
+      <View className="py-4">
         {/* Quick Select Section */}
         {!isModal && (
           <View className="bg-white/5 p-4 rounded-xl border border-white/10 mb-6">
@@ -200,8 +216,8 @@ const PTFormEnquiry = ({
               />
 
               {showMemberList && (
-                <View className="absolute top-full left-0 right-0 mt-1 bg-[#1a1a2e] border border-white/20 rounded-lg shadow-2xl z-50 max-h-60">
-                  <ScrollView showsVerticalScrollIndicator={false}>
+                <View className="absolute top-full left-0 right-0 mt-1 bg-[#1a1a2e] border border-white/20 rounded-lg shadow-2xl z-50 max-h-96">
+                  <ScrollView nestedScrollEnabled={true} showsVerticalScrollIndicator={true}>
                     {filteredMembers.length > 0 ? (
                       filteredMembers.map(member => (
                         <TouchableOpacity
@@ -209,7 +225,9 @@ const PTFormEnquiry = ({
                           onPress={() => handleSelectMember(member)}
                           className="px-4 py-3 border-b border-white/5"
                         >
-                          <Text className="font-bold text-white text-orange-400">{member.name}</Text>
+                          <Text className="font-bold text-white text-orange-400">
+                            {member.name}
+                          </Text>
                           <Text className="text-xs text-white/40 uppercase tracking-tight">
                             {member.phone || 'No Phone'} • {member.email || member.user_email || 'No Email'}
                             {member.plan && ` • ${member.plan}`}
@@ -571,7 +589,7 @@ const PTFormEnquiry = ({
           </TouchableOpacity>
         </View>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 

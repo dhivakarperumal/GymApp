@@ -16,7 +16,8 @@ import SessionTracker from './SessionTracker';
 const PTForm = ({ route, navigation }) => {
   const router = useRouter();
   const searchParams = useLocalSearchParams();
-  const { user, role } = useAuth();
+  const { user } = useAuth();
+  const role = user?.role;
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
@@ -332,7 +333,7 @@ const PTForm = ({ route, navigation }) => {
       </View>
 
       {/* Form Content */}
-      <ScrollView className="flex-1 px-4">
+      <ScrollView className="flex-1 px-2">
         <CurrentStepComponent
           onNext={handleNext}
           onPrevious={handlePrevious}
