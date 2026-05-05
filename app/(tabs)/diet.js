@@ -1,10 +1,25 @@
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useState, useEffect } from "react";
-import { getDietPlans } from "../../services/api";
-import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
-import dayjs from "dayjs";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useAuth } from "../../context/AuthContext";
+import { getDietPlans } from "../../services/api";
+
+const format12h = (time) => {
+  if (!time) return "";
+  if (typeof time !== "string") return time;
+  const normalized = time.trim();
+  if (normalized.toLowerCase().includes("am") || normalized.toLowerCase().includes("pm")) {
+    return normalized;
+  }
+  if (!normalized.includes(":")) return normalized;
+
+  const [hours, minutes] = normalized.split(":");
+  let h = parseInt(hours, 10);
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  return `${h}:${minutes} ${ampm}`;
+};
 
 export default function DietChartScreen() {
   const { user } = useAuth();
@@ -12,47 +27,60 @@ export default function DietChartScreen() {
 
   const [diet, setDiet] = useState(null);
   const [title, setTitle] = useState("");
-
   const [createdAt, setCreatedAt] = useState(null);
-
-  const [filter, setFilter] = useState("TODAY");
-
-  const getFilteredDiet = () => {
-    if (!diet || !createdAt) return [];
-
-    const baseDate = dayjs(createdAt);
-    const today = dayjs();
-
-    return Object.entries(diet).filter(([day, meals], index) => {
-      const date = baseDate.add(index, "day");
-
-      if (filter === "TODAY") {
-        return date.isSame(today, "day");
-      }
-
-      if (filter === "WEEK") {
-        return date.isAfter(today.subtract(7, "day"));
-      }
-
-      return true; // ALL
-    });
-  };
+  const [activeDay, setActiveDay] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchDietPlan = async () => {
+    setLoading(true);
+
     try {
       const data = await getDietPlans();
+      const plans = Array.isArray(data) ? data : data?.data || [];
+      const userEmail = user?.email?.toLowerCase() || "";
 
-      if (!Array.isArray(data)) return;
+      const userPlans = plans.filter(
+        (item) =>
+          item.member_email &&
+          item.member_email.toLowerCase() === userEmail
+      );
 
-      const myDiet = data.find((item) => item.member_email === user.email);
-
-      if (myDiet) {
-        setTitle(myDiet.title);
-        setDiet(myDiet.days); // store ALL days
-        setCreatedAt(myDiet.created_at);
+      if (!userPlans.length) {
+        setDiet(null);
+        setTitle("");
+        setCreatedAt(null);
+        setActiveDay(null);
+        return;
       }
+
+      const latestPlan = userPlans.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      )[0];
+
+      let daysData = latestPlan.days;
+      if (typeof daysData === "string") {
+        try {
+          daysData = JSON.parse(daysData);
+        } catch (err) {
+          console.log("Diet days parse error:", err);
+        }
+      }
+
+      if (!daysData || typeof daysData !== "object") {
+        setDiet(null);
+        return;
+      }
+
+      const dayKeys = Object.keys(daysData);
+      setTitle(latestPlan.title || "My Diet Plan");
+      setDiet(daysData);
+      setCreatedAt(latestPlan.created_at || null);
+      setActiveDay((prev) => prev || dayKeys[0] || null);
     } catch (err) {
       console.log("Diet fetch error:", err);
+      setDiet(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -62,98 +90,127 @@ export default function DietChartScreen() {
     }
   }, [user]);
 
+  const dayKeys = diet ? Object.keys(diet) : [];
+  const selectedDay = activeDay || dayKeys[0];
+  const meals = selectedDay ? diet?.[selectedDay] : null;
+
+  if (loading) {
+    return (
+      <View className="flex-1 bg-[#0f0f0f] items-center justify-center px-5 pt-12">
+        <ActivityIndicator size="large" color="#e11d1d" />
+        <Text className="text-white/60 text-sm mt-4">Loading your diet plan...</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView
       className="flex-1 bg-[#0f0f0f] px-5 pt-12"
       showsVerticalScrollIndicator={false}
     >
-      <Text className="text-white text-3xl font-extrabold mb-2">
-        My Diet Plan
-      </Text>
+      <Text className="text-white text-3xl font-extrabold mb-2">My Diet Plan</Text>
+      {title ? (
+        <Text className="text-gray-400 mb-6">{title}</Text>
+      ) : null}
 
-      {title && <Text className="text-gray-400 mb-6">{title}</Text>}
-
-      <View className="flex-row mb-4">
-        {["ALL", "TODAY", "WEEK"].map((f) => (
-          <TouchableOpacity
-            key={f}
-            onPress={() => setFilter(f)}
-            className={`px-4 py-2 rounded-full mr-2 ${filter === f ? "bg-primary" : "bg-[#222]"
-              }`}
+      {diet ? (
+        <>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 16 }}
+            className="mb-4"
           >
-            <Text
-              className={`text-sm font-semibold ${filter === f ? "text-white" : "text-gray-400"
-                }`}
-            >
-              {f === "ALL" ? "All" : f === "TODAY" ? "Today" : "This Week"}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {diet &&
-        getFilteredDiet().map(([day, meals], index) => {
-          const baseDate = dayjs(createdAt);
-          const originalIndex = Number(day.replace("Day", "")) - 1;
-
-          const calculatedDate = baseDate
-            .add(originalIndex, "day")
-            .format("DD-MM-YYYY");
-
-          return (
-            <View
-              key={day}
-              className="bg-[#1c1c1c] rounded-2xl p-5 border border-[#262626] mb-6"
-            >
-              <View className="flex-row items-center justify-between mb-4">
-                <Text className="text-white text-lg font-bold">
-                  {calculatedDate} Meals
+            {dayKeys.map((day) => (
+              <TouchableOpacity
+                key={day}
+                onPress={() => setActiveDay(day)}
+                className={`px-4 py-2 rounded-full mr-2 ${activeDay === day ? "bg-primary" : "bg-[#222]"}`}
+              >
+                <Text className={`text-sm font-semibold ${activeDay === day ? "text-white" : "text-gray-400"}`}>
+                  {day}
                 </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
 
-                <Ionicons name="restaurant-outline" size={18} color="#ff3c00" />
-              </View>
+          {meals ? (
+            Object.entries(meals).map(([meal, value]) => {
+              const mealItems = Array.isArray(value?.items) ? value.items : [];
+              const totalCalories = mealItems.reduce(
+                (sum, item) => sum + (parseInt(item.calories, 10) || 0),
+                0
+              );
 
-              {Object.entries(meals).map(([meal, value]) => (
+              return (
                 <View
                   key={meal}
-                  className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]"
+                  className="bg-[#1c1c1c] rounded-2xl border border-[#262626] mb-6"
                 >
-                  <View className="flex-row justify-between items-center">
-                    <Text className="text-white font-semibold">{meal}</Text>
-
-                    <Text className="text-red-500 text-sm">
-                      {value.time || "No time"}
-                    </Text>
+                  <View className="flex-row justify-between items-center bg-black/40 px-5 py-4 border-b border-[#262626]">
+                    <Text className="text-white font-semibold text-lg">{meal}</Text>
+                    {value?.time ? (
+                      <Text className="text-red-500 text-sm">
+                        {format12h(value.time)}
+                      </Text>
+                    ) : (
+                      <Text className="text-gray-500 text-xs">No time</Text>
+                    )}
                   </View>
 
-                  <Text className="text-gray-300 text-sm">
-                    {value.food} ({value.quantity})
-                  </Text>
+                  <View className="px-5 py-4 space-y-3">
+                    {mealItems.length > 0 ? (
+                      mealItems.map((item, idx) => (
+                        <View
+                          key={`${meal}-${idx}`}
+                          className="flex-row justify-between items-start gap-2 pb-3 border-b border-white/5 last:border-0 last:pb-0"
+                        >
+                          <View className="flex-1">
+                            <Text className="text-white text-sm font-medium">
+                              {item.food || "Food item"}
+                            </Text>
+                            <Text className="text-white/40 text-[12px] mt-1">
+                              Qty: <Text className="text-white/60">{item.quantity || "-"}</Text>
+                            </Text>
+                          </View>
+                          <View className="text-right">
+                            <Text className="text-xs font-semibold text-emerald-400 whitespace-nowrap">
+                              {item.calories || "0"} <Text className="text-[10px] opacity-70">kcal</Text>
+                            </Text>
+                          </View>
+                        </View>
+                      ))
+                    ) : (
+                      <Text className="text-white/60 text-sm">No food items</Text>
+                    )}
 
-                  <Text className="text-gray-500 text-xs mt-1">
-                    {value.calories} calories
-                  </Text>
+                    {mealItems.length > 0 && (
+                      <View className="mt-3 pt-3 border-t border-red-500/20 flex-row items-center justify-between">
+                        <Text className="text-[10px] text-white/30 uppercase tracking-tighter font-semibold">Total</Text>
+                        <Text className="text-xs font-bold text-red-500">
+                          {totalCalories} <Text className="text-[10px] opacity-70">kcal</Text>
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                 </View>
-              ))}
+              );
+            })
+          ) : (
+            <View className="bg-[#1c1c1c] rounded-2xl p-5 border border-[#262626] mb-6">
+              <Text className="text-white text-sm">No meals available for this day.</Text>
             </View>
-          );
-        })}
-
-      {!diet && (
+          )}
+        </>
+      ) : (
         <View className="items-center mt-16">
-          {/* BIG ICON */}
           <View className="bg-[#1c1c1c] p-6 rounded-full mb-6 border border-[#262626]">
             <Ionicons name="nutrition-outline" size={70} color="#e11d1d" />
           </View>
-
-          <Text className="text-white text-lg font-semibold mb-2">
-            No Diet Plan Assigned
-          </Text>
-
+          <Text className="text-white text-lg font-semibold mb-2">No Diet Plan Assigned</Text>
           <Text className="text-gray-400 text-center mb-6 px-10">
             Purchase a premium plan to unlock your personalized diet chart
           </Text>
-
           <TouchableOpacity
             onPress={() => router.push("/Pages/Pricing")}
             className="bg-primary px-8 py-3 rounded-xl"
