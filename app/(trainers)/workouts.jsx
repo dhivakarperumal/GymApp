@@ -238,6 +238,8 @@ export default function Workouts() {
         trainerName: user.username,
         memberId: Number(memberId),
         memberName: memberName,
+        member_email: memberEmail,
+        member_mobile: memberMobile,
         memberEmail: memberEmail,
         memberMobile: memberMobile,
         level: trainingLevel,
@@ -407,10 +409,12 @@ export default function Workouts() {
                          dropdownIconColor="#f97316" 
                          style={{ color: "white" }} 
                          onValueChange={(val) => {
-                          const m = members.find(i => String(i.id) === String(val));
-                          setMemberId(val);
-                          setMemberName(m?.name || "");
-                        }}>
+                           const m = members.find(i => String(i.id) === String(val));
+                           setMemberId(val);
+                           setMemberName(m?.name || "");
+                           setMemberEmail(m?.email || "");
+                           setMemberMobile(m?.mobile || m?.phone || "");
+                         }}>
                         <Picker.Item label="Select Member..." value="" />
                         {members.map(m => <Picker.Item key={m.id} label={m.name} value={String(m.id)} />)}
                       </Picker>
