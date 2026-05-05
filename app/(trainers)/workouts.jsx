@@ -366,8 +366,8 @@ export default function Workouts() {
                 </TouchableOpacity>
              </View>
 
-             <ScrollView className="flex-1 px-4 py-8" showsVerticalScrollIndicator={false}>
-                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
+             <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className="flex-1">
+                <ScrollView className="flex-1 px-4 py-8" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
                    
                    <Text className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-4 px-1">Assignment</Text>
                    <View className={`bg-white/5 rounded-2xl mb-6 border border-white/5 overflow-hidden ${isViewOnly ? 'opacity-50' : ''}`}>
@@ -575,8 +575,9 @@ export default function Workouts() {
                      />
                    )}
 
-                </KeyboardAvoidingView>
-             </ScrollView>
+                    <View className="h-64" />
+                </ScrollView>
+             </KeyboardAvoidingView>
           </View>
         </View>
       </Modal>
