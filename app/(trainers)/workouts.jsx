@@ -1,35 +1,24 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Alert,
+  ActivityIndicator,
+  Modal,
+  FlatList,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
-import { useLocalSearchParams } from "expo-router";
-import {
-  getTrainerMembers,
-  getWorkout,
-  createWorkout,
-  updateWorkout,
-} from "../../services/api";
-import * as DocumentPicker from "expo-document-picker";
-
-const timeOptions = [
-  "06:00-08:00",
-  "08:00-10:00",
-  "12:00-14:00",
-  "16:00-18:00",
-  "20:00-22:00",
-];
-
-
+import * as ImagePicker from "expo-image-picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import api, { getTrainerMembers, getTrainerWorkouts } from "../../services/api";
 
 const workoutTypes = [
   "Weight Training",
@@ -43,585 +32,386 @@ const workoutTypes = [
   "Warm Up",
   "Cool Down",
   "Rest Day",
-]; 
+];
 
 export default function Workouts() {
   const { user } = useAuth();
   const router = useRouter();
-  const { id } = useLocalSearchParams();
 
+  // -- UI STATE --
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [workouts, setWorkouts] = useState([]);
   const [members, setMembers] = useState([]);
-  const [existingWorkoutId, setExistingWorkoutId] = useState(null);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [selectedTimeField, setSelectedTimeField] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
-  const currentMemberRef = useRef(null);
+  // ... (existing functions)
 
-  const [form, setForm] = useState({
-    memberId: "",
-    memberName: "",
-    memberEmail: "",
-    memberMobile: "",
-    level: "Beginner",
-    durationWeeks: "",
-  });
-
-  const [days, setDays] = useState({
-    Day1: [
-      {
-        time: "",
-        type: "Weight Training",
-        name: "",
-        sets: "",
-        count: "",
-        media: "",
-        mediaType: "url",
-      },
-    ],
-  });
-
-  /* ---------------- FETCH MEMBERS ---------------- */
-
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const fetchMembers = async () => {
-      try {
-        const membersData = await getTrainerMembers(user.id, user);
-        setMembers(membersData);
-      } catch (err) {
-        console.log("Fetch members error:", err);
-      }
-    };
-
-    fetchMembers();
-  }, [user]);
-
-  const checkMemberWorkout = async (memberId) => {
+  const pickMedia = async (dayKey, index) => {
     try {
-      const res = await fetch(
-        `https://mygym.qtechx.com/api/workouts?memberId=${memberId}&trainerId=${user.id}`,
-      );
-
-      const data = await res.json();
-
-      // Ignore old responses
-      if (currentMemberRef.current !== memberId) return;
-
-      const workout = data.find(
-        (w) => String(w.member_id) === String(memberId),
-      );
-
-      if (workout) {
-        setExistingWorkoutId(workout.id);
-
-        setForm((prev) => ({
-          ...prev,
-          level: workout.level || "Beginner",
-          durationWeeks: String(workout.duration_weeks || ""),
-        }));
-
-        setDays(
-          workout.days || {
-            Day1: [
-              {
-                time: "",
-                type: "Weight Training",
-                name: "",
-                sets: "",
-                count: "",
-                media: "",
-                mediaType: "url",
-              },
-            ],
-          },
-        );
-      } else {
-        setExistingWorkoutId(null);
-
-        setForm((prev) => ({
-          ...prev,
-          level: "Beginner",
-          durationWeeks: "",
-        }));
-
-        setDays({
-          Day1: [
-            {
-              time: "",
-              type: "Weight Training",
-              name: "",
-              sets: "",
-              count: "",
-              media: "",
-              mediaType: "url",
-            },
-          ],
-        });
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert("Permission Denied", "We need library permissions to upload media.");
+        return;
       }
-    } catch (err) {
-      console.log("Workout check error:", err);
+
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        updateExercise(dayKey, index, "media", result.assets[0].uri);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to pick media.");
     }
   };
+
+  // -- FORM STATE --
+  const [editingId, setEditingId] = useState(null);
+  const [memberId, setMemberId] = useState("");
+  const [memberName, setMemberName] = useState("");
+  const [title, setTitle] = useState("");
+  const [days, setDays] = useState({
+    Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }],
+  });
+
+  // -- DATA FETCHING --
   useEffect(() => {
-    if (!id) return;
+    fetchData();
+  }, [user]);
 
-    const fetchWorkout = async () => {
-      try {
-        const data = await getWorkout(id);
+  const fetchData = async () => {
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      const [memberList, workoutList] = await Promise.all([
+        getTrainerMembers(user.id, user),
+        getTrainerWorkouts(user.id)
+      ]);
+      setMembers(memberList);
+      setWorkouts(Array.isArray(workoutList) ? workoutList : []);
+    } catch (err) {
+      console.log("Dashboard Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        setForm({
-          memberId: String(data.member_id),
-          memberName: data.member_name,
-          memberEmail: data.member_email,
-          memberMobile: data.member_mobile,
-          level: data.level,
-          durationWeeks: String(data.duration_weeks),
-        });
+  // -- HANDLERS --
+  const handleAdd = () => {
+    setEditingId(null);
+    setMemberId("");
+    setMemberName("");
+    setTitle("");
+    setDays({ Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
+    setIsModalOpen(true);
+  };
 
-        setDays(data.days || { Day1: [{ time: "", name: "" }] });
-      } catch (err) {
-        console.log("Fetch workout error:", err);
-      }
-    };
-
-    fetchWorkout();
-  }, [id]);
-
-  /* ---------------- ADD DAY ---------------- */
+  const handleEdit = (workout) => {
+    setEditingId(workout.id);
+    setMemberId(String(workout.member_id || workout.memberId));
+    setMemberName(workout.member_name);
+    setTitle(workout.title);
+    setDays(workout.days || { Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
+    setIsModalOpen(true);
+  };
 
   const addDay = () => {
     const nextDay = `Day${Object.keys(days).length + 1}`;
-    setDays({ ...days, [nextDay]: [{ time: "", name: "" }] });
+    setDays({ ...days, [nextDay]: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
   };
-
-  /* ---------------- REMOVE DAY ---------------- */
 
   const removeDay = (dayKey) => {
-    const updatedDays = { ...days };
-
-    delete updatedDays[dayKey];
-
-    // prevent removing the last remaining day
-    if (Object.keys(updatedDays).length === 0) {
-      updatedDays.Day1 = [
-        {
-          time: "",
-          type: "Weight Training",
-          name: "",
-          sets: "",
-          count: "",
-          media: "",
-          mediaType: "url",
-        },
-      ];
-    }
-
-    setDays(updatedDays);
+    if (Object.keys(days).length <= 1) return;
+    const updated = { ...days };
+    delete updated[dayKey];
+    setDays(updated);
   };
-
-  /* ---------------- ADD EXERCISE ---------------- */
 
   const addExercise = (dayKey) => {
-    setDays({
-      ...days,
-      [dayKey]: [
-        ...days[dayKey],
-        {
-          time: "",
-          type: "Weight Training",
-          name: "",
-          sets: "",
-          count: "",
-          media: "",
-          mediaType: "url",
-        },
-      ],
-    });
+    setDays({ ...days, [dayKey]: [...days[dayKey], { time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
   };
-
-  /* ---------------- UPDATE EXERCISE ---------------- */
 
   const updateExercise = (dayKey, index, field, value) => {
     const updated = [...days[dayKey]];
     updated[index][field] = value;
-
     setDays({ ...days, [dayKey]: updated });
   };
-
-  /* ---------------- REMOVE EXERCISE ---------------- */
 
   const removeExercise = (dayKey, index) => {
     const updated = [...days[dayKey]];
     updated.splice(index, 1);
-
-    setDays({
-      ...days,
-      [dayKey]: updated.length ? updated : [{ time: "", name: "" }],
-    });
+    setDays({ ...days, [dayKey]: updated.length ? updated : [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
   };
 
-  const pickFile = async (dayKey, index) => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ["image/*", "video/*", "application/pdf"],
-        copyToCacheDirectory: true,
-      });
-
-      if (!result.canceled) {
-        const file = result.assets[0];
-
-        updateExercise(dayKey, index, "media", file.uri);
-        updateExercise(dayKey, index, "mediaType", file.mimeType || "file");
-      }
-    } catch (error) {
-      console.log("File pick error:", error);
-      Alert.alert("Error", "Failed to pick file");
-    }
-  };
-
-  /* ---------------- SUBMIT ---------------- */
-
-  const handleSubmit = async () => {
-    if (!form.memberId) {
-      Alert.alert("Missing Fields", "Please select member");
-      return;
-    }
-
+  const saveProgram = async () => {
+    if (!memberId) { Alert.alert("Missing Selection", "Please select a member first."); return; }
     try {
       const payload = {
         trainerId: user.id,
         trainerName: user.username,
-        memberId: form.memberId,
-        memberName: form.memberName,
-        memberEmail: form.memberEmail,
-        memberMobile: form.memberMobile,
-        level: form.level,
-        durationWeeks: Number(form.durationWeeks),
+        memberId: Number(memberId),
+        memberName,
+        title: title || "New Training Program",
         days,
-        status: "active",
+        status: "active"
       };
+      
+      const url = editingId 
+        ? `https://mygym.qtechx.com/api/workouts/${editingId}`
+        : `https://mygym.qtechx.com/api/workouts`;
+      
+      const res = await fetch(url, {
+        method: editingId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
 
-      if (id || existingWorkoutId) {
-        await updateWorkout(id || existingWorkoutId, payload);
-      } else {
-        await createWorkout(payload);
+      if (res.ok) {
+        setIsModalOpen(false);
+        fetchData();
+        Alert.alert("Success", "Training program synchronized.");
       }
-
-      Alert.alert(
-        "Success",
-        id ? "Workout Updated Successfully" : "Workout Created Successfully",
-        [
-          {
-            text: "OK",
-            onPress: () => router.replace("/trainerdiet/AllWorkouts"),
-          },
-        ],
-      );
     } catch (err) {
-      console.log(err);
-      Alert.alert("Error", "Failed to save workout");
+      Alert.alert("Error", "Failed to sync program.");
     }
   };
 
-  return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+  const WorkoutCard = ({ item }) => (
+    <TouchableOpacity 
+      onPress={() => handleEdit(item)}
+      activeOpacity={0.7}
+      className="bg-[#1a1a1a] p-6 rounded-2xl mb-4 border border-white/5"
     >
-      <ScrollView
-        className="flex-1 bg-black px-5 pt-12"
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
-      >
-        {/* HEADER */}
-
-        <View className="flex-row justify-between items-center mb-6">
-          <Text className="text-white text-2xl font-bold">
-            Create Workout
-          </Text>
-
-          <TouchableOpacity
-            onPress={() => router.push("/trainerdiet/AllWorkouts")}
-            className="bg-primary px-4 py-3 rounded-lg"
-          >
-            <Text className="text-white font-semibold">All Workouts</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* MEMBER SELECT */}
-
-        <View className="bg-[#141414] border border-[#262626] rounded-xl mb-4">
-          <Picker
-            selectedValue={form.memberId}
-            dropdownIconColor="white"
-            style={{ color: "white" }}
-            onValueChange={(value) => {
-              const member = members.find((m) => m.id === value);
-
-              currentMemberRef.current = value;
-
-              // reset workout immediately when member changes
-              setExistingWorkoutId(null);
-
-              setDays({
-                Day1: [
-                  {
-                    time: "",
-                    type: "Weight Training",
-                    name: "",
-                    sets: "",
-                    count: "",
-                    media: "",
-                    mediaType: "url",
-                  },
-                ],
-              });
-
-              if (!value) {
-                setForm(() => ({
-                  memberId: value,
-                  memberName: member?.name || "",
-                  memberEmail: member?.email || "",
-                  memberMobile: member?.mobile || "",
-                  level: "Beginner",
-                  durationWeeks: "",
-                }));
-
-                return;
-              }
-
-              setForm({
-                memberId: value,
-                memberName: member?.name || "",
-                memberEmail: member?.email || "",
-                memberMobile: member?.mobile || "",
-                level: "Beginner",
-                durationWeeks: "",
-              });
-
-              // fetch workout for this member
-              checkMemberWorkout(value);
-            }}
-          >
-            <Picker.Item label="Select Member" value="" />
-
-            {members.map((m) => (
-              <Picker.Item
-                key={m.id}
-                label={`${m.name}${m.planName ? ` (${m.planName})` : ""}`}
-                value={m.id}
-              />
-            ))}
-          </Picker>
-        </View>
-
-        {/* LEVEL SELECT */}
-
-        <View className="bg-[#141414] border border-[#262626] rounded-xl mb-4">
-          <Picker
-            selectedValue={form.level}
-            dropdownIconColor="white"
-            style={{ color: "white" }}
-            onValueChange={(value) => setForm({ ...form, level: value })}
-          >
-            <Picker.Item label="Beginner" value="Beginner" />
-            <Picker.Item label="Intermediate" value="Intermediate" />
-            <Picker.Item label="Advanced" value="Advanced" />
-          </Picker>
-        </View>
-
-        {/* DURATION */}
-
-        <TextInput
-          placeholder="Duration Weeks"
-          placeholderTextColor="#aaa"
-          keyboardType="numeric"
-          value={form.durationWeeks}
-          onChangeText={(text) => setForm({ ...form, durationWeeks: text })}
-          className="bg-[#141414] text-white border border-[#262626] rounded-xl px-4 py-3 mb-4"
-        />
-
-        {/* DAYS */}
-
-        {Object.keys(days).map((dayKey) => (
-          <View
-            key={dayKey}
-            className="bg-[#111111] border border-[#262626] rounded-2xl p-5 mb-5"
-          >
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-primary text-xl font-bold">
-                {dayKey.replace("Day", "Day ")}
-              </Text>
-
-              {Object.keys(days).length > 1 && (
-                <TouchableOpacity
-                  onPress={() => removeDay(dayKey)}
-                  className="bg-red-500/20 px-3 py-1 rounded-full"
-                >
-                  <Text className="text-red-400 text-xs font-semibold">
-                    Remove Day
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-
-            {days[dayKey].map((item, index) => (
-              <View
-                key={index}
-                className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4 mb-4"
-              >
-                {/* EXERCISE HEADER */}
-                <View className="flex-row justify-between items-center mb-3">
-                  <Text className="text-white font-semibold text-sm">
-                    Exercise {index + 1}
-                  </Text>
-
-                  <TouchableOpacity
-                    onPress={() => removeExercise(dayKey, index)}
-                    className="bg-red-500/20 px-3 py-1 rounded-full"
-                  >
-                    <Text className="text-red-400 text-xs font-semibold">
-                      Remove
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                {/* EXERCISE NAME */}
-                <Text className="text-gray-400 text-xs mb-1">
-                  Exercise Name
-                </Text>
-                <TextInput
-                  placeholder="Example: Bench Press"
-                  placeholderTextColor="#777"
-                  value={item.name}
-                  onChangeText={(text) =>
-                    updateExercise(dayKey, index, "name", text)
-                  }
-                  className="bg-[#111111] text-white border border-[#333] rounded-lg px-3 py-3 mb-3"
-                />
-
-                {/* TIME */}
-                <Text className="text-gray-400 text-xs mb-1">Time Slot</Text>
-                <View className="bg-[#111111] border border-[#333] rounded-lg mb-3">
-                  <Picker
-                    selectedValue={item.time}
-                    dropdownIconColor="white"
-                    style={{ color: "white" }}
-                    onValueChange={(value) =>
-                      updateExercise(dayKey, index, "time", value)
-                    }
-                  >
-                    <Picker.Item label="Select Time" value="" />
-                    {timeOptions.map((t) => (
-                      <Picker.Item key={t} label={t} value={t} />
-                    ))}
-                  </Picker>
-                </View>
-
-                {/* WORKOUT TYPE */}
-                <Text className="text-gray-400 text-xs mb-1">Workout Type</Text>
-                <View className="bg-[#111111] border border-[#333] rounded-lg mb-3">
-                  <Picker
-                    selectedValue={item.type}
-                    dropdownIconColor="white"
-                    style={{ color: "white" }}
-                    onValueChange={(value) =>
-                      updateExercise(dayKey, index, "type", value)
-                    }
-                  >
-                    {workoutTypes.map((t) => (
-                      <Picker.Item key={t} label={t} value={t} />
-                    ))}
-                  </Picker>
-                </View>
-
-                {/* SETS */}
-                <Text className="text-gray-400 text-xs mb-1">Sets</Text>
-                <TextInput
-                  placeholder="Example: 4"
-                  placeholderTextColor="#777"
-                  keyboardType="numeric"
-                  value={item.sets}
-                  onChangeText={(text) =>
-                    updateExercise(dayKey, index, "sets", text)
-                  }
-                  className="bg-[#111111] text-white border border-[#333] rounded-lg px-3 py-3 mb-3"
-                />
-
-                {/* REPS */}
-                <Text className="text-gray-400 text-xs mb-1">Reps / Count</Text>
-                <TextInput
-                  placeholder="Example: 12 reps"
-                  placeholderTextColor="#777"
-                  value={item.count}
-                  onChangeText={(text) =>
-                    updateExercise(dayKey, index, "count", text)
-                  }
-                  className="bg-[#111111] text-white border border-[#333] rounded-lg px-3 py-3 mb-3"
-                />
-
-                {/* MEDIA */}
-                <Text className="text-gray-400 text-xs mb-1">Media URL</Text>
-                {/* MEDIA URL */}
-                <TextInput
-                  placeholder="Paste image/video URL"
-                  placeholderTextColor="#777"
-                  value={item.media}
-                  onChangeText={(text) =>
-                    updateExercise(dayKey, index, "media", text)
-                  }
-                  className="bg-[#111111] text-white border border-[#333] rounded-lg px-3 py-3 mb-2"
-                />
-
-                {/* FILE UPLOAD BUTTON */}
-                <TouchableOpacity
-                  onPress={() => pickFile(dayKey, index)}
-                  className="bg-[#222] border border-[#444] rounded-lg py-3"
-                >
-                  <Text className="text-center text-white">
-                    Upload Image / Video / Document
-                  </Text>
-                </TouchableOpacity>
-
-                {item.media ? (
-                  <View className="mt-2">
-                    <Text className="text-green-400 text-xs">
-                      File Attached
-                    </Text>
-                    <Text className="text-gray-400 text-xs mt-1">
-                      {item.media}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-            ))}
-
-            {/* ADD EXERCISE BUTTON */}
-            <TouchableOpacity
-              onPress={() => addExercise(dayKey)}
-              className="bg-primary rounded-xl py-3 mt-2"
-            >
-              <Text className="text-white text-center font-semibold">
-                + Add Exercise
-              </Text>
-            </TouchableOpacity>
+      <View className="flex-row items-center justify-between mb-4">
+        <View className="flex-row items-center">
+          <View className="w-12 h-12 rounded-2xl bg-orange-500/10 items-center justify-center border border-orange-500/20">
+            <Ionicons name="barbell-outline" size={20} color="#f97316" />
           </View>
-        ))}
+          <View className="ml-4">
+            <Text className="text-white font-black text-base uppercase tracking-tight">{item.member_name}</Text>
+            <Text className="text-orange-500/60 text-[9px] font-black uppercase tracking-widest">{item.title}</Text>
+          </View>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.2)" />
+      </View>
+      <View className="flex-row items-center border-t border-white/5 pt-4">
+        <Ionicons name="calendar-outline" size={12} color="rgba(255,255,255,0.4)" />
+        <Text className="text-white/40 text-[9px] font-black uppercase tracking-widest ml-2">Active Training Plan</Text>
+      </View>
+    </TouchableOpacity>
+  );
 
-        <TouchableOpacity
-          onPress={addDay}
-          className="bg-[#141414] border border-[#262626] rounded-xl p-3 mb-4"
-        >
-          <Text className="text-white text-center">+ Add Day</Text>
-        </TouchableOpacity>
+  if (loading && !workouts.length) {
+    return (
+      <View className="flex-1 bg-black items-center justify-center">
+        <ActivityIndicator size="large" color="#f97316" />
+        <Text className="text-white/40 mt-4 uppercase tracking-[0.3em] font-black text-[9px]">Syncing Workouts...</Text>
+      </View>
+    );
+  }
 
-        <TouchableOpacity
-          onPress={handleSubmit}
-          className="bg-primary rounded-xl p-4 mb-10"
-        >
-          <Text className="text-white text-center font-bold">Save Program</Text>
+  return (
+    <View className="flex-1 bg-black">
+      {/* HEADER */}
+      <View className="pt-16 pb-8 px-5 bg-[#0f0f0f] border-b border-white/5 flex-row justify-between items-center">
+        <View>
+          <Text className="text-white text-3xl font-black tracking-tight">Workouts</Text>
+          <Text className="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1">Training Hub</Text>
+        </View>
+        <TouchableOpacity className="bg-white/5 p-3 rounded-2xl border border-white/5">
+          <Ionicons name="search" size={20} color="white" />
         </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </View>
+
+      <FlatList
+        data={workouts}
+        keyExtractor={(item) => String(item.id)}
+        contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => <WorkoutCard item={item} />}
+        ListEmptyComponent={
+          <View className="flex-1 items-center justify-center py-32">
+            <Ionicons name="barbell-outline" size={60} color="rgba(255,255,255,0.05)" />
+            <Text className="text-white/20 font-black uppercase tracking-widest text-[10px] mt-6">No workouts assigned</Text>
+          </View>
+        }
+      />
+
+      {/* FAB */}
+      <TouchableOpacity
+        onPress={handleAdd}
+        activeOpacity={0.9}
+        className="absolute bottom-10 right-5 w-16 h-16 bg-orange-600 rounded-full items-center justify-center shadow-2xl shadow-orange-600/60 border-4 border-black"
+      >
+        <Ionicons name="add" size={32} color="white" />
+      </TouchableOpacity>
+
+      {/* MODAL */}
+      <Modal visible={isModalOpen} animationType="slide" transparent={true}>
+        <View className="flex-1 justify-end bg-black/80">
+          <View className="bg-[#111] rounded-t-[32px] h-[92%] border-t border-white/10">
+             <View className="flex-row justify-between items-center px-6 py-8 border-b border-white/5">
+                <Text className="text-white font-black uppercase tracking-widest text-xs">{editingId ? 'Edit Program' : 'New Program'}</Text>
+                <TouchableOpacity onPress={() => setIsModalOpen(false)} className="bg-white/10 p-2 rounded-full">
+                   <Ionicons name="close" size={22} color="white" />
+                </TouchableOpacity>
+             </View>
+
+             <ScrollView className="flex-1 px-4 py-8" showsVerticalScrollIndicator={false}>
+                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
+                   
+                   <Text className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-4 px-1">Assignment</Text>
+                   <View className="bg-white/5 rounded-2xl mb-6 border border-white/5 overflow-hidden">
+                      <Picker selectedValue={memberId} dropdownIconColor="#f97316" style={{ color: "white" }} onValueChange={(val) => {
+                          const m = members.find(i => String(i.id) === String(val));
+                          setMemberId(val);
+                          setMemberName(m?.name || "");
+                        }}>
+                        <Picker.Item label="Select Member..." value="" />
+                        {members.map(m => <Picker.Item key={m.id} label={m.name} value={m.id} />)}
+                      </Picker>
+                   </View>
+
+                   <TextInput placeholder="Program Title (e.g. Strength Phase 1)" value={title} onChangeText={setTitle} placeholderTextColor="rgba(255,255,255,0.2)" className="bg-white/5 p-5 rounded-2xl text-white mb-8 border border-white/5 font-bold" />
+
+                   {/* DAYS ORCHESTRATOR */}
+                   {Object.keys(days).sort((a,b) => parseInt(a.slice(3)) - parseInt(b.slice(3))).map((dayKey) => (
+                     <View key={dayKey} className="mb-10">
+                        <View className="flex-row justify-between items-center mb-6 px-2">
+                           <Text className="text-orange-500 font-black text-xl uppercase tracking-tighter">{dayKey}</Text>
+                           {Object.keys(days).length > 1 && (
+                             <TouchableOpacity onPress={() => removeDay(dayKey)} className="bg-red-500/10 px-4 py-2 rounded-xl">
+                               <Text className="text-red-500 font-black text-[9px] uppercase">Remove Day</Text>
+                             </TouchableOpacity>
+                           )}
+                        </View>
+
+                        {days[dayKey].map((ex, idx) => (
+                           <View key={idx} className="bg-[#1a1a1a] p-6 rounded-2xl mb-6 border border-white/5 shadow-sm">
+                              {/* ROW 1: TIME, TYPE, NAME */}
+                              <View className="flex-row gap-3 mb-4">
+                                 <View className="flex-1">
+                                    <Text className="text-white/30 text-[8px] font-black uppercase mb-2 ml-1">Time Slot</Text>
+                                    <TouchableOpacity 
+                                       onPress={() => { setSelectedTimeField({dayKey, idx}); setShowTimePicker(true); }}
+                                       className="bg-black/40 h-14 rounded-xl border border-white/5 flex-row items-center px-4 justify-between"
+                                    >
+                                       <Text className="text-white/60 font-bold text-xs">{ex.time || "--:--"}</Text>
+                                       <Ionicons name="time-outline" size={14} color="rgba(255,255,255,0.2)" />
+                                    </TouchableOpacity>
+                                 </View>
+                                 <View className="flex-[1.5]">
+                                    <Text className="text-white/30 text-[8px] font-black uppercase mb-2 ml-1">Type</Text>
+                                    <View className="bg-black/40 h-14 rounded-xl border border-white/5 justify-center overflow-hidden">
+                                       <Picker selectedValue={ex.type} style={{ color: "white" }} dropdownIconColor="#f97316" onValueChange={v => updateExercise(dayKey, idx, "type", v)}>
+                                          {workoutTypes.map(type => (
+                                             <Picker.Item key={type} label={type} value={type} />
+                                          ))}
+                                       </Picker>
+                                    </View>
+                                 </View>
+                                 <View className="flex-[1.5]">
+                                    <Text className="text-white/30 text-[8px] font-black uppercase mb-2 ml-1">Exercise Name</Text>
+                                    <TextInput placeholder="e.g. Bench Press" value={ex.name} onChangeText={v => updateExercise(dayKey, idx, "name", v)} placeholderTextColor="rgba(255,255,255,0.1)" className="bg-black/40 h-14 rounded-xl border border-white/5 px-4 text-white font-bold text-xs" />
+                                 </View>
+                              </View>
+
+                              {/* ROW 2: SETS, COUNT */}
+                              <View className="flex-row gap-3 mb-6">
+                                 <View className="flex-1">
+                                    <Text className="text-white/30 text-[8px] font-black uppercase mb-2 ml-1">Sets</Text>
+                                    <TextInput placeholder="No. of Sets" value={ex.sets} onChangeText={v => updateExercise(dayKey, idx, "sets", v)} placeholderTextColor="rgba(255,255,255,0.1)" className="bg-black/40 h-14 rounded-xl border border-white/5 px-4 text-white font-bold text-xs" />
+                                 </View>
+                                 <View className="flex-1">
+                                    <Text className="text-white/30 text-[8px] font-black uppercase mb-2 ml-1">Count / Reps</Text>
+                                    <TextInput placeholder="e.g. 12 reps / 30s" value={ex.count} onChangeText={v => updateExercise(dayKey, idx, "count", v)} placeholderTextColor="rgba(255,255,255,0.1)" className="bg-black/40 h-14 rounded-xl border border-white/5 px-4 text-white font-bold text-xs" />
+                                 </View>
+                              </View>
+
+                              {/* ROW 3: MEDIA */}
+                              <View className="mb-4">
+                                 <View className="flex-row justify-between items-center mb-2">
+                                    <Text className="text-white/30 text-[8px] font-black uppercase ml-1">Exercise Media (Image/Video)</Text>
+                                    <View className="flex-row bg-black/60 rounded-lg p-0.5">
+                                       <TouchableOpacity onPress={() => updateExercise(dayKey, idx, "mediaType", "url")} className={`px-3 py-1 rounded-md ${ex.mediaType === 'url' ? 'bg-orange-500' : ''}`}>
+                                          <Text className="text-white font-black text-[7px] uppercase">URL</Text>
+                                       </TouchableOpacity>
+                                       <TouchableOpacity onPress={() => { updateExercise(dayKey, idx, "mediaType", "upload"); updateExercise(dayKey, idx, "media", ""); }} className={`px-3 py-1 rounded-md ${ex.mediaType === 'upload' ? 'bg-orange-500' : ''}`}>
+                                          <Text className="text-white font-black text-[7px] uppercase">Upload</Text>
+                                       </TouchableOpacity>
+                                    </View>
+                                 </View>
+                                 
+                                 {ex.mediaType === 'url' ? (
+                                   <TextInput 
+                                     placeholder="Paste image or video URL (YouTube, MP4, JPG, etc.)" 
+                                     value={ex.media} 
+                                     onChangeText={v => updateExercise(dayKey, idx, "media", v)} 
+                                     placeholderTextColor="rgba(255,255,255,0.1)" 
+                                     className="bg-black/40 p-4 rounded-xl border border-white/5 text-white font-medium text-[10px]" 
+                                   />
+                                 ) : (
+                                   <TouchableOpacity 
+                                     onPress={() => pickMedia(dayKey, idx)}
+                                     className="bg-black/40 p-4 rounded-xl border border-white/5 flex-row items-center justify-between"
+                                   >
+                                      <Text className="text-white/60 font-medium text-[10px]">
+                                        {ex.media ? "Media Selected (Ready to Sync)" : "Select Video or Image from Library"}
+                                      </Text>
+                                      <Ionicons name={ex.media ? "checkmark-circle" : "cloud-upload-outline"} size={16} color={ex.media ? "#22c55e" : "#f97316"} />
+                                   </TouchableOpacity>
+                                 )}
+                              </View>
+
+                              {/* REMOVE ACTION */}
+                              <TouchableOpacity onPress={() => removeExercise(dayKey, idx)} className="flex-row items-center justify-end mt-2">
+                                 <Ionicons name="close" size={14} color="#ef4444" />
+                                 <Text className="text-red-500/60 font-black text-[9px] uppercase ml-1">Remove Exercise</Text>
+                              </TouchableOpacity>
+                           </View>
+                        ))}
+                        
+                        <TouchableOpacity onPress={() => addExercise(dayKey)} className="flex-row items-center py-2">
+                           <Text className="text-orange-500 font-black text-xs uppercase">+ Add Exercise</Text>
+                        </TouchableOpacity>
+                     </View>
+                   ))}
+
+                   <TouchableOpacity onPress={addDay} className="bg-white/5 p-6 rounded-2xl mb-8 items-center justify-center border border-dashed border-white/10">
+                      <View className="flex-row items-center">
+                         <Ionicons name="calendar-outline" size={20} color="#f97316" />
+                         <Text className="text-white font-black uppercase tracking-widest text-[10px] ml-3">Add Training Day</Text>
+                      </View>
+                   </TouchableOpacity>
+
+                   <TouchableOpacity onPress={saveProgram} className="bg-orange-600 p-6 rounded-2xl items-center justify-center mb-24 shadow-xl shadow-orange-600/40">
+                     <Text className="text-white font-black uppercase tracking-[0.1em]">Publish Training Program</Text>
+                   </TouchableOpacity>
+
+                </KeyboardAvoidingView>
+             </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {showTimePicker && (
+        <DateTimePicker
+          value={new Date()} mode="time" display="default"
+          onChange={(event, date) => {
+            setShowTimePicker(false);
+            if (date && selectedTimeField) {
+              const formatted = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              updateExercise(selectedTimeField.dayKey, selectedTimeField.idx, "time", formatted);
+            }
+          }}
+        />
+      )}
+    </View>
   );
 }
