@@ -45,7 +45,6 @@ export default function Workouts() {
   const [members, setMembers] = useState([]);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedTimeField, setSelectedTimeField] = useState(null);
-  const [uploading, setUploading] = useState(false);
   const [isViewOnly, setIsViewOnly] = useState(false);
   const [trainingLevel, setTrainingLevel] = useState("Beginner");
   const [workoutGoal, setWorkoutGoal] = useState("");
@@ -73,15 +72,6 @@ export default function Workouts() {
       Alert.alert("Error", "Failed to pick media.");
     }
   };
-
-  // -- FORM STATE --
-  const [editingId, setEditingId] = useState(null);
-  const [memberId, setMemberId] = useState("");
-  const [memberName, setMemberName] = useState("");
-  const [title, setTitle] = useState("");
-  const [days, setDays] = useState({
-    Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }],
-  });
 
   // -- DATA FETCHING --
   useEffect(() => {
@@ -115,7 +105,6 @@ export default function Workouts() {
     setEditingId(null);
     setMemberId("");
     setMemberName("");
-    setTitle("");
     setTrainingLevel("Beginner");
     setWorkoutGoal("");
     setDays({ Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
@@ -132,7 +121,6 @@ export default function Workouts() {
     setEditingId(workout.id);
     setMemberId(String(workout.member_id || workout.memberId));
     setMemberName(workout.member_name);
-    setTitle(workout.title);
     setTrainingLevel(workout.training_level || workout.trainingLevel || "Beginner");
     setWorkoutGoal(workout.workout_goal || workout.workoutGoal || "");
     setDays(daysData || { Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
@@ -149,7 +137,6 @@ export default function Workouts() {
     setEditingId(workout.id);
     setMemberId(String(workout.member_id || workout.memberId));
     setMemberName(workout.member_name);
-    setTitle(workout.title);
     setTrainingLevel(workout.training_level || workout.trainingLevel || "Beginner");
     setWorkoutGoal(workout.workout_goal || workout.workoutGoal || "");
     setDays(daysData || { Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
@@ -227,7 +214,6 @@ export default function Workouts() {
         trainerName: user.username,
         memberId: Number(memberId),
         memberName,
-        title,
         trainingLevel,
         workoutGoal,
         days,
@@ -271,7 +257,9 @@ export default function Workouts() {
             </View>
             <View className="ml-4">
               <Text className="text-white font-black text-base uppercase tracking-tight">{item.member_name}</Text>
-              <Text className="text-orange-500/60 text-[9px] font-black uppercase tracking-widest">{item.title}</Text>
+              <Text className="text-orange-500/60 text-[9px] font-black uppercase tracking-widest">
+                 {item.training_level || item.trainingLevel} • {item.workout_goal || item.workoutGoal}
+              </Text>
             </View>
           </View>
           <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.2)" />
@@ -389,29 +377,6 @@ export default function Workouts() {
                         }}>
                         <Picker.Item label="Select Member..." value="" />
                         {members.map(m => <Picker.Item key={m.id} label={m.name} value={String(m.id)} />)}
-                      </Picker>
-                   </View>
-
-                   <TextInput 
-                      placeholder="Program Title (e.g. Strength Phase 1)" 
-                      value={title} 
-                      editable={!isViewOnly}
-                      onChangeText={setTitle} 
-                      placeholderTextColor="rgba(255,255,255,0.2)" 
-                      className={`bg-white/5 p-5 rounded-2xl text-white mb-6 border border-white/5 font-bold ${isViewOnly ? 'opacity-50' : ''}`} 
-                   />
-
-                   <Text className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-4 px-1">Training Level</Text>
-                   <View className={`bg-white/5 rounded-2xl mb-8 border border-white/5 overflow-hidden ${isViewOnly ? 'opacity-50' : ''}`}>
-                      <Picker 
-                         selectedValue={trainingLevel} 
-                         enabled={!isViewOnly}
-                         dropdownIconColor="#f97316" 
-                         style={{ color: "white" }} 
-                         onValueChange={setTrainingLevel}>
-                        <Picker.Item label="Beginner" value="Beginner" />
-                        <Picker.Item label="Intermediate" value="Intermediate" />
-                        <Picker.Item label="Advanced" value="Advanced" />
                       </Picker>
                    </View>
 
