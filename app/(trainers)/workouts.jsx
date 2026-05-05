@@ -46,6 +46,7 @@ export default function Workouts() {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedTimeField, setSelectedTimeField] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [isViewOnly, setIsViewOnly] = useState(false);
 
   // ... (existing functions)
 
@@ -94,7 +95,12 @@ export default function Workouts() {
         getTrainerWorkouts(user.id)
       ]);
       setMembers(memberList);
-      setWorkouts(Array.isArray(workoutList) ? workoutList : []);
+      
+      const assignedMemberIds = memberList.map(m => String(m.id));
+      const filteredWorkouts = (Array.isArray(workoutList) ? workoutList : [])
+        .filter(w => assignedMemberIds.includes(String(w.member_id || w.memberId)));
+      
+      setWorkouts(filteredWorkouts);
     } catch (err) {
       console.log("Dashboard Error:", err);
     } finally {
@@ -109,6 +115,7 @@ export default function Workouts() {
     setMemberName("");
     setTitle("");
     setDays({ Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
+    setIsViewOnly(false);
     setIsModalOpen(true);
   };
 
@@ -118,7 +125,45 @@ export default function Workouts() {
     setMemberName(workout.member_name);
     setTitle(workout.title);
     setDays(workout.days || { Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
+    setIsViewOnly(false);
     setIsModalOpen(true);
+  };
+
+  const handleView = (workout) => {
+    setEditingId(workout.id);
+    setMemberId(String(workout.member_id || workout.memberId));
+    setMemberName(workout.member_name);
+    setTitle(workout.title);
+    setDays(workout.days || { Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
+    setIsViewOnly(true);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id) => {
+    Alert.alert(
+      "Remove Program",
+      "Are you sure you want to delete this workout program? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const res = await fetch(`https://mygym.qtechx.com/api/workouts/${id}`, {
+                method: "DELETE"
+              });
+              if (res.ok) {
+                fetchData();
+                Alert.alert("Success", "Program removed successfully.");
+              }
+            } catch (err) {
+              Alert.alert("Error", "Failed to delete program.");
+            }
+          }
+        }
+      ]
+    );
   };
 
   const addDay = () => {
@@ -183,28 +228,60 @@ export default function Workouts() {
   };
 
   const WorkoutCard = ({ item }) => (
-    <TouchableOpacity 
-      onPress={() => handleEdit(item)}
-      activeOpacity={0.7}
-      className="bg-[#1a1a1a] p-6 rounded-2xl mb-4 border border-white/5"
-    >
-      <View className="flex-row items-center justify-between mb-4">
-        <View className="flex-row items-center">
-          <View className="w-12 h-12 rounded-2xl bg-orange-500/10 items-center justify-center border border-orange-500/20">
-            <Ionicons name="barbell-outline" size={20} color="#f97316" />
+    <View className="bg-[#1a1a1a] rounded-2xl mb-4 border border-white/5 overflow-hidden">
+      <TouchableOpacity 
+        onPress={() => handleView(item)}
+        activeOpacity={0.7}
+        className="p-6 pb-4"
+      >
+        <View className="flex-row items-center justify-between mb-4">
+          <View className="flex-row items-center">
+            <View className="w-12 h-12 rounded-2xl bg-orange-500/10 items-center justify-center border border-orange-500/20">
+              <Ionicons name="barbell-outline" size={20} color="#f97316" />
+            </View>
+            <View className="ml-4">
+              <Text className="text-white font-black text-base uppercase tracking-tight">{item.member_name}</Text>
+              <Text className="text-orange-500/60 text-[9px] font-black uppercase tracking-widest">{item.title}</Text>
+            </View>
           </View>
-          <View className="ml-4">
-            <Text className="text-white font-black text-base uppercase tracking-tight">{item.member_name}</Text>
-            <Text className="text-orange-500/60 text-[9px] font-black uppercase tracking-widest">{item.title}</Text>
-          </View>
+          <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.2)" />
         </View>
-        <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.2)" />
+        <View className="flex-row items-center">
+          <Ionicons name="calendar-outline" size={12} color="rgba(255,255,255,0.4)" />
+          <Text className="text-white/40 text-[9px] font-black uppercase tracking-widest ml-2">Active Training Plan</Text>
+        </View>
+      </TouchableOpacity>
+
+      {/* ACTIONS */}
+      <View className="flex-row items-center justify-between px-6 py-4 bg-black/20 border-t border-white/5">
+        <TouchableOpacity 
+          onPress={() => handleView(item)}
+          className="flex-row items-center"
+        >
+          <View className="w-8 h-8 rounded-xl bg-blue-500/10 items-center justify-center border border-blue-500/20">
+            <Ionicons name="eye-outline" size={16} color="#3b82f6" />
+          </View>
+          <Text className="text-blue-500/60 text-[9px] font-black uppercase tracking-widest ml-2">View</Text>
+        </TouchableOpacity>
+
+        <View className="flex-row items-center gap-3">
+          <TouchableOpacity 
+            onPress={() => handleEdit(item)}
+            className="flex-row items-center px-4 py-2 bg-orange-500/10 rounded-xl border border-orange-500/20"
+          >
+            <Ionicons name="create-outline" size={14} color="#f97316" />
+            <Text className="text-orange-500 text-[9px] font-black uppercase tracking-widest ml-2">Edit</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            onPress={() => handleDelete(item.id)}
+            className="w-8 h-8 rounded-xl bg-red-500/10 items-center justify-center border border-red-500/20"
+          >
+            <Ionicons name="trash-outline" size={14} color="#ef4444" />
+          </TouchableOpacity>
+        </View>
       </View>
-      <View className="flex-row items-center border-t border-white/5 pt-4">
-        <Ionicons name="calendar-outline" size={12} color="rgba(255,255,255,0.4)" />
-        <Text className="text-white/40 text-[9px] font-black uppercase tracking-widest ml-2">Active Training Plan</Text>
-      </View>
-    </TouchableOpacity>
+    </View>
   );
 
   if (loading && !workouts.length) {
@@ -257,7 +334,9 @@ export default function Workouts() {
         <View className="flex-1 justify-end bg-black/80">
           <View className="bg-[#111] rounded-t-[32px] h-[92%] border-t border-white/10">
              <View className="flex-row justify-between items-center px-6 py-8 border-b border-white/5">
-                <Text className="text-white font-black uppercase tracking-widest text-xs">{editingId ? 'Edit Program' : 'New Program'}</Text>
+                <Text className="text-white font-black uppercase tracking-widest text-xs">
+                   {isViewOnly ? 'View Program' : (editingId ? 'Edit Program' : 'New Program')}
+                </Text>
                 <TouchableOpacity onPress={() => setIsModalOpen(false)} className="bg-white/10 p-2 rounded-full">
                    <Ionicons name="close" size={22} color="white" />
                 </TouchableOpacity>
@@ -267,25 +346,37 @@ export default function Workouts() {
                 <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
                    
                    <Text className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-4 px-1">Assignment</Text>
-                   <View className="bg-white/5 rounded-2xl mb-6 border border-white/5 overflow-hidden">
-                      <Picker selectedValue={memberId} dropdownIconColor="#f97316" style={{ color: "white" }} onValueChange={(val) => {
+                   <View className={`bg-white/5 rounded-2xl mb-6 border border-white/5 overflow-hidden ${isViewOnly ? 'opacity-50' : ''}`}>
+                      <Picker 
+                         selectedValue={memberId} 
+                         enabled={!isViewOnly}
+                         dropdownIconColor="#f97316" 
+                         style={{ color: "white" }} 
+                         onValueChange={(val) => {
                           const m = members.find(i => String(i.id) === String(val));
                           setMemberId(val);
                           setMemberName(m?.name || "");
                         }}>
                         <Picker.Item label="Select Member..." value="" />
-                        {members.map(m => <Picker.Item key={m.id} label={m.name} value={m.id} />)}
+                        {members.map(m => <Picker.Item key={m.id} label={m.name} value={String(m.id)} />)}
                       </Picker>
                    </View>
 
-                   <TextInput placeholder="Program Title (e.g. Strength Phase 1)" value={title} onChangeText={setTitle} placeholderTextColor="rgba(255,255,255,0.2)" className="bg-white/5 p-5 rounded-2xl text-white mb-8 border border-white/5 font-bold" />
+                   <TextInput 
+                      placeholder="Program Title (e.g. Strength Phase 1)" 
+                      value={title} 
+                      onChangeText={setTitle} 
+                      editable={!isViewOnly}
+                      placeholderTextColor="rgba(255,255,255,0.2)" 
+                      className={`bg-white/5 p-5 rounded-2xl text-white mb-8 border border-white/5 font-bold ${isViewOnly ? 'opacity-50' : ''}`} 
+                   />
 
                    {/* DAYS ORCHESTRATOR */}
                    {Object.keys(days).sort((a,b) => parseInt(a.slice(3)) - parseInt(b.slice(3))).map((dayKey) => (
                      <View key={dayKey} className="mb-10">
                         <View className="flex-row justify-between items-center mb-6 px-2">
                            <Text className="text-orange-500 font-black text-xl uppercase tracking-tighter">{dayKey}</Text>
-                           {Object.keys(days).length > 1 && (
+                           {Object.keys(days).length > 1 && !isViewOnly && (
                              <TouchableOpacity onPress={() => removeDay(dayKey)} className="bg-red-500/10 px-4 py-2 rounded-xl">
                                <Text className="text-red-500 font-black text-[9px] uppercase">Remove Day</Text>
                              </TouchableOpacity>
@@ -309,16 +400,28 @@ export default function Workouts() {
                                  <View className="flex-[1.5]">
                                     <Text className="text-white/30 text-[8px] font-black uppercase mb-2 ml-1">Type</Text>
                                     <View className="bg-black/40 h-14 rounded-xl border border-white/5 justify-center overflow-hidden">
-                                       <Picker selectedValue={ex.type} style={{ color: "white" }} dropdownIconColor="#f97316" onValueChange={v => updateExercise(dayKey, idx, "type", v)}>
-                                          {workoutTypes.map(type => (
-                                             <Picker.Item key={type} label={type} value={type} />
-                                          ))}
-                                       </Picker>
+                                        <Picker 
+                                           selectedValue={ex.type} 
+                                           enabled={!isViewOnly}
+                                           style={{ color: "white" }} 
+                                           dropdownIconColor="#f97316" 
+                                           onValueChange={v => updateExercise(dayKey, idx, "type", v)}>
+                                           {workoutTypes.map(type => (
+                                              <Picker.Item key={type} label={type} value={type} />
+                                           ))}
+                                        </Picker>
                                     </View>
                                  </View>
                                  <View className="flex-[1.5]">
                                     <Text className="text-white/30 text-[8px] font-black uppercase mb-2 ml-1">Exercise Name</Text>
-                                    <TextInput placeholder="e.g. Bench Press" value={ex.name} onChangeText={v => updateExercise(dayKey, idx, "name", v)} placeholderTextColor="rgba(255,255,255,0.1)" className="bg-black/40 h-14 rounded-xl border border-white/5 px-4 text-white font-bold text-xs" />
+                                     <TextInput 
+                                        placeholder="e.g. Bench Press" 
+                                        value={ex.name} 
+                                        editable={!isViewOnly}
+                                        onChangeText={v => updateExercise(dayKey, idx, "name", v)} 
+                                        placeholderTextColor="rgba(255,255,255,0.1)" 
+                                        className={`bg-black/40 h-14 rounded-xl border border-white/5 px-4 text-white font-bold text-xs ${isViewOnly ? 'opacity-50' : ''}`} 
+                                     />
                                  </View>
                               </View>
 
@@ -326,11 +429,25 @@ export default function Workouts() {
                               <View className="flex-row gap-3 mb-6">
                                  <View className="flex-1">
                                     <Text className="text-white/30 text-[8px] font-black uppercase mb-2 ml-1">Sets</Text>
-                                    <TextInput placeholder="No. of Sets" value={ex.sets} onChangeText={v => updateExercise(dayKey, idx, "sets", v)} placeholderTextColor="rgba(255,255,255,0.1)" className="bg-black/40 h-14 rounded-xl border border-white/5 px-4 text-white font-bold text-xs" />
+                                     <TextInput 
+                                        placeholder="No. of Sets" 
+                                        value={ex.sets} 
+                                        editable={!isViewOnly}
+                                        onChangeText={v => updateExercise(dayKey, idx, "sets", v)} 
+                                        placeholderTextColor="rgba(255,255,255,0.1)" 
+                                        className={`bg-black/40 h-14 rounded-xl border border-white/5 px-4 text-white font-bold text-xs ${isViewOnly ? 'opacity-50' : ''}`} 
+                                     />
                                  </View>
                                  <View className="flex-1">
                                     <Text className="text-white/30 text-[8px] font-black uppercase mb-2 ml-1">Count / Reps</Text>
-                                    <TextInput placeholder="e.g. 12 reps / 30s" value={ex.count} onChangeText={v => updateExercise(dayKey, idx, "count", v)} placeholderTextColor="rgba(255,255,255,0.1)" className="bg-black/40 h-14 rounded-xl border border-white/5 px-4 text-white font-bold text-xs" />
+                                     <TextInput 
+                                        placeholder="e.g. 12 reps / 30s" 
+                                        value={ex.count} 
+                                        editable={!isViewOnly}
+                                        onChangeText={v => updateExercise(dayKey, idx, "count", v)} 
+                                        placeholderTextColor="rgba(255,255,255,0.1)" 
+                                        className={`bg-black/40 h-14 rounded-xl border border-white/5 px-4 text-white font-bold text-xs ${isViewOnly ? 'opacity-50' : ''}`} 
+                                     />
                                  </View>
                               </View>
 
@@ -338,61 +455,86 @@ export default function Workouts() {
                               <View className="mb-4">
                                  <View className="flex-row justify-between items-center mb-2">
                                     <Text className="text-white/30 text-[8px] font-black uppercase ml-1">Exercise Media (Image/Video)</Text>
-                                    <View className="flex-row bg-black/60 rounded-lg p-0.5">
-                                       <TouchableOpacity onPress={() => updateExercise(dayKey, idx, "mediaType", "url")} className={`px-3 py-1 rounded-md ${ex.mediaType === 'url' ? 'bg-orange-500' : ''}`}>
-                                          <Text className="text-white font-black text-[7px] uppercase">URL</Text>
-                                       </TouchableOpacity>
-                                       <TouchableOpacity onPress={() => { updateExercise(dayKey, idx, "mediaType", "upload"); updateExercise(dayKey, idx, "media", ""); }} className={`px-3 py-1 rounded-md ${ex.mediaType === 'upload' ? 'bg-orange-500' : ''}`}>
-                                          <Text className="text-white font-black text-[7px] uppercase">Upload</Text>
-                                       </TouchableOpacity>
-                                    </View>
-                                 </View>
-                                 
-                                 {ex.mediaType === 'url' ? (
-                                   <TextInput 
-                                     placeholder="Paste image or video URL (YouTube, MP4, JPG, etc.)" 
-                                     value={ex.media} 
-                                     onChangeText={v => updateExercise(dayKey, idx, "media", v)} 
-                                     placeholderTextColor="rgba(255,255,255,0.1)" 
-                                     className="bg-black/40 p-4 rounded-xl border border-white/5 text-white font-medium text-[10px]" 
-                                   />
-                                 ) : (
-                                   <TouchableOpacity 
-                                     onPress={() => pickMedia(dayKey, idx)}
-                                     className="bg-black/40 p-4 rounded-xl border border-white/5 flex-row items-center justify-between"
-                                   >
-                                      <Text className="text-white/60 font-medium text-[10px]">
-                                        {ex.media ? "Media Selected (Ready to Sync)" : "Select Video or Image from Library"}
-                                      </Text>
-                                      <Ionicons name={ex.media ? "checkmark-circle" : "cloud-upload-outline"} size={16} color={ex.media ? "#22c55e" : "#f97316"} />
-                                   </TouchableOpacity>
-                                 )}
-                              </View>
+                                  {!isViewOnly && (
+                                     <View className="flex-row bg-black/60 rounded-lg p-0.5">
+                                        <TouchableOpacity onPress={() => updateExercise(dayKey, idx, "mediaType", "url")} className={`px-3 py-1 rounded-md ${ex.mediaType === 'url' ? 'bg-orange-500' : ''}`}>
+                                           <Text className="text-white font-black text-[7px] uppercase">URL</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={() => { updateExercise(dayKey, idx, "mediaType", "upload"); updateExercise(dayKey, idx, "media", ""); }} className={`px-3 py-1 rounded-md ${ex.mediaType === 'upload' ? 'bg-orange-500' : ''}`}>
+                                           <Text className="text-white font-black text-[7px] uppercase">Upload</Text>
+                                        </TouchableOpacity>
+                                     </View>
+                                  )}
+                               </View>
+                               
+                               {ex.mediaType === 'url' ? (
+                                 <TextInput 
+                                   placeholder="Paste image or video URL (YouTube, MP4, JPG, etc.)" 
+                                   value={ex.media} 
+                                   editable={!isViewOnly}
+                                   onChangeText={v => updateExercise(dayKey, idx, "media", v)} 
+                                   placeholderTextColor="rgba(255,255,255,0.1)" 
+                                   className={`bg-black/40 p-4 rounded-xl border border-white/5 text-white font-medium text-[10px] ${isViewOnly ? 'opacity-50' : ''}`} 
+                                 />
+                               ) : (
+                                 <TouchableOpacity 
+                                   onPress={() => pickMedia(dayKey, idx)}
+                                   disabled={isViewOnly}
+                                   className={`bg-black/40 p-4 rounded-xl border border-white/5 flex-row items-center justify-between ${isViewOnly ? 'opacity-50' : ''}`}
+                                 >
+                                    <Text className="text-white/60 font-medium text-[10px]">
+                                      {ex.media ? "Media Selected (Ready to Sync)" : "Select Video or Image from Library"}
+                                    </Text>
+                                    <Ionicons name={ex.media ? "checkmark-circle" : "cloud-upload-outline"} size={16} color={ex.media ? "#22c55e" : "#f97316"} />
+                                 </TouchableOpacity>
+                               )}
+                            </View>
 
-                              {/* REMOVE ACTION */}
+                            {/* REMOVE ACTION */}
+                            {!isViewOnly && (
                               <TouchableOpacity onPress={() => removeExercise(dayKey, idx)} className="flex-row items-center justify-end mt-2">
                                  <Ionicons name="close" size={14} color="#ef4444" />
                                  <Text className="text-red-500/60 font-black text-[9px] uppercase ml-1">Remove Exercise</Text>
                               </TouchableOpacity>
+                            )}
                            </View>
                         ))}
                         
-                        <TouchableOpacity onPress={() => addExercise(dayKey)} className="flex-row items-center py-2">
-                           <Text className="text-orange-500 font-black text-xs uppercase">+ Add Exercise</Text>
-                        </TouchableOpacity>
+                         {!isViewOnly && (
+                           <TouchableOpacity onPress={() => addExercise(dayKey)} className="flex-row items-center py-2">
+                              <Text className="text-orange-500 font-black text-xs uppercase">+ Add Exercise</Text>
+                           </TouchableOpacity>
+                         )}
                      </View>
                    ))}
 
-                   <TouchableOpacity onPress={addDay} className="bg-white/5 p-6 rounded-2xl mb-8 items-center justify-center border border-dashed border-white/10">
-                      <View className="flex-row items-center">
-                         <Ionicons name="calendar-outline" size={20} color="#f97316" />
-                         <Text className="text-white font-black uppercase tracking-widest text-[10px] ml-3">Add Training Day</Text>
-                      </View>
-                   </TouchableOpacity>
+                    {!isViewOnly && (
+                      <>
+                        <TouchableOpacity onPress={addDay} className="bg-white/5 p-6 rounded-2xl mb-8 items-center justify-center border border-dashed border-white/10">
+                           <View className="flex-row items-center">
+                              <Ionicons name="calendar-outline" size={20} color="#f97316" />
+                              <Text className="text-white font-black uppercase tracking-widest text-[10px] ml-3">Add Training Day</Text>
+                           </View>
+                        </TouchableOpacity>
 
-                   <TouchableOpacity onPress={saveProgram} className="bg-orange-600 p-6 rounded-2xl items-center justify-center mb-24 shadow-xl shadow-orange-600/40">
-                     <Text className="text-white font-black uppercase tracking-[0.1em]">Publish Training Program</Text>
-                   </TouchableOpacity>
+                        <TouchableOpacity onPress={saveProgram} className="bg-orange-600 p-6 rounded-2xl items-center justify-center mb-24 shadow-xl shadow-orange-600/40">
+                          <Text className="text-white font-black uppercase tracking-[0.1em]">Publish Training Program</Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
+
+                   {showTimePicker && (
+                     <DateTimePicker
+                       value={new Date()} mode="time" display="default"
+                       onChange={(event, date) => {
+                         setShowTimePicker(false);
+                         if (date && selectedTimeField) {
+                           const formatted = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                           updateExercise(selectedTimeField.dayKey, selectedTimeField.idx, "time", formatted);
+                         }
+                       }}
+                     />
+                   )}
 
                 </KeyboardAvoidingView>
              </ScrollView>
@@ -400,18 +542,7 @@ export default function Workouts() {
         </View>
       </Modal>
 
-      {showTimePicker && (
-        <DateTimePicker
-          value={new Date()} mode="time" display="default"
-          onChange={(event, date) => {
-            setShowTimePicker(false);
-            if (date && selectedTimeField) {
-              const formatted = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-              updateExercise(selectedTimeField.dayKey, selectedTimeField.idx, "time", formatted);
-            }
-          }}
-        />
-      )}
+      {/* Removed separate DateTimePicker as it's now inside the Modal */}
     </View>
   );
 }
