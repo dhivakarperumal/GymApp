@@ -1,25 +1,25 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Picker } from "@react-native-picker/picker";
+import * as DocumentPicker from "expo-document-picker";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
   ActivityIndicator,
-  Modal,
+  Alert,
   FlatList,
   KeyboardAvoidingView,
+  Modal,
   Platform,
-  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
-import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../../context/AuthContext";
-import { useRouter } from "expo-router";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import api, { getTrainerMembers, getTrainerDietPlans } from "../../services/api";
-import * as DocumentPicker from "expo-document-picker";
 import * as XLSX from "xlsx";
+import { useAuth } from "../../context/AuthContext";
+import api, { getTrainerDietPlans, getTrainerMembers } from "../../services/api";
 
 const meals = ["Early-morning", "Breakfast", "Mid-morning", "Lunch", "Evening", "Dinner", "Pre-workout", "Post-workout"];
 
@@ -32,6 +32,134 @@ const generateSingleDay = () => {
     };
   });
   return day;
+};
+
+const generateTestData = () => {
+  return {
+    Day1: {
+      "Early-morning": {
+        time: "06:00 AM",
+        items: [
+          { food: "Warm Water with Lemon", quantity: "1 glass", calories: "5" },
+          { food: "Almonds", quantity: "8 pcs", calories: "80" }
+        ]
+      },
+      "Breakfast": {
+        time: "07:30 AM",
+        items: [
+          { food: "Oats Porridge", quantity: "1 bowl (40g)", calories: "150" },
+          { food: "Whole Milk", quantity: "1 cup (200ml)", calories: "130" },
+          { food: "Banana", quantity: "1 medium", calories: "105" }
+        ]
+      },
+      "Mid-morning": {
+        time: "10:30 AM",
+        items: [
+          { food: "Apple", quantity: "1 large", calories: "95" },
+          { food: "Peanut Butter", quantity: "1 tbsp", calories: "95" }
+        ]
+      },
+      "Lunch": {
+        time: "01:00 PM",
+        items: [
+          { food: "Basmati Rice", quantity: "1 cup cooked", calories: "300" },
+          { food: "Grilled Chicken Breast", quantity: "150g", calories: "250" },
+          { food: "Mixed Vegetables", quantity: "1 bowl", calories: "80" }
+        ]
+      },
+      "Evening": {
+        time: "04:00 PM",
+        items: [
+          { food: "Greek Yogurt", quantity: "150g", calories: "100" },
+          { food: "Granola", quantity: "30g", calories: "120" },
+          { food: "Berries", quantity: "50g", calories: "30" }
+        ]
+      },
+      "Pre-workout": {
+        time: "05:00 PM",
+        items: [
+          { food: "White Bread", quantity: "2 slices", calories: "160" },
+          { food: "Honey", quantity: "2 tbsp", calories: "130" }
+        ]
+      },
+      "Post-workout": {
+        time: "07:00 PM",
+        items: [
+          { food: "Whey Protein Shake", quantity: "1 scoop (30g)", calories: "120" },
+          { food: "Whole Milk", quantity: "200ml", calories: "130" }
+        ]
+      },
+      "Dinner": {
+        time: "09:00 PM",
+        items: [
+          { food: "Whole Wheat Roti", quantity: "3 pcs", calories: "210" },
+          { food: "Paneer Curry", quantity: "1 bowl", calories: "200" },
+          { food: "Cucumber Salad", quantity: "1 bowl", calories: "45" }
+        ]
+      }
+    },
+    Day2: {
+      "Early-morning": {
+        time: "06:00 AM",
+        items: [
+          { food: "Green Tea", quantity: "1 cup", calories: "2" },
+          { food: "Cashews", quantity: "10 pcs", calories: "100" }
+        ]
+      },
+      "Breakfast": {
+        time: "07:30 AM",
+        items: [
+          { food: "Brown Bread", quantity: "2 slices", calories: "160" },
+          { food: "Boiled Eggs", quantity: "2 pcs", calories: "160" },
+          { food: "Tomato", quantity: "1 medium", calories: "22" }
+        ]
+      },
+      "Mid-morning": {
+        time: "10:30 AM",
+        items: [
+          { food: "Orange", quantity: "1 large", calories: "86" },
+          { food: "Almonds", quantity: "8 pcs", calories: "80" }
+        ]
+      },
+      "Lunch": {
+        time: "01:00 PM",
+        items: [
+          { food: "Brown Rice", quantity: "1 cup cooked", calories: "280" },
+          { food: "Grilled Fish", quantity: "150g", calories: "240" },
+          { food: "Steamed Broccoli", quantity: "1 cup", calories: "55" }
+        ]
+      },
+      "Evening": {
+        time: "04:00 PM",
+        items: [
+          { food: "Protein Bar", quantity: "1 bar (50g)", calories: "200" },
+          { food: "Almond Milk", quantity: "200ml", calories: "30" }
+        ]
+      },
+      "Pre-workout": {
+        time: "05:00 PM",
+        items: [
+          { food: "Banana", quantity: "1 large", calories: "120" },
+          { food: "Peanut Butter", quantity: "1 tbsp", calories: "95" }
+        ]
+      },
+      "Post-workout": {
+        time: "07:00 PM",
+        items: [
+          { food: "Whey Protein Shake", quantity: "1 scoop (30g)", calories: "120" },
+          { food: "Whole Milk", quantity: "200ml", calories: "130" }
+        ]
+      },
+      "Dinner": {
+        time: "09:00 PM",
+        items: [
+          { food: "Quinoa", quantity: "1 cup cooked", calories: "240" },
+          { food: "Grilled Chicken Thigh", quantity: "120g", calories: "200" },
+          { food: "Bell Pepper Mix", quantity: "1 bowl", calories: "60" }
+        ]
+      }
+    }
+  };
 };
 
 export default function DietPlans() {
@@ -105,6 +233,29 @@ export default function DietPlans() {
       memberId: "", memberName: "", memberEmail: "", memberMobile: "",
       memberWeight: "", title: "", totalCalories: 0, duration: 1,
       days: { Day1: generateSingleDay() },
+    });
+    setExpandedDay("Day1");
+    setIsViewOnly(false);
+    setIsModalOpen(true);
+  };
+
+  const handleAddWithTestData = () => {
+    if (members.length === 0) {
+      Alert.alert("No Members", "Please add members first.");
+      return;
+    }
+    const firstMember = members[0];
+    setEditingId(null);
+    setForm({
+      memberId: String(firstMember.id),
+      memberName: firstMember.name || firstMember.username || "",
+      memberEmail: firstMember.email || firstMember.userEmail || firstMember.user_email || "",
+      memberMobile: firstMember.mobile || firstMember.phone || firstMember.userMobile || firstMember.user_mobile || "",
+      memberWeight: firstMember.weight || firstMember.member_weight || firstMember.userWeight || "",
+      title: "Endurance & Stamina Test Plan",
+      totalCalories: 0,
+      duration: 2,
+      days: generateTestData(),
     });
     setExpandedDay("Day1");
     setIsViewOnly(false);
@@ -202,72 +353,95 @@ export default function DietPlans() {
   };
 
   const handleMealChange = (day, meal, field, value) => {
-    setForm((prev) => ({
-      ...prev,
-      days: {
-        ...prev.days,
-        [day]: {
-          ...prev.days[day],
-          [meal]: { ...prev.days[day][meal], [field]: value },
-        },
-      },
-    }));
+    setForm((prev) => {
+      try {
+        return {
+          ...prev,
+          days: {
+            ...prev.days,
+            [day]: {
+              ...prev.days[day],
+              [meal]: { ...prev.days[day][meal], [field]: String(value || "") },
+            },
+          },
+        };
+      } catch (error) {
+        console.log("Error updating meal:", error);
+        return prev;
+      }
+    });
   };
 
   const handleFoodItemChange = (day, meal, index, field, value) => {
     setForm((prev) => {
-      const items = prev.days?.[day]?.[meal]?.items || [];
-      const updatedItems = [...items];
-      if (updatedItems[index]) {
-        updatedItems[index] = { ...updatedItems[index], [field]: value };
-      }
-      return {
-        ...prev,
-        days: {
-          ...prev.days,
-          [day]: {
-            ...prev.days[day],
-            [meal]: { ...prev.days[day][meal], items: updatedItems },
+      try {
+        const items = prev.days?.[day]?.[meal]?.items || [];
+        const updatedItems = [...items];
+        if (updatedItems[index]) {
+          // Ensure value is never undefined or null
+          updatedItems[index] = { ...updatedItems[index], [field]: String(value || "") };
+        }
+        return {
+          ...prev,
+          days: {
+            ...prev.days,
+            [day]: {
+              ...prev.days[day],
+              [meal]: { ...prev.days[day][meal], items: updatedItems },
+            },
           },
-        },
-      };
+        };
+      } catch (error) {
+        console.log("Error updating food item:", error);
+        return prev;
+      }
     });
   };
 
   const handleAddFoodItem = (day, meal) => {
     setForm((prev) => {
-      const items = prev.days?.[day]?.[meal]?.items || [];
-      return {
-        ...prev,
-        days: {
-          ...prev.days,
-          [day]: {
-            ...prev.days[day],
-            [meal]: {
-              ...prev.days[day][meal],
-              items: [...items, { food: "", quantity: "", calories: "" }],
+      try {
+        const items = prev.days?.[day]?.[meal]?.items || [];
+        return {
+          ...prev,
+          days: {
+            ...prev.days,
+            [day]: {
+              ...prev.days[day],
+              [meal]: {
+                ...prev.days[day][meal],
+                items: [...items, { food: "", quantity: "", calories: "" }],
+              },
             },
           },
-        },
-      };
+        };
+      } catch (error) {
+        console.log("Error adding food item:", error);
+        return prev;
+      }
     });
   };
 
   const handleRemoveFoodItem = (day, meal, index) => {
     setForm((prev) => {
-      const items = prev.days?.[day]?.[meal]?.items || [];
-      if (items.length <= 1) return prev;
-      const updatedItems = items.filter((_, i) => i !== index);
-      return {
-        ...prev,
-        days: {
-          ...prev.days,
-          [day]: {
-            ...prev.days[day],
-            [meal]: { ...prev.days[day][meal], items: updatedItems },
+      try {
+        const items = prev.days?.[day]?.[meal]?.items || [];
+        if (items.length <= 1) return prev;
+        const updatedItems = items.filter((_, i) => i !== index);
+        return {
+          ...prev,
+          days: {
+            ...prev.days,
+            [day]: {
+              ...prev.days[day],
+              [meal]: { ...prev.days[day][meal], items: updatedItems },
+            },
           },
-        },
-      };
+        };
+      } catch (error) {
+        console.log("Error removing food item:", error);
+        return prev;
+      }
     });
   };
 
@@ -560,9 +734,17 @@ export default function DietPlans() {
               <Text className="text-white text-3xl font-black tracking-tight">Diet Plans</Text>
               <Text className="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1">Nutrition Hub</Text>
             </View>
-            <TouchableOpacity className="bg-white/5 p-3 rounded-2xl border border-white/5">
-              <Ionicons name="search" size={20} color="white" />
-            </TouchableOpacity>
+            <View className="flex-row gap-2">
+              <TouchableOpacity 
+                onPress={handleAddWithTestData}
+                className="bg-emerald-500/20 p-3 rounded-2xl border border-emerald-500/30"
+              >
+                <Ionicons name="flask-outline" size={20} color="#10b981" />
+              </TouchableOpacity>
+              <TouchableOpacity className="bg-white/5 p-3 rounded-2xl border border-white/5">
+                <Ionicons name="search" size={20} color="white" />
+              </TouchableOpacity>
+            </View>
           </View>
 
           <FlatList
@@ -719,13 +901,21 @@ export default function DietPlans() {
                            return (
                              <View key={meal} className="bg-white/5 p-6 rounded-2xl mb-6 border border-white/5">
                                 <View className="flex-row justify-between items-center mb-6">
-                                   <Text className="text-white font-black text-xs uppercase tracking-widest">{meal}</Text>
+                                   <View className="flex-1">
+                                      <Text className="text-white font-black text-xs uppercase tracking-widest">{meal}</Text>
+                                      {mealData.time && (
+                                        <View className="flex-row items-center mt-2">
+                                          <Ionicons name="time" size={14} color="#f97316" />
+                                          <Text className="text-orange-500 text-xs font-bold ml-1">{mealData.time}</Text>
+                                        </View>
+                                      )}
+                                   </View>
                                     <TouchableOpacity 
                                        onPress={() => { setSelectedTimeField({day, meal}); setShowTimePicker(true); }} 
                                        disabled={isViewOnly}
                                        className="bg-orange-500/10 px-3 py-1.5 rounded-full border border-orange-500/20"
                                     >
-                                       <Text className="text-orange-500 text-[8px] font-black uppercase">{mealData.time || "SET TIME"}</Text>
+                                       <Text className="text-orange-500 text-[8px] font-black uppercase">{mealData.time ? "EDIT" : "SET TIME"}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 
@@ -733,7 +923,7 @@ export default function DietPlans() {
                                   <View key={idx} className="mb-6 border-b border-white/5 pb-6">
                                      <TextInput 
                                         placeholder="Food Description" 
-                                        value={item.food} 
+                                        value={String(item.food || "")} 
                                         editable={!isViewOnly}
                                         onChangeText={v => handleFoodItemChange(day, meal, idx, "food", v)} 
                                         placeholderTextColor="rgba(255,255,255,0.1)" 
@@ -743,7 +933,7 @@ export default function DietPlans() {
                                      <View className="flex-row gap-4">
                                         <TextInput 
                                            placeholder="Quantity" 
-                                           value={item.quantity} 
+                                           value={String(item.quantity || "")} 
                                            editable={!isViewOnly}
                                            onChangeText={v => handleFoodItemChange(day, meal, idx, "quantity", v)} 
                                            placeholderTextColor="rgba(255,255,255,0.1)" 
@@ -751,7 +941,7 @@ export default function DietPlans() {
                                         />
                                         <TextInput 
                                            placeholder="Kcal" 
-                                           value={String(item.calories)} 
+                                           value={String(item.calories || "")} 
                                            editable={!isViewOnly}
                                            onChangeText={v => handleFoodItemChange(day, meal, idx, "calories", v.replace(/[^0-9]/g, ""))} 
                                            keyboardType="numeric" 
@@ -829,7 +1019,7 @@ export default function DietPlans() {
         </View>
       </Modal>
 
-      {/* Removed separate DateTimePicker as it's now inside the Modal */}
+      
     </View>
   );
 }
