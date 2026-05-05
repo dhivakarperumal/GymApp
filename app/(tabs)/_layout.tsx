@@ -3,14 +3,14 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Tabs, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    BackHandler,
-    Image,
-    Modal,
-    Pressable,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  BackHandler,
+  Image,
+  Modal,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
@@ -71,8 +71,8 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: "#0f0f0f",
           borderTopColor: "#222",
-          height: 60,
-          paddingBottom: 10,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom + 10,
         },
 
         headerLeft: () => (
