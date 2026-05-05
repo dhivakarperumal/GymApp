@@ -5,9 +5,10 @@ import {
   ScrollView, 
   TouchableOpacity, 
   TextInput, 
-  ActivityIndicator,
   Dimensions,
-  StyleSheet
+  StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,6 +20,34 @@ import SessionTracker from "./PTForm/SessionTracker";
 import Toast from "react-native-toast-message";
 
 const { width } = Dimensions.get('window');
+
+/* ─── Styles mirrored from pricing.jsx ─── */
+const s = StyleSheet.create({
+  safe:   { flex: 1, backgroundColor: "#0a0a0a" },
+  scroll: { flex: 1 },
+  scrollContent: { paddingHorizontal: 18, paddingBottom: 120 },
+
+  /* Header */
+  header:          { paddingTop: 28, paddingBottom: 20, flexDirection: "row", alignItems: "center", gap: 12 },
+  backBtn:         { width: 40, height: 40, borderRadius: 20, backgroundColor: "#111", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#222" },
+  headerTextBlock: { flex: 1 },
+  headerTitle:     { color: "#ffffff", fontSize: 24, fontWeight: "800" },
+
+  /* Search */
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#111",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#1f1f1f",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 12,
+    gap: 8,
+  },
+  searchInput: { flex: 1, color: "#fff", fontSize: 14 },
+});
 
 export default function SessionTrackingScreen() {
   const { user } = useAuth();
@@ -155,42 +184,35 @@ export default function SessionTrackingScreen() {
 
   if (showMemberPicker) {
     return (
-      <SafeAreaView className="flex-1 bg-[#0f0f0f]" edges={["top"]}>
-        <View className="flex-row items-center p-6 bg-[#0f0f0f]">
-          <TouchableOpacity 
-            onPress={() => router.back()} 
-            className="w-10 h-10 bg-white/5 rounded-full items-center justify-center border border-white/10"
-          >
-            <Ionicons name="chevron-back" size={20} color="white" />
-          </TouchableOpacity>
-          <View className="ml-4">
-            <Text className="text-white text-3xl font-black tracking-tighter">Directory</Text>
-            <Text className="text-white/40 text-xs font-bold uppercase tracking-widest">Assigned Members</Text>
+      <SafeAreaView style={s.safe} edges={["top"]}>
+        <ScrollView style={s.scroll} contentContainerStyle={s.scrollContent}>
+          {/* ── HEADER ── */}
+          <View style={s.header}>
+            <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
+              <Ionicons name="arrow-back" size={20} color="white" />
+            </TouchableOpacity>
+            <View style={s.headerTextBlock}>
+              <Text style={s.headerTitle}>Directory</Text>
+            </View>
           </View>
-        </View>
 
-        <View className="px-6 pb-4">
-          <View 
-            className="flex-row items-center bg-[#1a1a1a] px-5 border border-white/5"
-            style={{ borderRadius: 24 }}
-          >
-            <Ionicons name="search" size={18} color="#f97316" />
+          {/* ── SEARCH ── */}
+          <View style={s.searchRow}>
+            <Ionicons name="search-outline" size={18} color="#6b7280" />
             <TextInput
               placeholder="Find a member..."
-              placeholderTextColor="rgba(255,255,255,0.2)"
-              className="flex-1 h-14 text-white ml-3 font-medium"
+              placeholderTextColor="#4b5563"
+              style={s.searchInput}
               value={searchTerm}
               onChangeText={setSearchTerm}
             />
             {searchTerm !== "" && (
               <TouchableOpacity onPress={() => setSearchTerm("")}>
-                <Ionicons name="close-circle" size={18} color="#444" />
+                <Ionicons name="close-circle" size={18} color="#6b7280" />
               </TouchableOpacity>
             )}
           </View>
-        </View>
 
-        <ScrollView className="flex-1 px-6 pt-2">
           {loading ? (
             <ActivityIndicator color="#f97316" className="mt-20" />
           ) : filteredMembers.length === 0 ? (
@@ -265,10 +287,10 @@ export default function SessionTrackingScreen() {
           </TouchableOpacity>
           
           <TouchableOpacity 
-            onPress={() => router.back()}
-            className="w-12 h-12 bg-white/5 rounded-full items-center justify-center ml-3 border border-white/5"
+            onPress={() => setShowMemberPicker(true)}
+            style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "#111", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#222", marginLeft: 12 }}
           >
-            <Ionicons name="close" size={24} color="white" />
+            <Ionicons name="arrow-back" size={20} color="white" />
           </TouchableOpacity>
         </View>
 
