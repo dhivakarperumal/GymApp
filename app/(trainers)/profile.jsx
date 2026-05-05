@@ -14,7 +14,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const API_BASE = "https://mygym.qtechx.com/api";
+const API_BASE = "https://dap.qtechx.com/api";
 
 export default function Profile() {
   const { user, logout } = useAuth();

@@ -88,14 +88,13 @@ export default function Workouts() {
     if (!user?.id) return;
     setLoading(true);
     try {
-      const [memberList, workoutList] = await Promise.all([
-        getTrainerMembers(user.id, user),
-        getTrainerWorkouts(user.id)
-      ]);
+      const workoutList = await getTrainerWorkouts();
+      const memberList = await getTrainerMembers(user.id, user);
+      
       setMembers(memberList);
       
       const assignedMemberIds = memberList.map(m => String(m.id));
-      const filteredWorkouts = (Array.isArray(workoutList) ? workoutList : [])
+      const filteredWorkouts = (Array.isArray(workoutList) ? workoutList : (workoutList.data || []))
         .filter(w => assignedMemberIds.includes(String(w.member_id || w.memberId)));
       
       setWorkouts(filteredWorkouts);
@@ -161,7 +160,7 @@ export default function Workouts() {
           style: "destructive",
           onPress: async () => {
             try {
-              const res = await fetch(`https://mygym.qtechx.com/api/workouts/${id}`, {
+              const res = await fetch(`https://dap.qtechx.com/api/workouts/${id}`, {
                 method: "DELETE"
               });
               if (res.ok) {
@@ -216,19 +215,19 @@ export default function Workouts() {
     if (!memberId) { Alert.alert("Missing Selection", "Please select a member first."); return; }
     try {
       const payload = {
-        trainerId: user.id,
-        trainerName: user.username,
-        memberId: Number(memberId),
-        memberName,
-        trainingLevel,
-        workoutGoal,
-        days,
+        trainer_id: user.id,
+        trainer_name: user.username,
+        member_id: Number(memberId),
+        member_name: memberName,
+        training_level: trainingLevel,
+        workout_goal: workoutGoal,
+        days: JSON.stringify(days),
         status: "active"
       };
-      
+
       const url = editingId 
-        ? `https://mygym.qtechx.com/api/workouts/${editingId}`
-        : `https://mygym.qtechx.com/api/workouts`;
+        ? `https://dap.qtechx.com/api/workouts/${editingId}`
+        : `https://dap.qtechx.com/api/workouts`;
       
       const res = await fetch(url, {
         method: editingId ? "PUT" : "POST",
