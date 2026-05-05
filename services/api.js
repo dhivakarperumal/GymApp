@@ -290,6 +290,7 @@ export const getTrainerMembers = async (trainerId, user) => {
       name: a.username || a.user_name || "Member",
       email: a.userEmail || a.user_email || "",
       mobile: a.userMobile || a.user_mobile || "",
+      weight: a.userWeight || a.member_weight || a.weight || "",
       planName: a.planName || a.plan_name || "",
     }));
   } catch (err) {
