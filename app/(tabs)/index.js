@@ -1,26 +1,26 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  StatusBar,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  getAllReviews,
-  getUserAssignment,
-  getDietPlans,
-  getTrainerWorkouts,
-  getAllProducts,
-  getUserMemberships,
-} from "../../services/api";
-import React, { useEffect, useState, useRef } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { Dimensions } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import ProductCard from "../ProductCard";
 import dayjs from "dayjs";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import {
+    Dimensions,
+    Image,
+    ScrollView,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { useAuth } from "../../context/AuthContext";
+import {
+    getAllProducts,
+    getAllReviews,
+    getDietPlans,
+    getTrainerWorkouts,
+    getUserAssignment,
+    getUserMemberships,
+} from "../../services/api";
+import ProductCard from "../ProductCard";
 
 const { width } = Dimensions.get("window");
 
@@ -100,39 +100,69 @@ export default function Home() {
 
       if (!Array.isArray(data) || !user?.email) {
         setTodayDiet({});
+        setTodayDay("");
+        setDietTitle("");
         return;
       }
 
-      const myDiet = data.find((item) => item.member_email === user.email);
+      const userEmail = user.email.toLowerCase();
+      const userPlans = data.filter(
+        (item) =>
+          item.member_email &&
+          item.member_email.toLowerCase() === userEmail
+      );
 
-      if (!myDiet || !myDiet.days || !myDiet.created_at) {
+      if (!userPlans.length) {
         setTodayDiet({});
         setTodayDay("");
+        setDietTitle("");
         return;
       }
 
-      const baseDate = dayjs(myDiet.created_at);
+      const latestPlan = userPlans.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      )[0];
+
+      let days = latestPlan.days;
+      if (typeof days === "string") {
+        try {
+          days = JSON.parse(days);
+        } catch (err) {
+          console.log("Diet days parse error:", err);
+        }
+      }
+
+      if (!days || typeof days !== "object") {
+        setTodayDiet({});
+        setTodayDay("");
+        setDietTitle(latestPlan.title || "");
+        return;
+      }
+
+      const baseDate = dayjs(latestPlan.created_at);
       const today = dayjs();
 
       let foundMeals = {};
       let foundDate = "";
 
-      Object.entries(myDiet.days).forEach(([day, meals]) => {
+      Object.entries(days).forEach(([day, meals]) => {
         const index = Number(day.replace("Day", "")) - 1;
         const date = baseDate.add(index, "day");
 
         if (date.isSame(today, "day")) {
           foundMeals = meals;
-          foundDate = formatDate(date); // ✅ same as workout
+          foundDate = formatDate(date);
         }
       });
 
       setTodayDiet(foundMeals);
       setTodayDay(foundDate);
-      setDietTitle(myDiet.title);
+      setDietTitle(latestPlan.title || "");
     } catch (err) {
       console.log("Today diet error:", err);
       setTodayDiet({});
+      setTodayDay("");
+      setDietTitle("");
     }
   };
 
