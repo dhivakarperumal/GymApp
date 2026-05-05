@@ -3,22 +3,22 @@ import dayjs from "dayjs";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-    Dimensions,
-    Image,
-    ScrollView,
-    StatusBar,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  Image,
+  ScrollView,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import {
-    getAllProducts,
-    getAllReviews,
-    getDietPlans,
-    getTrainerWorkouts,
-    getUserAssignment,
-    getUserMemberships,
+  getAllProducts,
+  getAllReviews,
+  getDietPlans,
+  getTrainerWorkouts,
+  getUserAssignment,
+  getUserMemberships,
 } from "../../services/api";
 import ProductCard from "../ProductCard";
 
@@ -555,7 +555,6 @@ export default function Home() {
 
             {Object.entries(todayDiet).map(([meal, value]) => {
               const mealItems = Array.isArray(value?.items) ? value.items : [];
-              const firstItem = mealItems[0] || {};
               const totalCalories = mealItems.reduce(
                 (sum, item) => sum + (parseInt(item.calories, 10) || 0),
                 0
@@ -576,10 +575,13 @@ export default function Home() {
 
                   {mealItems.length > 0 ? (
                     <>
-                      <Text className="text-gray-300 text-sm mt-3">
-                        {firstItem.food || "Food item"} ({firstItem.quantity || "-"})
-                      </Text>
-                      <Text className="text-gray-500 text-xs mt-1">
+                      {mealItems.map((item, idx) => (
+                        <Text key={idx} className="text-gray-300 text-sm mt-2">
+                          • {item.food || "Food item"} ({item.quantity || "-"})
+                        </Text>
+                      ))}
+
+                      <Text className="text-gray-500 text-xs mt-2">
                         {totalCalories} calories
                       </Text>
                     </>
