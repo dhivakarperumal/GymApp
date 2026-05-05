@@ -553,28 +553,44 @@ export default function Home() {
               </TouchableOpacity>
             </View>
 
-            {Object.entries(todayDiet).map(([meal, value]) => (
-              <View
-                key={meal}
-                className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]"
-              >
-                <View className="flex-row justify-between items-center">
-                  <Text className="text-white font-semibold">{meal}</Text>
+            {Object.entries(todayDiet).map(([meal, value]) => {
+              const mealItems = Array.isArray(value?.items) ? value.items : [];
+              const firstItem = mealItems[0] || {};
+              const totalCalories = mealItems.reduce(
+                (sum, item) => sum + (parseInt(item.calories, 10) || 0),
+                0
+              );
 
-                  <Text className="text-red-500 text-sm">
-                    {value.time || "No time"}
-                  </Text>
+              return (
+                <View
+                  key={meal}
+                  className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]"
+                >
+                  <View className="flex-row justify-between items-center">
+                    <Text className="text-white font-semibold">{meal}</Text>
+
+                    <Text className="text-red-500 text-sm">
+                      {value?.time || "No time"}
+                    </Text>
+                  </View>
+
+                  {mealItems.length > 0 ? (
+                    <>
+                      <Text className="text-gray-300 text-sm mt-3">
+                        {firstItem.food || "Food item"} ({firstItem.quantity || "-"})
+                      </Text>
+                      <Text className="text-gray-500 text-xs mt-1">
+                        {totalCalories} calories
+                      </Text>
+                    </>
+                  ) : (
+                    <Text className="text-gray-300 text-sm mt-3">
+                      No food items assigned for this meal.
+                    </Text>
+                  )}
                 </View>
-
-                <Text className="text-gray-300 text-sm">
-                  {value.food} ({value.quantity})
-                </Text>
-
-                <Text className="text-gray-500 text-xs mt-1">
-                  {value.calories} calories
-                </Text>
-              </View>
-            ))}
+              );
+            })}
           </View>
         )}
 
