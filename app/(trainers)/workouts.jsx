@@ -283,12 +283,12 @@ export default function Workouts() {
       >
         <View className="flex-row items-center justify-between mb-4">
           <View className="flex-row items-center">
-            <View className="w-12 h-12 rounded-2xl bg-orange-500/10 items-center justify-center border border-orange-500/20">
-              <Ionicons name="barbell-outline" size={20} color="#f97316" />
+            <View className="w-12 h-12 rounded-2xl bg-[#e11d1d]/10 items-center justify-center border border-[#e11d1d]/20">
+              <Ionicons name="barbell-outline" size={20} color="#e11d1d" />
             </View>
             <View className="ml-4">
               <Text className="text-white font-black text-base uppercase tracking-tight">{item.member_name}</Text>
-              <Text className="text-orange-500/60 text-[9px] font-black uppercase tracking-widest">
+              <Text className="text-[#e11d1d]/60 text-[9px] font-black uppercase tracking-widest">
                  {(item.level || item.training_level || item.trainingLevel || "beginner").charAt(0).toUpperCase() + (item.level || item.training_level || item.trainingLevel || "beginner").slice(1)} • {item.goal || item.workout_goal || item.workoutGoal || "General Training"}
               </Text>
             </View>
@@ -316,10 +316,10 @@ export default function Workouts() {
         <View className="flex-row items-center gap-3">
           <TouchableOpacity 
             onPress={() => handleEdit(item)}
-            className="flex-row items-center px-4 py-2 bg-orange-500/10 rounded-xl border border-orange-500/20"
+            className="flex-row items-center px-4 py-2 bg-[#e11d1d]/10 rounded-xl border border-[#e11d1d]/20"
           >
-            <Ionicons name="create-outline" size={14} color="#f97316" />
-            <Text className="text-orange-500 text-[9px] font-black uppercase tracking-widest ml-2">Edit</Text>
+            <Ionicons name="create-outline" size={14} color="#e11d1d" />
+            <Text className="text-[#e11d1d] text-[9px] font-black uppercase tracking-widest ml-2">Edit</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -337,7 +337,7 @@ export default function Workouts() {
     <View className="flex-1 bg-black">
       {loading && !workouts.length ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#f97316" />
+          <ActivityIndicator size="large" color="#e11d1d" />
           <Text className="text-white/40 mt-4 uppercase tracking-[0.3em] font-black text-[9px]">Syncing Workouts...</Text>
         </View>
       ) : (
@@ -346,11 +346,9 @@ export default function Workouts() {
           <View className="pt-16 pb-8 px-5 bg-[#0f0f0f] border-b border-white/5 flex-row justify-between items-center">
             <View>
               <Text className="text-white text-3xl font-black tracking-tight">Workouts</Text>
-              <Text className="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1">Trainer Panel</Text>
+              <Text className="text-[#e11d1d] text-[10px] font-black uppercase tracking-[0.3em] mt-1">Trainer Panel</Text>
             </View>
-            <TouchableOpacity className="bg-white/5 p-3 rounded-2xl border border-white/5">
-              <Ionicons name="search" size={20} color="white" />
-            </TouchableOpacity>
+           
           </View>
 
           <FlatList
@@ -373,7 +371,7 @@ export default function Workouts() {
       <TouchableOpacity
         onPress={handleAdd}
         activeOpacity={0.9}
-        className="absolute bottom-10 right-5 w-16 h-16 bg-orange-600 rounded-full items-center justify-center shadow-2xl shadow-orange-600/60 border-4 border-black"
+        className="absolute bottom-10 right-5 w-16 h-16 bg-[#e11d1d] rounded-full items-center justify-center shadow-2xl shadow-[#e11d1d]/60 border-4 border-black"
       >
         <Ionicons name="add" size={32} color="white" />
       </TouchableOpacity>
@@ -406,7 +404,7 @@ export default function Workouts() {
                       <Picker 
                          selectedValue={memberId} 
                          enabled={!isViewOnly}
-                         dropdownIconColor="#f97316" 
+                         dropdownIconColor="#e11d1d" 
                          style={{ color: "white" }} 
                          onValueChange={(val) => {
                            const m = members.find(i => String(i.id) === String(val));
@@ -425,7 +423,7 @@ export default function Workouts() {
                       <Picker 
                          selectedValue={trainingLevel} 
                          enabled={!isViewOnly}
-                         dropdownIconColor="#f97316" 
+                         dropdownIconColor="#e11d1d" 
                          style={{ color: "white" }} 
                          onValueChange={(itemValue) => setTrainingLevel(itemValue)}>
                         <Picker.Item label="Beginner" value="beginner" />
@@ -452,7 +450,7 @@ export default function Workouts() {
                    }).map((dayKey) => (
                      <View key={dayKey} className="mb-10">
                         <View className="flex-row justify-between items-center mb-6 px-2">
-                           <Text className="text-orange-500 font-black text-xl uppercase tracking-tighter">{dayKey}</Text>
+                           <Text className="text-[#e11d1d] font-black text-xl uppercase tracking-tighter">{dayKey}</Text>
                            {Object.keys(days).length > 1 && !isViewOnly && (
                              <TouchableOpacity onPress={() => removeDay(dayKey)} className="bg-red-500/10 px-4 py-2 rounded-xl">
                                <Text className="text-red-500 font-black text-[9px] uppercase">Remove Day</Text>
@@ -481,7 +479,7 @@ export default function Workouts() {
                                            selectedValue={ex.type} 
                                            enabled={!isViewOnly}
                                            style={{ color: "white" }} 
-                                           dropdownIconColor="#f97316" 
+                                           dropdownIconColor="#e11d1d" 
                                            onValueChange={v => updateExercise(dayKey, idx, "type", v)}>
                                            {workoutTypes.map(type => (
                                               <Picker.Item key={type} label={type} value={type} />
@@ -534,10 +532,10 @@ export default function Workouts() {
                                     <Text className="text-white/30 text-[8px] font-black uppercase ml-1">Exercise Media (Image/Video)</Text>
                                   {!isViewOnly && (
                                      <View className="flex-row bg-black/60 rounded-lg p-0.5">
-                                        <TouchableOpacity onPress={() => updateExercise(dayKey, idx, "mediaType", "url")} className={`px-3 py-1 rounded-md ${ex.mediaType === 'url' ? 'bg-orange-500' : ''}`}>
+                                        <TouchableOpacity onPress={() => updateExercise(dayKey, idx, "mediaType", "url")} className={`px-3 py-1 rounded-md ${ex.mediaType === 'url' ? 'bg-[#e11d1d]' : ''}`}>
                                            <Text className="text-white font-black text-[7px] uppercase">URL</Text>
                                         </TouchableOpacity>
-                                        <TouchableOpacity onPress={() => { updateExercise(dayKey, idx, "mediaType", "upload"); updateExercise(dayKey, idx, "media", ""); }} className={`px-3 py-1 rounded-md ${ex.mediaType === 'upload' ? 'bg-orange-500' : ''}`}>
+                                        <TouchableOpacity onPress={() => { updateExercise(dayKey, idx, "mediaType", "upload"); updateExercise(dayKey, idx, "media", ""); }} className={`px-3 py-1 rounded-md ${ex.mediaType === 'upload' ? 'bg-[#e11d1d]' : ''}`}>
                                            <Text className="text-white font-black text-[7px] uppercase">Upload</Text>
                                         </TouchableOpacity>
                                      </View>
@@ -562,7 +560,7 @@ export default function Workouts() {
                                     <Text className="text-white/60 font-medium text-[10px]">
                                       {ex.media ? "Media Selected (Ready to Sync)" : "Select Video or Image from Library"}
                                     </Text>
-                                    <Ionicons name={ex.media ? "checkmark-circle" : "cloud-upload-outline"} size={16} color={ex.media ? "#22c55e" : "#f97316"} />
+                                    <Ionicons name={ex.media ? "checkmark-circle" : "cloud-upload-outline"} size={16} color={ex.media ? "#22c55e" : "#e11d1d"} />
                                  </TouchableOpacity>
                                )}
                             </View>
@@ -579,7 +577,7 @@ export default function Workouts() {
                         
                          {!isViewOnly && (
                            <TouchableOpacity onPress={() => addExercise(dayKey)} className="flex-row items-center py-2">
-                              <Text className="text-orange-500 font-black text-xs uppercase">+ Add Exercise</Text>
+                              <Text className="text-[#e11d1d] font-black text-xs uppercase">+ Add Exercise</Text>
                            </TouchableOpacity>
                          )}
                      </View>
@@ -589,12 +587,12 @@ export default function Workouts() {
                       <>
                         <TouchableOpacity onPress={addDay} className="bg-white/5 p-6 rounded-2xl mb-8 items-center justify-center border border-dashed border-white/10">
                            <View className="flex-row items-center">
-                              <Ionicons name="calendar-outline" size={20} color="#f97316" />
+                              <Ionicons name="calendar-outline" size={20} color="#e11d1d" />
                               <Text className="text-white font-black uppercase tracking-widest text-[10px] ml-3">Add Training Day</Text>
                            </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={saveProgram} className="bg-orange-600 p-6 rounded-2xl items-center justify-center mb-24 shadow-xl shadow-orange-600/40">
+                        <TouchableOpacity onPress={saveProgram} className="bg-[#e11d1d] p-6 rounded-2xl items-center justify-center mb-24 shadow-xl shadow-[#e11d1d]/40">
                           <Text className="text-white font-black uppercase tracking-[0.1em]">Publish Training Program</Text>
                         </TouchableOpacity>
                       </>

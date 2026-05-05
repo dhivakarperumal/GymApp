@@ -710,15 +710,15 @@ export default function DietPlans() {
       >
         <View className="flex-row items-center justify-between mb-4">
           <View className="flex-row items-center">
-            <View className="w-12 h-12 rounded-2xl bg-orange-500/10 items-center justify-center border border-orange-500/20">
-              <Ionicons name="restaurant-outline" size={20} color="#f97316" />
+            <View className="w-12 h-12 rounded-2xl bg-#e11d1d/10 items-center justify-center border border-#e11d1d/20">
+              <Ionicons name="restaurant-outline" size={20} color="#e11d1d" />
             </View>
             <View className="ml-4">
               <Text className="text-white font-black text-base uppercase tracking-tight">{item.member_name}</Text>
-              <Text className="text-orange-500/60 text-[9px] font-black uppercase tracking-widest">{item.title}</Text>
+              <Text className="text-[#e11d1d]/60 text-[9px] font-black uppercase tracking-widest">{item.title}</Text>
             </View>
           </View>
-          <View className="bg-orange-600 px-3 py-1.5 rounded-xl">
+          <View className="bg-[#e11d1d] px-3 py-1.5 rounded-xl">
              <Text className="text-white text-[10px] font-black uppercase">{(item.total_calories || item.totalCalories || 0)} KCAL</Text>
           </View>
         </View>
@@ -743,10 +743,10 @@ export default function DietPlans() {
         <View className="flex-row items-center gap-3">
           <TouchableOpacity 
             onPress={() => handleEdit(item)}
-            className="flex-row items-center px-4 py-2 bg-orange-500/10 rounded-xl border border-orange-500/20"
+            className="flex-row items-center px-4 py-2 bg-#e11d1d/10 rounded-xl border border-#e11d1d/20"
           >
-            <Ionicons name="create-outline" size={14} color="#f97316" />
-            <Text className="text-orange-500 text-[9px] font-black uppercase tracking-widest ml-2">Edit</Text>
+            <Ionicons name="create-outline" size={14} color="#e11d1d" />
+            <Text className="text-[#e11d1d] text-[9px] font-black uppercase tracking-widest ml-2">Edit</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -764,7 +764,7 @@ export default function DietPlans() {
     <View className="flex-1 bg-black">
       {loading && !dietPlans.length ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#f97316" />
+          <ActivityIndicator size="large" color="#e11d1d" />
           <Text className="text-white/40 mt-4 uppercase tracking-[0.3em] font-black text-[9px]">Syncing Diets...</Text>
         </View>
       ) : (
@@ -773,7 +773,7 @@ export default function DietPlans() {
           <View className="pt-16 pb-8 px-5 bg-[#0f0f0f] border-b border-white/5 flex-row justify-between items-center">
             <View>
               <Text className="text-white text-3xl font-black tracking-tight">Diet Plans</Text>
-              <Text className="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1">Nutrition Hub</Text>
+              <Text className="text-[#e11d1d] text-[10px] font-black uppercase tracking-[0.3em] mt-1">Nutrition Hub</Text>
             </View>
 
           </View>
@@ -798,7 +798,7 @@ export default function DietPlans() {
       <TouchableOpacity
         onPress={handleAdd}
         activeOpacity={0.9}
-        className="absolute bottom-10 right-5 w-16 h-16 bg-orange-600 rounded-full items-center justify-center shadow-2xl shadow-orange-600/60 border-4 border-black"
+        className="absolute bottom-10 right-5 w-16 h-16 bg-[#e11d1d] rounded-full items-center justify-center shadow-2xl shadow-[#e11d1d]/60 border-4 border-black"
       >
         <Ionicons name="add" size={32} color="white" />
       </TouchableOpacity>
@@ -843,7 +843,7 @@ export default function DietPlans() {
                 >
                    
                    {/* STATS OVERVIEW */}
-                   <View className="bg-orange-600 p-6 rounded-2xl mb-8 flex-row justify-between items-center shadow-lg shadow-orange-600/40">
+                   <View className="bg-[#e11d1d] p-6 rounded-2xl mb-8 flex-row justify-between items-center shadow-lg shadow-[#e11d1d]/40">
                       <View>
                         <Text className="text-white/60 text-[8px] font-black uppercase tracking-widest mb-1">Target Daily</Text>
                         <Text className="text-white text-2xl font-black">{form.totalCalories} KCAL</Text>
@@ -856,7 +856,7 @@ export default function DietPlans() {
                       <Picker 
                          selectedValue={form.memberId} 
                          enabled={!isViewOnly}
-                         dropdownIconColor="#f97316" 
+                         dropdownIconColor="#e11d1d" 
                          style={{ color: "white" }} 
                          onValueChange={(val) => {
                           const m = members.find(i => String(i.id) === String(val));
@@ -904,9 +904,9 @@ export default function DietPlans() {
                    {form.days && form.days.length > 0 && form.days.map((dayData, dayIndex) => (
                       <View key={dayIndex} className="mb-8">
                          <View className="flex-row items-center mb-6">
-                            <View className="w-10 h-[1px] bg-orange-500/30" />
-                            <Text className="text-orange-500 font-black uppercase tracking-[0.3em] mx-4 text-center">Day {dayIndex + 1}</Text>
-                            <View className="flex-1 h-[1px] bg-orange-500/30" />
+                            <View className="w-10 h-[1px] bg-#e11d1d/30" />
+                            <Text className="text-[#e11d1d] font-black uppercase tracking-[0.3em] mx-4 text-center">Day {dayIndex + 1}</Text>
+                            <View className="flex-1 h-[1px] bg-#e11d1d/30" />
                             <View className="flex-row items-center gap-2 ml-4">
                                {dayIndex === 0 && form.days.length > 1 && (
                                  <TouchableOpacity onPress={handleCopyDay1ToAll} className="bg-emerald-500/10 p-2 rounded-xl">
@@ -932,17 +932,17 @@ export default function DietPlans() {
                                       <Text className="text-white font-black text-xs uppercase tracking-widest">{meal}</Text>
                                       {mealInfo.time && (
                                         <View className="flex-row items-center mt-2">
-                                          <Ionicons name="time" size={14} color="#f97316" />
-                                          <Text className="text-orange-500 text-xs font-bold ml-1">{mealInfo.time}</Text>
+                                          <Ionicons name="time" size={14} color="#e11d1d" />
+                                          <Text className="text-[#e11d1d] text-xs font-bold ml-1">{mealInfo.time}</Text>
                                         </View>
                                       )}
                                    </View>
                                     <TouchableOpacity 
                                        onPress={() => { setSelectedTimeField({dayIndex, meal}); setShowTimePicker(true); }} 
                                        disabled={isViewOnly}
-                                       className="bg-orange-500/10 px-3 py-1.5 rounded-full border border-orange-500/20"
+                                       className="bg-#e11d1d/10 px-3 py-1.5 rounded-full border border-#e11d1d/20"
                                     >
-                                       <Text className="text-orange-500 text-[8px] font-black uppercase">{mealInfo.time ? "EDIT" : "SET TIME"}</Text>
+                                       <Text className="text-[#e11d1d] text-[8px] font-black uppercase">{mealInfo.time ? "EDIT" : "SET TIME"}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 
@@ -1010,12 +1010,12 @@ export default function DietPlans() {
                            className="bg-white/5 p-6 rounded-2xl mb-8 items-center justify-center border border-dashed border-white/10"
                         >
                            <View className="flex-row items-center">
-                              <Ionicons name="restaurant-outline" size={20} color="#f97316" />
+                              <Ionicons name="restaurant-outline" size={20} color="#e11d1d" />
                               <Text className="text-white font-black uppercase tracking-widest text-[10px] ml-3">Add Nutrition Day</Text>
                            </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={saveDietPlan} className="bg-orange-600 p-6 rounded-2xl items-center justify-center mb-24 shadow-xl shadow-orange-600/40">
+                        <TouchableOpacity onPress={saveDietPlan} className="bg-#e11d1d p-6 rounded-2xl items-center justify-center mb-24 shadow-xl shadow-#e11d1d/40">
                           <Text className="text-white font-black uppercase tracking-[0.1em]">Publish Diet Plan</Text>
                         </TouchableOpacity>
                       </>

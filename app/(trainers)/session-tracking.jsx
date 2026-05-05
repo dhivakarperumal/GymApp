@@ -214,7 +214,7 @@ export default function SessionTrackingScreen() {
           </View>
 
           {loading ? (
-            <ActivityIndicator color="#f97316" className="mt-20" />
+            <ActivityIndicator color="#e11d1d" className="mt-20" />
           ) : filteredMembers.length === 0 ? (
             <View className="mt-32 items-center">
                <View className="w-20 h-20 bg-white/5 rounded-full items-center justify-center border border-white/5">
@@ -237,8 +237,8 @@ export default function SessionTrackingScreen() {
                 >
                   <View className="flex-row justify-between items-center relative z-10">
                     <View className="flex-row items-center flex-1">
-                      <View className="w-14 h-14 rounded-2xl bg-orange-500/10 items-center justify-center mr-4 border border-orange-500/20">
-                        <Text className="text-orange-500 font-black text-xl">{m.name.charAt(0).toUpperCase()}</Text>
+                      <View className="w-14 h-14 rounded-2xl bg-[#e11d1d]/10 items-center justify-center mr-4 border border-[#e11d1d]/20">
+                        <Text className="text-[#e11d1d] font-black text-xl">{m.name.charAt(0).toUpperCase()}</Text>
                       </View>
                       <View className="flex-1">
                         <Text className="text-white text-lg font-bold tracking-tight" numberOfLines={1}>{m.name}</Text>
@@ -248,8 +248,8 @@ export default function SessionTrackingScreen() {
                         </View>
                       </View>
                     </View>
-                    <View className="w-10 h-10 rounded-xl bg-orange-500/10 items-center justify-center border border-orange-500/20">
-                      <Ionicons name="arrow-forward" size={18} color="#f97316" />
+                    <View className="w-10 h-10 rounded-xl bg-[#e11d1d]/10 items-center justify-center border border-[#e11d1d]/20">
+                      <Ionicons name="arrow-forward" size={18} color="#e11d1d" />
                     </View>
                   </View>
                   <View style={{ position: 'absolute', top: 0, right: 0, padding: 8, opacity: 0.03 }}>
@@ -274,12 +274,12 @@ export default function SessionTrackingScreen() {
             className="flex-row items-center flex-1 bg-white/5 p-3 border border-white/5"
             style={{ borderRadius: 20 }}
           >
-            <View className="w-10 h-10 rounded-xl bg-orange-500 items-center justify-center shadow-lg">
+            <View className="w-10 h-10 rounded-xl bg-[#e11d1d] items-center justify-center shadow-lg">
               <Text className="text-white font-black text-lg">{selectedMember?.name.charAt(0).toUpperCase()}</Text>
             </View>
             <View className="ml-3 flex-1">
               <Text className="text-white font-bold text-lg leading-tight" numberOfLines={1}>{selectedMember?.name}</Text>
-              <Text className="text-orange-500/60 text-[10px] font-bold uppercase tracking-widest">{selectedMember?.planName || 'Active Member'}</Text>
+              <Text className="text-[#e11d1d]/60 text-[10px] font-bold uppercase tracking-widest">{selectedMember?.planName || 'Active Member'}</Text>
             </View>
             <View className="mr-2">
               <Ionicons name="swap-horizontal" size={16} color="#666" />
@@ -304,7 +304,7 @@ export default function SessionTrackingScreen() {
             className="flex-1 flex-row items-center justify-center py-3.5"
             style={[
               { borderRadius: 18 },
-              activeTab === 'sessions' ? { backgroundColor: '#f97316' } : {}
+              activeTab === 'sessions' ? { backgroundColor: '#e11d1d' } : {}
             ]}
           >
             <Ionicons name="calendar" size={16} color={activeTab === 'sessions' ? 'white' : '#666'} />
@@ -320,7 +320,7 @@ export default function SessionTrackingScreen() {
             className="flex-1 flex-row items-center justify-center py-3.5"
             style={[
               { borderRadius: 18 },
-              activeTab === 'overview' ? { backgroundColor: '#f97316' } : {}
+              activeTab === 'overview' ? { backgroundColor: '#e11d1d' } : {}
             ]}
           >
             <Ionicons name="id-card" size={16} color={activeTab === 'overview' ? 'white' : '#666'} />
@@ -336,7 +336,7 @@ export default function SessionTrackingScreen() {
 
       <ScrollView className="flex-1">
         {loading ? (
-          <ActivityIndicator color="#f97316" className="mt-20" />
+          <ActivityIndicator color="#e11d1d" className="mt-20" />
         ) : activeTab === "sessions" ? (
           <View className="p-4">
             {formData && (
@@ -359,16 +359,16 @@ export default function SessionTrackingScreen() {
               style={{ borderRadius: 40, padding: 32, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', position: 'relative', overflow: 'hidden' }}
             >
                <View className="flex-row items-center mb-10">
-                  <View className="w-16 h-16 bg-orange-500 rounded-[22px] items-center justify-center shadow-xl shadow-orange-500/40">
+                  <View className="w-16 h-16 bg-[#e11d1d] rounded-[22px] items-center justify-center shadow-xl shadow-[#e11d1d]/40">
                     <Ionicons name="person" size={32} color="white" />
                   </View>
                   <View className="ml-5 flex-1">
                     <Text className="text-white text-3xl font-black leading-tight" style={{ letterSpacing: -0.5 }}>{selectedMember?.name}</Text>
                     <View 
-                      className="bg-orange-500/10 self-start px-2 py-1 mt-1 border border-orange-500/20"
+                      className="bg-[#e11d1d]/10 self-start px-2 py-1 mt-1 border border-[#e11d1d]/20"
                       style={{ borderRadius: 6 }}
                     >
-                      <Text className="text-orange-500 text-[10px] font-black uppercase" style={{ letterSpacing: 1.5 }}>Platinum Tier</Text>
+                      <Text className="text-[#e11d1d] text-[10px] font-black uppercase" style={{ letterSpacing: 1.5 }}>Platinum Tier</Text>
                     </View>
                   </View>
                </View>
@@ -376,11 +376,11 @@ export default function SessionTrackingScreen() {
                <View className="space-y-6">
                   <ProInfoItem icon="mail" label="E-Mail Address" value={selectedMember?.email || 'N/A'} />
                   <ProInfoItem icon="call" label="Direct Contact" value={selectedMember?.phone || 'N/A'} />
-                  <ProInfoItem icon="ribbon" label="Active Plan" value={selectedMember?.planName || 'Elite Training'} valueColor="#f97316" />
+                  <ProInfoItem icon="ribbon" label="Active Plan" value={selectedMember?.planName || 'Elite Training'} valueColor="#e11d1d" />
                   <ProInfoItem icon="finger-print" label="Unique Member ID" value={selectedMember?.id} />
                </View>
 
-               <View className="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/10 rounded-full" />
+               <View className="absolute -top-10 -right-10 w-40 h-40 bg-[#e11d1d]/10 rounded-full" />
             </LinearGradient>
 
             {/* Premium Status Footer */}

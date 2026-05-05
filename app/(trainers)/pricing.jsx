@@ -103,7 +103,7 @@ export default function TrainerPricing() {
   if (loading) {
     return (
       <View style={s.center}>
-        <ActivityIndicator size="large" color="#f97316" />
+        <ActivityIndicator size="large" color="#e11d1d" />
         <Text style={s.loadingText}>Loading pricing data…</Text>
       </View>
     );
@@ -113,7 +113,7 @@ export default function TrainerPricing() {
   if (error) {
     return (
       <View style={s.center}>
-        <Ionicons name="cloud-offline-outline" size={52} color="#f97316" />
+        <Ionicons name="cloud-offline-outline" size={52} color="#e11d1d" />
         <Text style={s.errorText}>{error}</Text>
         <TouchableOpacity style={s.retryBtn} onPress={() => loadPlans()}>
           <Text style={s.retryText}>Retry</Text>
@@ -133,8 +133,8 @@ export default function TrainerPricing() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#f97316"
-            colors={["#f97316"]}
+            tintColor="#e11d1d"
+            colors={["#e11d1d"]}
           />
         }
       >
@@ -154,7 +154,7 @@ export default function TrainerPricing() {
             label="Total"
             value={stats.total}
             icon="layers-outline"
-            color="#f97316"
+            color="#e11d1d"
           />
           <StatPill
             label="Active"
@@ -264,7 +264,7 @@ function PricingCard({ plan }) {
       {/* Top row: name + badge */}
       <View style={s.cardTop}>
         <View style={s.cardNameBlock}>
-          <Ionicons name="pricetag" size={16} color="#f97316" style={{ marginRight: 6 }} />
+          <Ionicons name="pricetag" size={16} color="#e11d1d" style={{ marginRight: 6 }} />
           <Text style={s.cardName}>{plan.name}</Text>
         </View>
         <View style={[s.statusBadge, isActive ? s.badgeActive : s.badgeInactive]}>
@@ -337,7 +337,7 @@ function PricingCard({ plan }) {
           <Text style={s.listTitle}>FACILITIES</Text>
           {plan.facilities.slice(0, 4).map((f, i) => (
             <View key={i} style={s.listItem}>
-              <Ionicons name="checkmark" size={13} color="#f97316" />
+              <Ionicons name="checkmark" size={13} color="#e11d1d" />
               <Text style={s.listItemText}>{f}</Text>
             </View>
           ))}
@@ -371,7 +371,7 @@ function PricingCard({ plan }) {
         <View style={s.footerDivider} />
         <View style={s.footerStat}>
           <Text style={s.footerStatLabel}>Per Month</Text>
-          <Text style={[s.footerStatValue, { color: "#f97316" }]}>
+          <Text style={[s.footerStatValue, { color: "#e11d1d" }]}>
             ₹{perMonth}
           </Text>
         </View>
@@ -391,14 +391,14 @@ const s = StyleSheet.create({
   center: { flex: 1, backgroundColor: "#0a0a0a", alignItems: "center", justifyContent: "center", padding: 24 },
   loadingText: { color: "#6b7280", marginTop: 12, fontSize: 13 },
   errorText:   { color: "#ffffff", fontSize: 15, fontWeight: "700", marginTop: 12, textAlign: "center" },
-  retryBtn:    { marginTop: 20, backgroundColor: "#f97316", paddingHorizontal: 28, paddingVertical: 12, borderRadius: 14 },
+  retryBtn:    { marginTop: 20, backgroundColor: "#e11d1d", paddingHorizontal: 28, paddingVertical: 12, borderRadius: 14 },
   retryText:   { color: "#fff", fontWeight: "700" },
 
   /* Header */
   header:          { paddingTop: 28, paddingBottom: 20, flexDirection: "row", alignItems: "flex-start", gap: 12 },
   backBtn:         { marginTop: 6, width: 40, height: 40, borderRadius: 20, backgroundColor: "#1a1a1a", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
   headerTextBlock: { flex: 1 },
-  eyebrow:         { color: "#f97316", fontSize: 10, fontWeight: "700", letterSpacing: 3, marginBottom: 4 },
+  eyebrow:         { color: "#e11d1d", fontSize: 10, fontWeight: "700", letterSpacing: 3, marginBottom: 4 },
   headerTitle:     { color: "#ffffff", fontSize: 24, fontWeight: "800" },
   headerSub:       { color: "#4b5563", fontSize: 12, marginTop: 4 },
 
@@ -443,7 +443,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#2a2a2a",
   },
-  filterChipActive:     { backgroundColor: "#f97316", borderColor: "#f97316" },
+  filterChipActive:     { backgroundColor: "#e11d1d", borderColor: "#e11d1d" },
   filterChipText:       { color: "#6b7280", fontSize: 12, fontWeight: "600" },
   filterChipTextActive: { color: "#fff" },
   filterCount:          { marginLeft: "auto", color: "#374151", fontSize: 11 },
@@ -463,7 +463,7 @@ const s = StyleSheet.create({
     borderColor: "#1f1f1f",
     position: "relative",
     overflow: "hidden",
-    shadowColor: "#f97316",
+    shadowColor: "#e11d1d",
     shadowOpacity: 0.25,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 8 },
@@ -476,7 +476,7 @@ const s = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 60,
-    backgroundColor: "#f9731612",
+    backgroundColor: "#e11d1d12",
   },
 
   /* Card top */
