@@ -38,7 +38,7 @@ export default function Workouts() {
   const { user } = useAuth();
   const router = useRouter();
 
-  // -- UI STATE --
+  // -- STATE --
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [workouts, setWorkouts] = useState([]);
@@ -46,8 +46,14 @@ export default function Workouts() {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedTimeField, setSelectedTimeField] = useState(null);
   const [isViewOnly, setIsViewOnly] = useState(false);
-  const [trainingLevel, setTrainingLevel] = useState("Beginner");
+
+  // -- FORM STATE --
+  const [editingId, setEditingId] = useState(null);
+  const [memberId, setMemberId] = useState("");
+  const [memberName, setMemberName] = useState("");
   const [workoutGoal, setWorkoutGoal] = useState("");
+  const [trainingLevel, setTrainingLevel] = useState("Beginner");
+  const [days, setDays] = useState({ Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
 
   // ... (existing functions)
 
@@ -377,6 +383,20 @@ export default function Workouts() {
                         }}>
                         <Picker.Item label="Select Member..." value="" />
                         {members.map(m => <Picker.Item key={m.id} label={m.name} value={String(m.id)} />)}
+                      </Picker>
+                   </View>
+
+                   <Text className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-4 px-1">Training Level</Text>
+                   <View className={`bg-white/5 rounded-2xl mb-8 border border-white/5 overflow-hidden ${isViewOnly ? 'opacity-50' : ''}`}>
+                      <Picker 
+                         selectedValue={trainingLevel} 
+                         enabled={!isViewOnly}
+                         dropdownIconColor="#f97316" 
+                         style={{ color: "white" }} 
+                         onValueChange={setTrainingLevel}>
+                        <Picker.Item label="Beginner" value="Beginner" />
+                        <Picker.Item label="Intermediate" value="Intermediate" />
+                        <Picker.Item label="Advanced" value="Advanced" />
                       </Picker>
                    </View>
 
