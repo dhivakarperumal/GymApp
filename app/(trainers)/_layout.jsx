@@ -451,6 +451,15 @@ export default function TrainersLayout() {
           headerShown: false
         }}
       />
+
+      <Tabs.Screen
+        name="session-tracking"
+        options={{
+          href: null,
+          tabBarStyle: { display: "none" },
+          headerShown: false
+        }}
+      />
     </Tabs>
   );
 }
