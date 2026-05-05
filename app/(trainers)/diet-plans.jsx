@@ -18,6 +18,8 @@ import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import api, { getTrainerMembers, getTrainerDietPlans } from "../../services/api";
+import * as DocumentPicker from "expo-document-picker";
+import * as XLSX from "xlsx";
 
 const meals = ["Early-morning", "Breakfast", "Mid-morning", "Lunch", "Evening", "Dinner", "Pre-workout", "Post-workout"];
 
@@ -45,6 +47,7 @@ export default function DietPlans() {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedTimeField, setSelectedTimeField] = useState(null);
   const [isViewOnly, setIsViewOnly] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   // -- FORM STATE --
   const [editingId, setEditingId] = useState(null);
@@ -284,6 +287,160 @@ export default function DietPlans() {
     Alert.alert("Success", "Day 1 copied to all days.");
   };
 
+  const normalizeString = (value) => String(value || "").trim();
+
+  const getRowValue = (row, keys) => {
+    for (const key of keys) {
+      if (Object.prototype.hasOwnProperty.call(row, key)) {
+        const value = row[key];
+        if (value !== undefined && value !== null && String(value).trim() !== "") {
+          return String(value).trim();
+        }
+      }
+    }
+    const lowerMap = Object.fromEntries(
+      Object.keys(row).map((key) => [key.toLowerCase(), row[key]])
+    );
+    for (const key of keys) {
+      const lowerKey = key.toLowerCase();
+      if (Object.prototype.hasOwnProperty.call(lowerMap, lowerKey)) {
+        const value = lowerMap[lowerKey];
+        if (value !== undefined && value !== null && String(value).trim() !== "") {
+          return String(value).trim();
+        }
+      }
+    }
+    return "";
+  };
+
+  const parseDayNumber = (value) => {
+    const raw = normalizeString(value);
+    if (!raw) return null;
+    const found = raw.match(/\d+/);
+    if (found) return Number(found[0]);
+    const numeric = Number(raw);
+    return Number.isFinite(numeric) ? numeric : null;
+  };
+
+  const normalizeMeal = (value) => {
+    const raw = normalizeString(value).toLowerCase();
+    if (!raw) return "";
+    const normalized = raw.replace(/[\s_-]+/g, " ").trim();
+    if (["early morning", "early-morning", "early"].includes(normalized)) return "Early-morning";
+    if (["mid morning", "mid-morning", "mid", "midmorning"].includes(normalized)) return "Mid-morning";
+    if (["breakfast"].includes(normalized)) return "Breakfast";
+    if (["lunch"].includes(normalized)) return "Lunch";
+    if (["evening"].includes(normalized)) return "Evening";
+    if (["dinner"].includes(normalized)) return "Dinner";
+    if (["pre workout", "pre-workout", "preworkout"].includes(normalized)) return "Pre-workout";
+    if (["post workout", "post-workout", "postworkout"].includes(normalized)) return "Post-workout";
+    
+    const found = meals.find((meal) => meal.toLowerCase() === raw);
+    if (found) return found;
+    for (const meal of meals) {
+      if (raw.startsWith(meal.toLowerCase())) return meal;
+    }
+    
+    if (raw.includes("pre") && raw.includes("workout")) return "Pre-workout";
+    if (raw.includes("post") && raw.includes("workout")) return "Post-workout";
+    if (raw.includes("early") && raw.includes("morning")) return "Early-morning";
+    if (raw.includes("mid") && raw.includes("morning")) return "Mid-morning";
+    return "";
+  };
+
+  const handleImportExcel = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'],
+      });
+      if (result.canceled || !result.assets) return;
+      
+      setImporting(true);
+      const fileUri = result.assets[0].uri;
+      const response = await fetch(fileUri);
+      const arrayBuffer = await response.arrayBuffer();
+      
+      const workbook = XLSX.read(arrayBuffer, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+      if (!rows || rows.length === 0) {
+        Alert.alert("Error", "Excel file is empty or invalid.");
+        return;
+      }
+
+      const parsedDays = {};
+      let rowsParsed = 0;
+
+      rows.forEach((row) => {
+        const dayRaw = getRowValue(row, ["Day", "Day Number", "Day No", "DayNo", "Day#", "day"]);
+        const mealRaw = getRowValue(row, ["Meal", "Meal Name", "Meal Type", "MealType", "meal"]);
+        const dayNumber = parseDayNumber(dayRaw) || 1;
+        const mealName = normalizeMeal(mealRaw);
+        const time = getRowValue(row, ["Time", "Timing", "Meal Time", "MealTime", "time"]);
+        const food = getRowValue(row, ["Food", "Food Item", "FoodItem", "Item", "Description", "food"]);
+        const quantity = getRowValue(row, ["Qty", "Quantity", "QTY", "Serving", "quantity"]);
+        const calories = getRowValue(row, ["Kcal", "Calories", "Cal", "Energy", "calories"]);
+
+        if (!mealName || !meals.includes(mealName)) return;
+
+        const dayKey = `Day${dayNumber}`;
+        if (!parsedDays[dayKey]) parsedDays[dayKey] = {};
+        if (!parsedDays[dayKey][mealName]) parsedDays[dayKey][mealName] = { time: "", items: [] };
+
+        const mealData = parsedDays[dayKey][mealName];
+        if (time) mealData.time = time;
+        if (food || quantity || calories) mealData.items.push({ food, quantity, calories });
+
+        rowsParsed += 1;
+      });
+
+      const dayKeys = Object.keys(parsedDays).sort(
+        (a, b) => Number(a.replace("Day", "")) - Number(b.replace("Day", ""))
+      );
+
+      if (dayKeys.length === 0 || rowsParsed === 0) {
+        Alert.alert("Error", "No valid diet rows found.");
+        return;
+      }
+
+      const newDays = {};
+      dayKeys.forEach((dayKey) => {
+        const rawDay = parsedDays[dayKey] || {};
+        const dayTemplate = generateSingleDay();
+        const mergedDay = {};
+
+        meals.forEach((meal) => {
+          const mealData = rawDay[meal];
+          if (mealData) {
+            mergedDay[meal] = {
+              ...dayTemplate[meal],
+              time: mealData.time || dayTemplate[meal].time,
+              items: mealData.items.length > 0 ? mealData.items : dayTemplate[meal].items,
+            };
+          } else {
+            mergedDay[meal] = dayTemplate[meal];
+          }
+        });
+        newDays[dayKey] = mergedDay;
+      });
+
+      setForm((prev) => ({
+        ...prev,
+        days: newDays,
+        duration: dayKeys.length,
+      }));
+
+      Alert.alert("Success", `Imported diet plan for ${dayKeys.length} day(s)`);
+    } catch (err) {
+      console.log(err);
+      Alert.alert("Error", "Failed to import Excel.");
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const saveDietPlan = async () => {
     if (!form.memberId) { Alert.alert("Selection Required", "Please select a member."); return; }
     if (!form.title) { Alert.alert("Title Required", "Please enter a diet plan title."); return; }
@@ -441,9 +598,23 @@ export default function DietPlans() {
                 <Text className="text-white font-black uppercase tracking-widest text-xs">
                    {isViewOnly ? 'View Plan' : (editingId ? 'Edit Plan' : 'New Plan')}
                 </Text>
-                <TouchableOpacity onPress={() => setIsModalOpen(false)} className="bg-white/10 p-2 rounded-full">
-                   <Ionicons name="close" size={22} color="white" />
-                </TouchableOpacity>
+                <View className="flex-row items-center gap-4">
+                   {!isViewOnly && (
+                     <TouchableOpacity 
+                       onPress={handleImportExcel} 
+                       disabled={importing}
+                       className={`flex-row items-center bg-emerald-500/20 px-3 py-1.5 rounded-xl border border-emerald-500/30 ${importing ? 'opacity-50' : ''}`}
+                     >
+                       <Ionicons name="document-text-outline" size={14} color="#10b981" />
+                       <Text className="text-emerald-400 font-black text-[10px] uppercase ml-1">
+                         {importing ? "..." : "Import"}
+                       </Text>
+                     </TouchableOpacity>
+                   )}
+                   <TouchableOpacity onPress={() => setIsModalOpen(false)} className="bg-white/10 p-2 rounded-full">
+                      <Ionicons name="close" size={22} color="white" />
+                   </TouchableOpacity>
+                </View>
              </View>
 
              <KeyboardAvoidingView 
