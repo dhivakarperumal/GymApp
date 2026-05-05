@@ -222,38 +222,37 @@ export default function Workouts() {
     try {
       const payload = {
         trainer_id: user.id,
+        trainerId: user.id,
         trainer_name: user.username,
+        trainerName: user.username,
         member_id: Number(memberId),
+        memberId: Number(memberId),
+        user_id: Number(memberId),
         member_name: memberName,
+        memberName: memberName,
         title: workoutGoal || "Training Program",
         training_level: trainingLevel,
+        trainingLevel: trainingLevel,
         workout_goal: workoutGoal,
+        workoutGoal: workoutGoal,
+        duration: Object.keys(days).length,
         days: JSON.stringify(days),
         status: "active"
       };
 
-      const url = editingId 
-        ? `https://dap.qtechx.com/api/workouts/${editingId}`
-        : `https://dap.qtechx.com/api/workouts`;
-      
-      const res = await fetch(url, {
-        method: editingId ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (res.ok) {
-        setIsModalOpen(false);
-        fetchData();
-        Alert.alert("Success", "Training program synchronized.");
+      if (editingId) {
+        await api.put(`/workouts/${editingId}`, payload);
       } else {
-        const errData = await res.json().catch(() => ({}));
-        console.log("SYNC ERROR:", errData);
-        Alert.alert("Sync Error", errData.message || `Server responded with ${res.status}`);
+        await api.post(`/workouts`, payload);
       }
+
+      setIsModalOpen(false);
+      fetchData();
+      Alert.alert("Success", "Training program synchronized.");
     } catch (err) {
-      console.log("NETWORK ERROR:", err);
-      Alert.alert("Network Error", "Failed to reach server. Please check your connection.");
+      console.log("SYNC ERROR:", err.response?.data || err.message);
+      const serverMsg = err.response?.data?.message || err.response?.data?.error;
+      Alert.alert("Sync Error", serverMsg || "Server rejected the program. Please check all fields.");
     }
   };
 
@@ -272,7 +271,7 @@ export default function Workouts() {
             <View className="ml-4">
               <Text className="text-white font-black text-base uppercase tracking-tight">{item.member_name}</Text>
               <Text className="text-orange-500/60 text-[9px] font-black uppercase tracking-widest">
-                 {item.training_level || item.trainingLevel} • {item.workout_goal || item.workoutGoal}
+                 {item.training_level || item.trainingLevel || "Beginner"} • {item.workout_goal || item.workoutGoal || "General Training"}
               </Text>
             </View>
           </View>
@@ -572,11 +571,16 @@ export default function Workouts() {
 
                    {showTimePicker && (
                      <DateTimePicker
-                       value={new Date()} mode="time" display="default"
+                       value={new Date()} mode="time" is24Hour={false} display="default"
                        onChange={(event, date) => {
                          setShowTimePicker(false);
-                         if (date && selectedTimeField) {
-                           const formatted = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                         if (event.type === "set" && date && selectedTimeField) {
+                           const h = date.getHours();
+                           const m = date.getMinutes();
+                           const ampm = h >= 12 ? 'PM' : 'AM';
+                           const h12 = h % 12 || 12;
+                           const mStr = m < 10 ? `0${m}` : m;
+                           const formatted = `${h12}:${mStr} ${ampm}`;
                            updateExercise(selectedTimeField.dayKey, selectedTimeField.idx, "time", formatted);
                          }
                        }}
