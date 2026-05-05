@@ -47,6 +47,8 @@ export default function Workouts() {
   const [selectedTimeField, setSelectedTimeField] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [isViewOnly, setIsViewOnly] = useState(false);
+  const [trainingLevel, setTrainingLevel] = useState("Beginner");
+  const [workoutGoal, setWorkoutGoal] = useState("");
 
   // ... (existing functions)
 
@@ -114,27 +116,43 @@ export default function Workouts() {
     setMemberId("");
     setMemberName("");
     setTitle("");
+    setTrainingLevel("Beginner");
+    setWorkoutGoal("");
     setDays({ Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
     setIsViewOnly(false);
     setIsModalOpen(true);
   };
 
   const handleEdit = (workout) => {
+    let daysData = workout.days;
+    if (typeof daysData === 'string') {
+      try { daysData = JSON.parse(daysData); } catch (e) { daysData = null; }
+    }
+
     setEditingId(workout.id);
     setMemberId(String(workout.member_id || workout.memberId));
     setMemberName(workout.member_name);
     setTitle(workout.title);
-    setDays(workout.days || { Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
+    setTrainingLevel(workout.training_level || workout.trainingLevel || "Beginner");
+    setWorkoutGoal(workout.workout_goal || workout.workoutGoal || "");
+    setDays(daysData || { Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
     setIsViewOnly(false);
     setIsModalOpen(true);
   };
 
   const handleView = (workout) => {
+    let daysData = workout.days;
+    if (typeof daysData === 'string') {
+      try { daysData = JSON.parse(daysData); } catch (e) { daysData = null; }
+    }
+
     setEditingId(workout.id);
     setMemberId(String(workout.member_id || workout.memberId));
     setMemberName(workout.member_name);
     setTitle(workout.title);
-    setDays(workout.days || { Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
+    setTrainingLevel(workout.training_level || workout.trainingLevel || "Beginner");
+    setWorkoutGoal(workout.workout_goal || workout.workoutGoal || "");
+    setDays(daysData || { Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
     setIsViewOnly(true);
     setIsModalOpen(true);
   };
@@ -183,15 +201,22 @@ export default function Workouts() {
   };
 
   const updateExercise = (dayKey, index, field, value) => {
-    const updated = [...days[dayKey]];
-    updated[index][field] = value;
-    setDays({ ...days, [dayKey]: updated });
+    setDays(prev => ({
+      ...prev,
+      [dayKey]: prev[dayKey].map((ex, i) => 
+        i === index ? { ...ex, [field]: value } : ex
+      )
+    }));
   };
 
   const removeExercise = (dayKey, index) => {
-    const updated = [...days[dayKey]];
-    updated.splice(index, 1);
-    setDays({ ...days, [dayKey]: updated.length ? updated : [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
+    setDays(prev => {
+      const updated = prev[dayKey].filter((_, i) => i !== index);
+      return { 
+        ...prev, 
+        [dayKey]: updated.length ? updated : [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] 
+      };
+    });
   };
 
   const saveProgram = async () => {
@@ -202,7 +227,9 @@ export default function Workouts() {
         trainerName: user.username,
         memberId: Number(memberId),
         memberName,
-        title: title || "New Training Program",
+        title,
+        trainingLevel,
+        workoutGoal,
         days,
         status: "active"
       };
@@ -221,6 +248,9 @@ export default function Workouts() {
         setIsModalOpen(false);
         fetchData();
         Alert.alert("Success", "Training program synchronized.");
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        Alert.alert("Error", errData.message || "Failed to sync program.");
       }
     } catch (err) {
       Alert.alert("Error", "Failed to sync program.");
@@ -284,41 +314,41 @@ export default function Workouts() {
     </View>
   );
 
-  if (loading && !workouts.length) {
-    return (
-      <View className="flex-1 bg-black items-center justify-center">
-        <ActivityIndicator size="large" color="#f97316" />
-        <Text className="text-white/40 mt-4 uppercase tracking-[0.3em] font-black text-[9px]">Syncing Workouts...</Text>
-      </View>
-    );
-  }
-
   return (
     <View className="flex-1 bg-black">
-      {/* HEADER */}
-      <View className="pt-16 pb-8 px-5 bg-[#0f0f0f] border-b border-white/5 flex-row justify-between items-center">
-        <View>
-          <Text className="text-white text-3xl font-black tracking-tight">Workouts</Text>
-          <Text className="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1">Training Hub</Text>
+      {loading && !workouts.length ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#f97316" />
+          <Text className="text-white/40 mt-4 uppercase tracking-[0.3em] font-black text-[9px]">Syncing Workouts...</Text>
         </View>
-        <TouchableOpacity className="bg-white/5 p-3 rounded-2xl border border-white/5">
-          <Ionicons name="search" size={20} color="white" />
-        </TouchableOpacity>
-      </View>
-
-      <FlatList
-        data={workouts}
-        keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => <WorkoutCard item={item} />}
-        ListEmptyComponent={
-          <View className="flex-1 items-center justify-center py-32">
-            <Ionicons name="barbell-outline" size={60} color="rgba(255,255,255,0.05)" />
-            <Text className="text-white/20 font-black uppercase tracking-widest text-[10px] mt-6">No workouts assigned</Text>
+      ) : (
+        <>
+          {/* HEADER */}
+          <View className="pt-16 pb-8 px-5 bg-[#0f0f0f] border-b border-white/5 flex-row justify-between items-center">
+            <View>
+              <Text className="text-white text-3xl font-black tracking-tight">Workouts</Text>
+              <Text className="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1">Trainer Panel</Text>
+            </View>
+            <TouchableOpacity className="bg-white/5 p-3 rounded-2xl border border-white/5">
+              <Ionicons name="search" size={20} color="white" />
+            </TouchableOpacity>
           </View>
-        }
-      />
+
+          <FlatList
+            data={workouts}
+            keyExtractor={(item) => String(item.id)}
+            contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => <WorkoutCard item={item} />}
+            ListEmptyComponent={
+              <View className="flex-1 items-center justify-center py-32">
+                <Ionicons name="barbell-outline" size={60} color="rgba(255,255,255,0.05)" />
+                <Text className="text-white/20 font-black uppercase tracking-widest text-[10px] mt-6">No training programs</Text>
+              </View>
+            }
+          />
+        </>
+      )}
 
       {/* FAB */}
       <TouchableOpacity
@@ -365,10 +395,34 @@ export default function Workouts() {
                    <TextInput 
                       placeholder="Program Title (e.g. Strength Phase 1)" 
                       value={title} 
-                      onChangeText={setTitle} 
                       editable={!isViewOnly}
+                      onChangeText={setTitle} 
                       placeholderTextColor="rgba(255,255,255,0.2)" 
-                      className={`bg-white/5 p-5 rounded-2xl text-white mb-8 border border-white/5 font-bold ${isViewOnly ? 'opacity-50' : ''}`} 
+                      className={`bg-white/5 p-5 rounded-2xl text-white mb-6 border border-white/5 font-bold ${isViewOnly ? 'opacity-50' : ''}`} 
+                   />
+
+                   <Text className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-4 px-1">Training Level</Text>
+                   <View className={`bg-white/5 rounded-2xl mb-8 border border-white/5 overflow-hidden ${isViewOnly ? 'opacity-50' : ''}`}>
+                      <Picker 
+                         selectedValue={trainingLevel} 
+                         enabled={!isViewOnly}
+                         dropdownIconColor="#f97316" 
+                         style={{ color: "white" }} 
+                         onValueChange={setTrainingLevel}>
+                        <Picker.Item label="Beginner" value="Beginner" />
+                        <Picker.Item label="Intermediate" value="Intermediate" />
+                        <Picker.Item label="Advanced" value="Advanced" />
+                      </Picker>
+                   </View>
+
+                   <Text className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-4 px-1">Workout Goal</Text>
+                   <TextInput 
+                      placeholder="e.g. Weight Loss, Muscle Gain" 
+                      value={workoutGoal} 
+                      editable={!isViewOnly}
+                      onChangeText={setWorkoutGoal} 
+                      placeholderTextColor="rgba(255,255,255,0.2)" 
+                      className={`bg-white/5 p-5 rounded-2xl text-white mb-10 border border-white/5 font-bold ${isViewOnly ? 'opacity-50' : ''}`} 
                    />
 
                    {/* DAYS ORCHESTRATOR */}
