@@ -65,7 +65,7 @@ const menuItems = [
     id: "session-tracking",
     title: "Session Tracking",
     subtitle: "Track PT sessions & view profile",
-    icon: "list",
+    icon: "reader",
     route: "/(trainers)/session-tracking",
     iconBg: "#f97316",
     glowBg: "#f9731618",

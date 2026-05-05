@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ScrollView, View, Text, TextInput, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import api from "../../../services/api";
 import { useAuth } from '../../../context/AuthContext.js'
 import Toast from "react-native-toast-message";
@@ -106,7 +107,7 @@ const SessionTracker = ({
   };
 
   return (
-    <View className="flex-1 bg-black">
+    <View className="flex-1">
       <View className="py-4">
 
         {/* TITLE */}
@@ -121,77 +122,143 @@ const SessionTracker = ({
         )}
 
         {/* SESSION LIST */}
-        {localFormData.sessions.map((session, index) => (
-          <View key={index} className="bg-white/5 p-4 rounded-xl mb-4">
-
-            <Text className="text-orange-400 font-bold mb-2">
-              Session {session.session_no}
-            </Text>
-
-            {/* Date */}
-            <TouchableOpacity
-              onPress={() => {
-                if (!userMode) {
-                  setCurrentPickerIndex(index);
-                  setShowPicker(true);
-                }
-              }}
-              className="bg-white/10 p-3 rounded-xl mb-2 flex-row justify-between items-center"
+        {localFormData.sessions.map((session, index) => {
+          const isCompleted = session.status === "Completed";
+          
+          return (
+            <View 
+              key={index} 
+              className="bg-[#1a1a1a] p-5 mb-6 border border-white/5"
+              style={{ borderRadius: 32 }}
             >
-              <Text className={session.date ? "text-white" : "text-white/40"}>
-                {session.date || "Select Date"}
-              </Text>
-              <Text className="text-orange-400/50 text-[10px]">📅</Text>
-            </TouchableOpacity>
+              <View className="flex-row justify-between items-center mb-5">
+                <View className="flex-row items-center">
+                  <View className="w-8 h-8 rounded-full bg-orange-500/10 items-center justify-center mr-3 border border-orange-500/20">
+                    <Text className="text-orange-500 font-bold text-xs">{session.session_no}</Text>
+                  </View>
+                  <Text className="text-white font-bold text-lg">
+                    Session Record
+                  </Text>
+                </View>
+                {isCompleted && (
+                  <View className="bg-green-500/20 px-2 py-1 rounded-lg border border-green-500/30 flex-row items-center">
+                    <Ionicons name="checkmark-circle" size={12} color="#4ade80" />
+                    <Text className="text-green-400 text-[10px] font-bold ml-1 uppercase">Logged</Text>
+                  </View>
+                )}
+              </View>
 
-            {/* Workout */}
-            <TextInput
-              value={session.workout}
-              onChangeText={(t) => handleSessionChange(index, "workout", t)}
-              placeholder="Workout"
-              placeholderTextColor="#aaa"
-              editable={!userMode}
-              className="bg-white/10 p-2 rounded text-white mb-2"
-            />
+              <View className="space-y-4">
+                {/* Date Field */}
+                <View className="mb-4">
+                  <View className="flex-row items-center mb-2 px-1">
+                    <Ionicons name="calendar-outline" size={12} color="#f97316" />
+                    <Text className="text-[10px] text-white/40 font-bold uppercase tracking-widest ml-2">Training Date</Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (!userMode) {
+                        setCurrentPickerIndex(index);
+                        setShowPicker(true);
+                      }
+                    }}
+                    className="bg-white/5 p-4 border border-white/5 flex-row justify-between items-center"
+                    style={{ borderRadius: 16 }}
+                  >
+                    <Text className={session.date ? "text-white" : "text-white/20 font-medium"}>
+                      {session.date || "Pick a date..."}
+                    </Text>
+                    <Ionicons name="chevron-down" size={16} color="#f97316" />
+                  </TouchableOpacity>
+                </View>
 
-            {/* Status */}
-            <TouchableOpacity
-              onPress={() => {
-                if (canApproveSession(session)) {
-                  handleSessionChange(index, "status", "Completed");
-                }
-              }}
-              disabled={!canApproveSession(session)}
-              className={`p-2 rounded mb-2 ${
-                session.status === "Completed"
-                  ? "bg-green-500"
-                  : "bg-orange-500"
-              }`}
-            >
-              <Text className="text-white text-center">
-                {session.status}
-              </Text>
-            </TouchableOpacity>
+                {/* Workout Field */}
+                <View className="mb-4">
+                  <View className="flex-row items-center mb-2 px-1">
+                    <Ionicons name="barbell-outline" size={12} color="#f97316" />
+                    <Text className="text-[10px] text-white/40 font-bold uppercase tracking-widest ml-2">Workout / Exercise Details</Text>
+                  </View>
+                  <TextInput
+                    value={session.workout}
+                    onChangeText={(t) => handleSessionChange(index, "workout", t)}
+                    placeholder="Enter workout summary..."
+                    placeholderTextColor="rgba(255,255,255,0.2)"
+                    multiline
+                    editable={!userMode}
+                    className="bg-white/5 p-4 text-white border border-white/5 text-sm"
+                    style={{ textAlignVertical: 'top', borderRadius: 16, minHeight: 60 }}
+                  />
+                </View>
 
-            {/* Client Sign */}
-            <TextInput
-              value={session.client_sign}
-              placeholder="Client Sign"
-              editable={false}
-              className="bg-white/10 p-2 rounded text-white mb-2"
-            />
+                {/* Status Toggle */}
+                <View className="mb-4">
+                  <View className="flex-row items-center mb-2 px-1">
+                    <Ionicons name="stats-chart-outline" size={12} color="#f97316" />
+                    <Text className="text-[10px] text-white/40 font-bold uppercase tracking-widest ml-2">Session Status</Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (canApproveSession(session)) {
+                        handleSessionChange(index, "status", "Completed");
+                      }
+                    }}
+                    disabled={!canApproveSession(session)}
+                    className={`p-4 flex-row items-center justify-center border ${
+                      isCompleted
+                        ? "bg-green-500/10 border-green-500/30"
+                        : "bg-orange-500/10 border-orange-500/30"
+                    }`}
+                    style={{ borderRadius: 16 }}
+                  >
+                    <Ionicons 
+                      name={isCompleted ? "checkmark-circle" : "time-outline"} 
+                      size={18} 
+                      color={isCompleted ? "#4ade80" : "#f97316"} 
+                    />
+                    <Text className={`font-bold ml-2 ${isCompleted ? "text-green-400" : "text-orange-400"}`}>
+                      {session.status}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
 
-            {/* Trainer Sign */}
-            <TextInput
-              value={session.trainer_sign}
-              onChangeText={(t) => handleSessionChange(index, "trainer_sign", t)}
-              editable={!userMode}
-              placeholder="Trainer Sign"
-              className="bg-white/10 p-2 rounded text-white"
-            />
+                <View className="flex-row gap-4">
+                  {/* Client Sign */}
+                  <View className="flex-1">
+                    <View className="flex-row items-center mb-2 px-1">
+                      <Ionicons name="person-outline" size={12} color="#f97316" />
+                      <Text className="text-[10px] text-white/40 font-bold uppercase tracking-widest ml-2">Member Sign</Text>
+                    </View>
+                    <TextInput
+                      value={session.client_sign}
+                      placeholder="Waiting..."
+                      placeholderTextColor="rgba(255,255,255,0.1)"
+                      editable={false}
+                      className="bg-white/5 p-4 text-white/60 border border-white/5 text-xs font-medium"
+                      style={{ borderRadius: 16 }}
+                    />
+                  </View>
 
-          </View>
-        ))}
+                  {/* Trainer Sign */}
+                  <View className="flex-1">
+                    <View className="flex-row items-center mb-2 px-1">
+                      <Ionicons name="pencil-outline" size={12} color="#f97316" />
+                      <Text className="text-[10px] text-white/40 font-bold uppercase tracking-widest ml-2">Trainer Sign</Text>
+                    </View>
+                    <TextInput
+                      value={session.trainer_sign}
+                      onChangeText={(t) => handleSessionChange(index, "trainer_sign", t)}
+                      editable={!userMode}
+                      placeholder="Sign here..."
+                      placeholderTextColor="rgba(255,255,255,0.2)"
+                      className="bg-white/5 p-4 text-white border border-white/5 text-xs font-medium"
+                      style={{ borderRadius: 16 }}
+                    />
+                  </View>
+                </View>
+              </View>
+            </View>
+          );
+        })}
 
         {/* BUTTONS */}
         <View className="flex-row gap-3 mt-6">

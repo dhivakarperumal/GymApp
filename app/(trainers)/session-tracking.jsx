@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
+import { LinearGradient } from 'expo-linear-gradient';
 import SessionTracker from "./PTForm/SessionTracker";
 import Toast from "react-native-toast-message";
 
@@ -55,6 +56,8 @@ export default function SessionTrackingScreen() {
         planName: item.planName || item.plan_name || "",
       })).filter(m => m.id);
 
+      console.log("📊 Assignments from server:", data.length);
+      console.log("👥 Assigned members:", members.length);
       setAssignedMembers(members);
     } catch (err) {
       console.error(err);
@@ -153,46 +156,84 @@ export default function SessionTrackingScreen() {
   if (showMemberPicker) {
     return (
       <SafeAreaView className="flex-1 bg-[#0f0f0f]" edges={["top"]}>
-        <View className="flex-row items-center p-4 border-b border-white/10 bg-[#1a1a1a]">
-          <TouchableOpacity onPress={() => router.back()} className="mr-4">
-            <Ionicons name="arrow-back" size={24} color="white" />
+        <View className="flex-row items-center p-6 bg-[#0f0f0f]">
+          <TouchableOpacity 
+            onPress={() => router.back()} 
+            className="w-10 h-10 bg-white/5 rounded-full items-center justify-center border border-white/10"
+          >
+            <Ionicons name="chevron-back" size={20} color="white" />
           </TouchableOpacity>
-          <Text className="text-white text-xl font-bold">Select Member</Text>
-        </View>
-
-        <View className="p-4">
-          <View className="flex-row items-center bg-white/5 rounded-2xl px-4 py-1 border border-white/10">
-            <Ionicons name="search" size={20} color="#666" />
-            <TextInput
-              placeholder="Search assigned members..."
-              placeholderTextColor="#666"
-              className="flex-1 h-12 text-white ml-2"
-              value={searchTerm}
-              onChangeText={setSearchTerm}
-            />
+          <View className="ml-4">
+            <Text className="text-white text-3xl font-black tracking-tighter">Directory</Text>
+            <Text className="text-white/40 text-xs font-bold uppercase tracking-widest">Assigned Members</Text>
           </View>
         </View>
 
-        <ScrollView className="flex-1 px-4">
+        <View className="px-6 pb-4">
+          <View 
+            className="flex-row items-center bg-[#1a1a1a] px-5 border border-white/5"
+            style={{ borderRadius: 24 }}
+          >
+            <Ionicons name="search" size={18} color="#f97316" />
+            <TextInput
+              placeholder="Find a member..."
+              placeholderTextColor="rgba(255,255,255,0.2)"
+              className="flex-1 h-14 text-white ml-3 font-medium"
+              value={searchTerm}
+              onChangeText={setSearchTerm}
+            />
+            {searchTerm !== "" && (
+              <TouchableOpacity onPress={() => setSearchTerm("")}>
+                <Ionicons name="close-circle" size={18} color="#444" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        <ScrollView className="flex-1 px-6 pt-2">
           {loading ? (
-            <ActivityIndicator color="#f97316" className="mt-10" />
+            <ActivityIndicator color="#f97316" className="mt-20" />
           ) : filteredMembers.length === 0 ? (
-            <Text className="text-white/40 text-center mt-10">No assigned members found</Text>
+            <View className="mt-32 items-center">
+               <View className="w-20 h-20 bg-white/5 rounded-full items-center justify-center border border-white/5">
+                 <Ionicons name="search-outline" size={32} color="#262626" />
+               </View>
+               <Text className="text-white/40 text-center mt-6 font-medium">No results for "{searchTerm}"</Text>
+            </View>
           ) : (
-            filteredMembers.map((m) => (
+            filteredMembers.map((m, index) => (
               <TouchableOpacity
-                key={m.id}
+                key={`${m.id}-${index}`}
                 onPress={() => handleSelectMember(m)}
-                className="bg-[#1a1a1a] p-5 rounded-3xl mb-4 border border-white/5"
+                className="mb-5"
               >
-                <View className="flex-row justify-between items-center">
-                  <View>
-                    <Text className="text-white text-lg font-bold">{m.name}</Text>
-                    <Text className="text-white/40 text-xs mt-1">{m.phone || m.email}</Text>
-                    <Text className="text-orange-400 text-[10px] mt-2 font-bold uppercase tracking-widest">{m.planName}</Text>
+                <LinearGradient
+                  colors={['#1a1a1a', '#0f0f0f']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{ padding: 24, borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', position: 'relative', overflow: 'hidden' }}
+                >
+                  <View className="flex-row justify-between items-center relative z-10">
+                    <View className="flex-row items-center flex-1">
+                      <View className="w-14 h-14 rounded-2xl bg-orange-500/10 items-center justify-center mr-4 border border-orange-500/20">
+                        <Text className="text-orange-500 font-black text-xl">{m.name.charAt(0).toUpperCase()}</Text>
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-white text-lg font-bold tracking-tight" numberOfLines={1}>{m.name}</Text>
+                        <View className="flex-row items-center mt-1">
+                          <View className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2" />
+                          <Text className="text-white/40 text-[11px] font-bold uppercase tracking-widest">{m.planName || 'Pro Membership'}</Text>
+                        </View>
+                      </View>
+                    </View>
+                    <View className="w-10 h-10 rounded-xl bg-orange-500/10 items-center justify-center border border-orange-500/20">
+                      <Ionicons name="arrow-forward" size={18} color="#f97316" />
+                    </View>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color="#f97316" />
-                </View>
+                  <View style={{ position: 'absolute', top: 0, right: 0, padding: 8, opacity: 0.03 }}>
+                     <Ionicons name="ribbon" size={100} color="white" />
+                  </View>
+                </LinearGradient>
               </TouchableOpacity>
             ))
           )}
@@ -202,37 +243,71 @@ export default function SessionTrackingScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0f0f0f]" edges={["top"]}>
-      {/* Header */}
-      <View className="bg-[#1a1a1a] p-4 border-b border-white/10">
-        <View className="flex-row items-center justify-between mb-4">
-          <TouchableOpacity onPress={() => setShowMemberPicker(true)}>
-            <View className="flex-row items-center">
-              <Ionicons name="people" size={20} color="#f97316" />
-              <Text className="text-white font-bold ml-2">{selectedMember?.name}</Text>
-              <Ionicons name="chevron-down" size={16} color="#666" className="ml-1" />
+    <SafeAreaView className="flex-1 bg-black" edges={["top"]}>
+      {/* Dynamic Header */}
+      <View className="bg-[#0f0f0f] px-6 pt-4 pb-6 border-b border-white/5">
+        <View className="flex-row items-center justify-between mb-6">
+          <TouchableOpacity 
+            onPress={() => setShowMemberPicker(true)}
+            className="flex-row items-center flex-1 bg-white/5 p-3 border border-white/5"
+            style={{ borderRadius: 20 }}
+          >
+            <View className="w-10 h-10 rounded-xl bg-orange-500 items-center justify-center shadow-lg">
+              <Text className="text-white font-black text-lg">{selectedMember?.name.charAt(0).toUpperCase()}</Text>
+            </View>
+            <View className="ml-3 flex-1">
+              <Text className="text-white font-bold text-lg leading-tight" numberOfLines={1}>{selectedMember?.name}</Text>
+              <Text className="text-orange-500/60 text-[10px] font-bold uppercase tracking-widest">{selectedMember?.planName || 'Active Member'}</Text>
+            </View>
+            <View className="mr-2">
+              <Ionicons name="swap-horizontal" size={16} color="#666" />
             </View>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.back()}>
+          
+          <TouchableOpacity 
+            onPress={() => router.back()}
+            className="w-12 h-12 bg-white/5 rounded-full items-center justify-center ml-3 border border-white/5"
+          >
             <Ionicons name="close" size={24} color="white" />
           </TouchableOpacity>
         </View>
 
-        {/* Tabs */}
-        <View className="flex-row bg-black/40 p-1 rounded-2xl">
+        {/* Pro Tabs */}
+        <View 
+          className="flex-row bg-[#1a1a1a] p-1.5 border border-white/5"
+          style={{ borderRadius: 24 }}
+        >
           <TouchableOpacity
             onPress={() => setActiveTab("sessions")}
-            className={`flex-1 flex-row items-center justify-center py-3 rounded-xl ${activeTab === 'sessions' ? 'bg-[#262626]' : ''}`}
+            className="flex-1 flex-row items-center justify-center py-3.5"
+            style={[
+              { borderRadius: 18 },
+              activeTab === 'sessions' ? { backgroundColor: '#f97316' } : {}
+            ]}
           >
-            <Ionicons name="clipboard" size={18} color={activeTab === 'sessions' ? '#f97316' : '#666'} />
-            <Text className={`ml-2 font-bold ${activeTab === 'sessions' ? 'text-white' : 'text-gray-500'}`}>Sessions</Text>
+            <Ionicons name="calendar" size={16} color={activeTab === 'sessions' ? 'white' : '#666'} />
+            <Text 
+              className={`ml-2 text-[11px] font-black uppercase ${activeTab === 'sessions' ? 'text-white' : 'text-gray-500'}`}
+              style={{ letterSpacing: 2 }}
+            >
+              Sessions
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setActiveTab("overview")}
-            className={`flex-1 flex-row items-center justify-center py-3 rounded-xl ${activeTab === 'overview' ? 'bg-[#262626]' : ''}`}
+            className="flex-1 flex-row items-center justify-center py-3.5"
+            style={[
+              { borderRadius: 18 },
+              activeTab === 'overview' ? { backgroundColor: '#f97316' } : {}
+            ]}
           >
-            <Ionicons name="person" size={18} color={activeTab === 'overview' ? '#f97316' : '#666'} />
-            <Text className={`ml-2 font-bold ${activeTab === 'overview' ? 'text-white' : 'text-gray-500'}`}>Overview</Text>
+            <Ionicons name="id-card" size={16} color={activeTab === 'overview' ? 'white' : '#666'} />
+            <Text 
+              className={`ml-2 text-[11px] font-black uppercase ${activeTab === 'overview' ? 'text-white' : 'text-gray-500'}`}
+              style={{ letterSpacing: 2 }}
+            >
+              Overview
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -254,41 +329,51 @@ export default function SessionTrackingScreen() {
           </View>
         ) : (
           <View className="p-6">
-            {/* Profile Card */}
-            <View style={styles.profileCard}>
-               <View className="flex-row items-center mb-6">
-                  <View className="w-14 h-14 bg-orange-500/20 rounded-2xl items-center justify-center border border-orange-500/30">
-                    <Ionicons name="person" size={30} color="#f97316" />
+            {/* Pro Profile Card */}
+            <LinearGradient
+              colors={['#1a1a1a', '#0a0a0a']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{ borderRadius: 40, padding: 32, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', position: 'relative', overflow: 'hidden' }}
+            >
+               <View className="flex-row items-center mb-10">
+                  <View className="w-16 h-16 bg-orange-500 rounded-[22px] items-center justify-center shadow-xl shadow-orange-500/40">
+                    <Ionicons name="person" size={32} color="white" />
                   </View>
-                  <View className="ml-4">
-                    <Text className="text-white text-2xl font-extrabold">{selectedMember?.name}</Text>
-                    <Text className="text-white/40 text-[10px] uppercase tracking-widest font-bold">Gym Member</Text>
+                  <View className="ml-5 flex-1">
+                    <Text className="text-white text-3xl font-black leading-tight" style={{ letterSpacing: -0.5 }}>{selectedMember?.name}</Text>
+                    <View 
+                      className="bg-orange-500/10 self-start px-2 py-1 mt-1 border border-orange-500/20"
+                      style={{ borderRadius: 6 }}
+                    >
+                      <Text className="text-orange-500 text-[10px] font-black uppercase" style={{ letterSpacing: 1.5 }}>Platinum Tier</Text>
+                    </View>
                   </View>
                </View>
 
                <View className="space-y-6">
-                  <InfoItem icon="mail" label="Email Address" value={selectedMember?.email || 'N/A'} />
-                  <InfoItem icon="call" label="Phone Number" value={selectedMember?.phone || 'N/A'} />
-                  <InfoItem icon="ribbon" label="Current Plan" value={selectedMember?.planName || 'No Active Plan'} valueColor="#f97316" />
-                  <InfoItem icon="finger-print" label="Member ID" value={selectedMember?.id} />
+                  <ProInfoItem icon="mail" label="E-Mail Address" value={selectedMember?.email || 'N/A'} />
+                  <ProInfoItem icon="call" label="Direct Contact" value={selectedMember?.phone || 'N/A'} />
+                  <ProInfoItem icon="ribbon" label="Active Plan" value={selectedMember?.planName || 'Elite Training'} valueColor="#f97316" />
+                  <ProInfoItem icon="finger-print" label="Unique Member ID" value={selectedMember?.id} />
                </View>
 
-               {/* Background Decorative Blob */}
-               <View style={styles.blob} />
-            </View>
+               <View className="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/10 rounded-full" />
+            </LinearGradient>
 
-            {/* Status Card */}
-            <View className="bg-white/5 border border-white/10 rounded-[40px] p-8 mt-6 items-center">
-                <View className="w-16 h-16 bg-white/5 rounded-full items-center justify-center mb-4">
-                   <Ionicons name="shield-checkmark" size={32} color="#10b981" />
+            {/* Premium Status Footer */}
+            <View 
+              className="bg-[#141414] p-6 mt-6 flex-row items-center border border-white/5"
+              style={{ borderRadius: 32 }}
+            >
+                <View className="w-12 h-12 bg-green-500/10 rounded-2xl items-center justify-center border border-green-500/20">
+                   <Ionicons name="shield-checkmark" size={24} color="#4ade80" />
                 </View>
-                <Text className="text-white font-bold text-lg">Active Member</Text>
-                <Text className="text-white/40 text-sm text-center mt-2 px-4">
-                  This member is currently assigned to you for PT sessions.
-                </Text>
-                <View className="mt-6 bg-green-500/10 px-4 py-2 rounded-full border border-green-500/20">
-                  <Text className="text-green-500 text-[10px] font-bold uppercase tracking-tighter">Verified Status</Text>
+                <View className="ml-4 flex-1">
+                  <Text className="text-white font-bold text-base">Verified Access</Text>
+                  <Text className="text-white/40 text-xs mt-0.5">Subscription is active and valid.</Text>
                 </View>
+                <View className="w-2 h-2 rounded-full bg-green-500" />
             </View>
           </View>
         )}
@@ -297,36 +382,14 @@ export default function SessionTrackingScreen() {
   );
 }
 
-const InfoItem = ({ icon, label, value, valueColor = "white" }) => (
-  <View className="flex-row items-center mb-5">
-    <View className="w-10 h-10 bg-white/5 rounded-xl items-center justify-center mr-4">
-      <Ionicons name={icon} size={18} color="#f97316" />
+const ProInfoItem = ({ icon, label, value, valueColor = "white" }) => (
+  <View className="flex-row items-center mb-6">
+    <View className="w-12 h-12 bg-white/5 rounded-2xl items-center justify-center mr-5 border border-white/5">
+      <Ionicons name={icon} size={20} color="#f97316" />
     </View>
-    <View>
-      <Text className="text-[10px] text-white/40 uppercase font-bold tracking-tighter">{label}</Text>
-      <Text className="text-sm font-medium" style={{ color: valueColor }}>{value}</Text>
+    <View className="flex-1">
+      <Text className="text-[10px] text-white/30 uppercase font-black mb-1" style={{ letterSpacing: 2 }}>{label}</Text>
+      <Text className="text-base font-bold" style={{ color: valueColor, letterSpacing: -0.2 }}>{value}</Text>
     </View>
   </View>
 );
-
-const styles = StyleSheet.create({
-  profileCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 40,
-    padding: 30,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  blob: {
-    position: 'absolute',
-    top: -50,
-    right: -50,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: 'rgba(249, 115, 22, 0.1)',
-    zIndex: -1,
-  }
-});
