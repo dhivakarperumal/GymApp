@@ -3,6 +3,8 @@ import { ScrollView, View, Text, TextInput, TouchableOpacity } from "react-nativ
 import api from "../../../services/api";
 import { useAuth } from '../../../context/AuthContext.js'
 import Toast from "react-native-toast-message";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import dayjs from 'dayjs';
 
 const SessionTracker = ({
   onNext,
@@ -29,6 +31,9 @@ const SessionTracker = ({
       trainer_sign: initialFormData?.trainer_name_assigned || trainerName,
     }))
   });
+
+  const [showPicker, setShowPicker] = useState(false);
+  const [currentPickerIndex, setCurrentPickerIndex] = useState(null);
 
   useEffect(() => {
     if (initialFormData?.sessions) {
@@ -59,6 +64,14 @@ const SessionTracker = ({
 
     newSessions[index] = updatedSession;
     setLocalFormData(prev => ({ ...prev, sessions: newSessions }));
+  };
+
+  const onDateChange = (event, selectedDate) => {
+    setShowPicker(false);
+    if (selectedDate && currentPickerIndex !== null) {
+      handleSessionChange(currentPickerIndex, "date", dayjs(selectedDate).format("YYYY-MM-DD"));
+    }
+    setCurrentPickerIndex(null);
   };
 
   const hasRequiredSessionFields = (session) => {
@@ -116,14 +129,20 @@ const SessionTracker = ({
             </Text>
 
             {/* Date */}
-            <TextInput
-              value={session.date}
-              onChangeText={(t) => handleSessionChange(index, "date", t)}
-              placeholder="Date"
-              placeholderTextColor="#aaa"
-              editable={!userMode}
-              className="bg-white/10 p-2 rounded text-white mb-2"
-            />
+            <TouchableOpacity
+              onPress={() => {
+                if (!userMode) {
+                  setCurrentPickerIndex(index);
+                  setShowPicker(true);
+                }
+              }}
+              className="bg-white/10 p-3 rounded-xl mb-2 flex-row justify-between items-center"
+            >
+              <Text className={session.date ? "text-white" : "text-white/40"}>
+                {session.date || "Select Date"}
+              </Text>
+              <Text className="text-orange-400/50 text-[10px]">📅</Text>
+            </TouchableOpacity>
 
             {/* Workout */}
             <TextInput
@@ -198,6 +217,19 @@ const SessionTracker = ({
           </TouchableOpacity>
 
         </View>
+
+        {showPicker && (
+          <DateTimePicker
+            value={
+              localFormData.sessions[currentPickerIndex]?.date 
+                ? new Date(localFormData.sessions[currentPickerIndex].date) 
+                : new Date()
+            }
+            mode="date"
+            display="default"
+            onChange={onDateChange}
+          />
+        )}
 
       </View>
     </View>
