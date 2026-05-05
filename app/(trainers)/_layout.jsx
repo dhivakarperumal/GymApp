@@ -36,13 +36,13 @@ function TrainerHeader() {
     const fetchMembers = async () => {
       try {
         const res = await fetch("https://dap.qtechx.com/api/assignments");
-        const data = await res.json();
-        // console.log("API DATA:", data);
+        const json = await res.json();
+        const data = Array.isArray(json) ? json : (json?.data || json?.assignments || []);
 
         const now = new Date();
         const last24HoursMembers = data
           .filter((m) => {
-            if (!m.updatedAt) return false;
+            if (!m || !m.updatedAt) return false;
 
             const diffHours =
               (Date.now() - new Date(m.updatedAt).getTime()) /

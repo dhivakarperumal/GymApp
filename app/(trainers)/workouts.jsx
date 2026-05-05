@@ -91,11 +91,14 @@ export default function Workouts() {
       const workoutList = await getTrainerWorkouts();
       const memberList = await getTrainerMembers(user.id, user);
       
-      setMembers(memberList);
+      setMembers(memberList || []);
       
-      const assignedMemberIds = memberList.map(m => String(m.id));
-      const filteredWorkouts = (Array.isArray(workoutList) ? workoutList : (workoutList.data || []))
-        .filter(w => assignedMemberIds.includes(String(w.member_id || w.memberId)));
+      const assignedMemberIds = (memberList || []).map(m => String(m.id));
+      const workoutArray = Array.isArray(workoutList) ? workoutList : (workoutList?.data || []);
+      
+      const filteredWorkouts = workoutArray.filter(w => 
+        assignedMemberIds.includes(String(w.member_id || w.memberId))
+      );
       
       setWorkouts(filteredWorkouts);
     } catch (err) {
@@ -193,12 +196,15 @@ export default function Workouts() {
   };
 
   const updateExercise = (dayKey, index, field, value) => {
-    setDays(prev => ({
-      ...prev,
-      [dayKey]: prev[dayKey].map((ex, i) => 
-        i === index ? { ...ex, [field]: value } : ex
-      )
-    }));
+    setDays(prev => {
+      if (!prev[dayKey] || !prev[dayKey][index]) return prev;
+      return {
+        ...prev,
+        [dayKey]: prev[dayKey].map((ex, i) => 
+          i === index ? { ...ex, [field]: value } : ex
+        )
+      };
+    });
   };
 
   const removeExercise = (dayKey, index) => {
@@ -219,6 +225,7 @@ export default function Workouts() {
         trainer_name: user.username,
         member_id: Number(memberId),
         member_name: memberName,
+        title: workoutGoal || "Training Program",
         training_level: trainingLevel,
         workout_goal: workoutGoal,
         days: JSON.stringify(days),
@@ -241,10 +248,12 @@ export default function Workouts() {
         Alert.alert("Success", "Training program synchronized.");
       } else {
         const errData = await res.json().catch(() => ({}));
-        Alert.alert("Error", errData.message || "Failed to sync program.");
+        console.log("SYNC ERROR:", errData);
+        Alert.alert("Sync Error", errData.message || `Server responded with ${res.status}`);
       }
     } catch (err) {
-      Alert.alert("Error", "Failed to sync program.");
+      console.log("NETWORK ERROR:", err);
+      Alert.alert("Network Error", "Failed to reach server. Please check your connection.");
     }
   };
 
