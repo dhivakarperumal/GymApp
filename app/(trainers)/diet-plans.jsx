@@ -171,7 +171,7 @@ export default function DietPlans() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [dietPlans, setDietPlans] = useState([]);
   const [members, setMembers] = useState([]);
-  const [expandedDay, setExpandedDay] = useState("Day1");
+  const [expandedDayIndex, setExpandedDayIndex] = useState(0);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedTimeField, setSelectedTimeField] = useState(null);
   const [isViewOnly, setIsViewOnly] = useState(false);
@@ -181,8 +181,8 @@ export default function DietPlans() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     memberId: "", memberName: "", memberEmail: "", memberMobile: "",
-    memberWeight: "", title: "", totalCalories: 0, duration: 7,
-    days: { Day1: generateSingleDay() },
+    memberWeight: "", title: "", totalCalories: 0, duration: 1,
+    days: [generateSingleDay()],
   });
 
   // -- DATA FETCHING --
@@ -214,9 +214,9 @@ export default function DietPlans() {
   // -- CALCULATION --
   useEffect(() => {
     let total = 0;
-    Object.values(form.days).forEach((day) => {
-      Object.values(day).forEach((meal) => {
-        if (meal.items && Array.isArray(meal.items)) {
+    (form.days || []).forEach((day) => {
+      Object.values(day || {}).forEach((meal) => {
+        if (meal && meal.items && Array.isArray(meal.items)) {
           meal.items.forEach(item => {
             total += Number(item.calories || 0);
           });
@@ -232,9 +232,9 @@ export default function DietPlans() {
     setForm({
       memberId: "", memberName: "", memberEmail: "", memberMobile: "",
       memberWeight: "", title: "", totalCalories: 0, duration: 1,
-      days: { Day1: generateSingleDay() },
+      days: [generateSingleDay()],
     });
-    setExpandedDay("Day1");
+    setExpandedDayIndex(0);
     setIsViewOnly(false);
     setIsModalOpen(true);
   };
@@ -245,6 +245,13 @@ export default function DietPlans() {
       return;
     }
     const firstMember = members[0];
+    const testData = generateTestData();
+    const testDaysArray = Object.keys(testData).sort((a,b) => {
+       const numA = parseInt(a.replace(/\D/g, "")) || 0;
+       const numB = parseInt(b.replace(/\D/g, "")) || 0;
+       return numA - numB;
+    }).map(key => testData[key]);
+
     setEditingId(null);
     setForm({
       memberId: String(firstMember.id),
@@ -254,10 +261,10 @@ export default function DietPlans() {
       memberWeight: firstMember.weight || firstMember.member_weight || firstMember.userWeight || "",
       title: "Endurance & Stamina Test Plan",
       totalCalories: 0,
-      duration: 2,
-      days: generateTestData(),
+      duration: testDaysArray.length,
+      days: testDaysArray,
     });
-    setExpandedDay("Day1");
+    setExpandedDayIndex(0);
     setIsViewOnly(false);
     setIsModalOpen(true);
   };
@@ -268,6 +275,19 @@ export default function DietPlans() {
       try { daysData = JSON.parse(daysData); } catch (e) { daysData = null; }
     }
 
+    let fixedDays = [];
+    if (Array.isArray(daysData)) {
+      fixedDays = daysData;
+    } else if (daysData && typeof daysData === 'object') {
+      const keys = Object.keys(daysData).sort((a,b) => {
+         const numA = parseInt(a.replace(/\D/g, "")) || 0;
+         const numB = parseInt(b.replace(/\D/g, "")) || 0;
+         return numA - numB;
+      });
+      fixedDays = keys.map(k => daysData[k]);
+    }
+    if (fixedDays.length === 0) fixedDays = [generateSingleDay()];
+
     setEditingId(plan.id);
     setForm({
       memberId: String(plan.member_id || plan.memberId),
@@ -277,10 +297,10 @@ export default function DietPlans() {
       memberWeight: plan.member_weight || plan.memberWeight || "",
       title: plan.title,
       totalCalories: plan.total_calories || plan.totalCalories || 0,
-      duration: plan.duration || 1,
-      days: daysData || { Day1: generateSingleDay() },
+      duration: plan.duration || fixedDays.length,
+      days: fixedDays,
     });
-    setExpandedDay("Day1");
+    setExpandedDayIndex(0);
     setIsViewOnly(false);
     setIsModalOpen(true);
   };
@@ -291,6 +311,19 @@ export default function DietPlans() {
       try { daysData = JSON.parse(daysData); } catch (e) { daysData = null; }
     }
 
+    let fixedDays = [];
+    if (Array.isArray(daysData)) {
+      fixedDays = daysData;
+    } else if (daysData && typeof daysData === 'object') {
+      const keys = Object.keys(daysData).sort((a,b) => {
+         const numA = parseInt(a.replace(/\D/g, "")) || 0;
+         const numB = parseInt(b.replace(/\D/g, "")) || 0;
+         return numA - numB;
+      });
+      fixedDays = keys.map(k => daysData[k]);
+    }
+    if (fixedDays.length === 0) fixedDays = [generateSingleDay()];
+
     setEditingId(plan.id);
     setForm({
       memberId: String(plan.member_id || plan.memberId),
@@ -300,10 +333,10 @@ export default function DietPlans() {
       memberWeight: plan.member_weight || plan.memberWeight || "",
       title: plan.title,
       totalCalories: plan.total_calories || plan.totalCalories || 0,
-      duration: plan.duration || 1,
-      days: daysData || { Day1: generateSingleDay() },
+      duration: plan.duration || fixedDays.length,
+      days: fixedDays,
     });
-    setExpandedDay("Day1");
+    setExpandedDayIndex(0);
     setIsViewOnly(true);
     setIsModalOpen(true);
   };
@@ -336,34 +369,49 @@ export default function DietPlans() {
   };
 
   const handleAddDay = () => {
-    const count = Object.keys(form.days).length;
-    const newKey = `Day${count + 1}`;
+    const count = form.days.length;
     setForm((prev) => ({
       ...prev,
       duration: count + 1,
-      days: { ...prev.days, [newKey]: generateSingleDay() },
+      days: [...prev.days, generateSingleDay()],
     }));
   };
 
-  const handleRemoveDay = (dayKey) => {
-    if (Object.keys(form.days).length <= 1) return;
-    const updated = { ...form.days };
-    delete updated[dayKey];
-    setForm((prev) => ({ ...prev, duration: Object.keys(updated).length, days: updated }));
+  const handleRemoveDay = (dayIndex) => {
+    if (form.days.length <= 1) return;
+    const updated = [...form.days];
+    updated.splice(dayIndex, 1);
+    setForm((prev) => ({ ...prev, duration: updated.length, days: updated }));
   };
 
-  const handleMealChange = (day, meal, field, value) => {
+  const parseTimeToDate = (timeStr) => {
+    if (!timeStr) return new Date();
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!match) return new Date();
+    
+    let hours = parseInt(match[1]);
+    const minutes = parseInt(match[2]);
+    const ampm = match[3].toUpperCase();
+    
+    if (ampm === 'PM' && hours !== 12) hours += 12;
+    if (ampm === 'AM' && hours === 12) hours = 0;
+    
+    const date = new Date();
+    date.setHours(hours, minutes, 0);
+    return date;
+  };
+
+  const handleMealChange = (dayIndex, meal, field, value) => {
     setForm((prev) => {
       try {
+        const updatedDays = [...prev.days];
+        updatedDays[dayIndex] = {
+          ...updatedDays[dayIndex],
+          [meal]: { ...updatedDays[dayIndex][meal], [field]: String(value || "") },
+        };
         return {
           ...prev,
-          days: {
-            ...prev.days,
-            [day]: {
-              ...prev.days[day],
-              [meal]: { ...prev.days[day][meal], [field]: String(value || "") },
-            },
-          },
+          days: updatedDays,
         };
       } catch (error) {
         console.log("Error updating meal:", error);
@@ -372,24 +420,22 @@ export default function DietPlans() {
     });
   };
 
-  const handleFoodItemChange = (day, meal, index, field, value) => {
+  const handleFoodItemChange = (dayIndex, meal, itemIndex, field, value) => {
     setForm((prev) => {
       try {
-        const items = prev.days?.[day]?.[meal]?.items || [];
+        const updatedDays = [...prev.days];
+        const items = updatedDays[dayIndex]?.[meal]?.items || [];
         const updatedItems = [...items];
-        if (updatedItems[index]) {
-          // Ensure value is never undefined or null
-          updatedItems[index] = { ...updatedItems[index], [field]: String(value || "") };
+        if (updatedItems[itemIndex]) {
+          updatedItems[itemIndex] = { ...updatedItems[itemIndex], [field]: String(value || "") };
         }
+        updatedDays[dayIndex] = {
+          ...updatedDays[dayIndex],
+          [meal]: { ...updatedDays[dayIndex][meal], items: updatedItems },
+        };
         return {
           ...prev,
-          days: {
-            ...prev.days,
-            [day]: {
-              ...prev.days[day],
-              [meal]: { ...prev.days[day][meal], items: updatedItems },
-            },
-          },
+          days: updatedDays,
         };
       } catch (error) {
         console.log("Error updating food item:", error);
@@ -398,22 +444,21 @@ export default function DietPlans() {
     });
   };
 
-  const handleAddFoodItem = (day, meal) => {
+  const handleAddFoodItem = (dayIndex, meal) => {
     setForm((prev) => {
       try {
-        const items = prev.days?.[day]?.[meal]?.items || [];
+        const updatedDays = [...prev.days];
+        const items = updatedDays[dayIndex]?.[meal]?.items || [];
+        updatedDays[dayIndex] = {
+          ...updatedDays[dayIndex],
+          [meal]: {
+            ...updatedDays[dayIndex][meal],
+            items: [...items, { food: "", quantity: "", calories: "" }],
+          },
+        };
         return {
           ...prev,
-          days: {
-            ...prev.days,
-            [day]: {
-              ...prev.days[day],
-              [meal]: {
-                ...prev.days[day][meal],
-                items: [...items, { food: "", quantity: "", calories: "" }],
-              },
-            },
-          },
+          days: updatedDays,
         };
       } catch (error) {
         console.log("Error adding food item:", error);
@@ -422,21 +467,20 @@ export default function DietPlans() {
     });
   };
 
-  const handleRemoveFoodItem = (day, meal, index) => {
+  const handleRemoveFoodItem = (dayIndex, meal, itemIndex) => {
     setForm((prev) => {
       try {
-        const items = prev.days?.[day]?.[meal]?.items || [];
+        const updatedDays = [...prev.days];
+        const items = updatedDays[dayIndex]?.[meal]?.items || [];
         if (items.length <= 1) return prev;
-        const updatedItems = items.filter((_, i) => i !== index);
+        const updatedItems = items.filter((_, i) => i !== itemIndex);
+        updatedDays[dayIndex] = {
+          ...updatedDays[dayIndex],
+          [meal]: { ...updatedDays[dayIndex][meal], items: updatedItems },
+        };
         return {
           ...prev,
-          days: {
-            ...prev.days,
-            [day]: {
-              ...prev.days[day],
-              [meal]: { ...prev.days[day][meal], items: updatedItems },
-            },
-          },
+          days: updatedDays,
         };
       } catch (error) {
         console.log("Error removing food item:", error);
@@ -446,16 +490,13 @@ export default function DietPlans() {
   };
 
   const handleCopyDay1ToAll = () => {
-    if (Object.keys(form.days).length <= 1) {
+    if (form.days.length <= 1) {
       Alert.alert("Wait", "Add more days first.");
       return;
     }
-    const day1Data = JSON.parse(JSON.stringify(form.days["Day1"]));
+    const day1Data = JSON.parse(JSON.stringify(form.days[0]));
     setForm((prev) => {
-      const updatedDays = { ...prev.days };
-      Object.keys(updatedDays).forEach((dayKey) => {
-        if (dayKey !== "Day1") updatedDays[dayKey] = day1Data;
-      });
+      const updatedDays = prev.days.map((day, i) => i === 0 ? day : day1Data);
       return { ...prev, days: updatedDays };
     });
     Alert.alert("Success", "Day 1 copied to all days.");
@@ -570,21 +611,21 @@ export default function DietPlans() {
         rowsParsed += 1;
       });
 
-      const dayKeys = Object.keys(parsedDays).sort(
-        (a, b) => Number(a.replace("Day", "")) - Number(b.replace("Day", ""))
-      );
+      const dayIndices = Object.keys(parsedDays)
+        .map(key => parseInt(key.replace("Day", "")))
+        .sort((a,b) => a - b);
 
-      if (dayKeys.length === 0 || rowsParsed === 0) {
+      if (dayIndices.length === 0 || rowsParsed === 0) {
         Alert.alert("Error", "No valid diet rows found.");
         return;
       }
 
-      const newDays = {};
-      dayKeys.forEach((dayKey) => {
-        const rawDay = parsedDays[dayKey] || {};
+      const maxDay = Math.max(...dayIndices);
+      const newDaysArray = [];
+      for (let i = 1; i <= maxDay; i++) {
+        const rawDay = parsedDays[`Day${i}`] || {};
         const dayTemplate = generateSingleDay();
         const mergedDay = {};
-
         meals.forEach((meal) => {
           const mealData = rawDay[meal];
           if (mealData) {
@@ -597,16 +638,16 @@ export default function DietPlans() {
             mergedDay[meal] = dayTemplate[meal];
           }
         });
-        newDays[dayKey] = mergedDay;
-      });
+        newDaysArray.push(mergedDay);
+      }
 
       setForm((prev) => ({
         ...prev,
-        days: newDays,
-        duration: dayKeys.length,
+        days: newDaysArray,
+        duration: newDaysArray.length,
       }));
 
-      Alert.alert("Success", `Imported diet plan for ${dayKeys.length} day(s)`);
+      Alert.alert("Success", `Imported diet plan for ${newDaysArray.length} day(s)`);
     } catch (err) {
       console.log(err);
       Alert.alert("Error", "Failed to import Excel.");
@@ -639,8 +680,8 @@ export default function DietPlans() {
         title: form.title,
         total_calories: Number(form.totalCalories),
         totalCalories: Number(form.totalCalories),
-        duration: form.duration,
-        days: JSON.stringify(form.days),
+        duration: Number(form.duration) || form.days.length,
+        days: form.days,
         status: "active"
       };
 
@@ -870,24 +911,20 @@ export default function DietPlans() {
                    </View>
 
                    {/* MEALS GRID */}
-                   {form.days && Object.keys(form.days).length > 0 && Object.keys(form.days).sort((a,b) => {
-                      const numA = parseInt(a.replace(/\D/g, "")) || 0;
-                      const numB = parseInt(b.replace(/\D/g, "")) || 0;
-                      return numA - numB;
-                   }).map(day => (
-                      <View key={day} className="mb-8">
+                   {form.days && form.days.length > 0 && form.days.map((dayData, dayIndex) => (
+                      <View key={dayIndex} className="mb-8">
                          <View className="flex-row items-center mb-6">
                             <View className="w-10 h-[1px] bg-orange-500/30" />
-                            <Text className="text-orange-500 font-black uppercase tracking-[0.3em] mx-4 text-center">{day.replace("Day", "Day ")}</Text>
+                            <Text className="text-orange-500 font-black uppercase tracking-[0.3em] mx-4 text-center">Day {dayIndex + 1}</Text>
                             <View className="flex-1 h-[1px] bg-orange-500/30" />
                             <View className="flex-row items-center gap-2 ml-4">
-                               {day === "Day1" && Object.keys(form.days).length > 1 && (
+                               {dayIndex === 0 && form.days.length > 1 && (
                                  <TouchableOpacity onPress={handleCopyDay1ToAll} className="bg-emerald-500/10 p-2 rounded-xl">
                                    <Ionicons name="copy-outline" size={16} color="#10b981" />
                                  </TouchableOpacity>
                                )}
-                               {Object.keys(form.days).length > 1 && (
-                                 <TouchableOpacity onPress={() => handleRemoveDay(day)} className="bg-red-500/10 p-2 rounded-xl">
+                               {form.days.length > 1 && (
+                                 <TouchableOpacity onPress={() => handleRemoveDay(dayIndex)} className="bg-red-500/10 p-2 rounded-xl">
                                    <Ionicons name="trash-outline" size={16} color="#ef4444" />
                                  </TouchableOpacity>
                                )}
@@ -895,27 +932,27 @@ export default function DietPlans() {
                          </View>
                          
                          {meals.map(meal => {
-                           const mealData = form.days[day][meal];
-                           const mealItems = mealData.items || [];
+                           const mealInfo = dayData[meal] || { time: "", items: [] };
+                           const mealItems = mealInfo.items || [];
                            
                            return (
                              <View key={meal} className="bg-white/5 p-6 rounded-2xl mb-6 border border-white/5">
                                 <View className="flex-row justify-between items-center mb-6">
                                    <View className="flex-1">
                                       <Text className="text-white font-black text-xs uppercase tracking-widest">{meal}</Text>
-                                      {mealData.time && (
+                                      {mealInfo.time && (
                                         <View className="flex-row items-center mt-2">
                                           <Ionicons name="time" size={14} color="#f97316" />
-                                          <Text className="text-orange-500 text-xs font-bold ml-1">{mealData.time}</Text>
+                                          <Text className="text-orange-500 text-xs font-bold ml-1">{mealInfo.time}</Text>
                                         </View>
                                       )}
                                    </View>
                                     <TouchableOpacity 
-                                       onPress={() => { setSelectedTimeField({day, meal}); setShowTimePicker(true); }} 
+                                       onPress={() => { setSelectedTimeField({dayIndex, meal}); setShowTimePicker(true); }} 
                                        disabled={isViewOnly}
                                        className="bg-orange-500/10 px-3 py-1.5 rounded-full border border-orange-500/20"
                                     >
-                                       <Text className="text-orange-500 text-[8px] font-black uppercase">{mealData.time ? "EDIT" : "SET TIME"}</Text>
+                                       <Text className="text-orange-500 text-[8px] font-black uppercase">{mealInfo.time ? "EDIT" : "SET TIME"}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 
@@ -925,7 +962,7 @@ export default function DietPlans() {
                                         placeholder="Food Description" 
                                         value={String(item.food || "")} 
                                         editable={!isViewOnly}
-                                        onChangeText={v => handleFoodItemChange(day, meal, idx, "food", v)} 
+                                        onChangeText={v => handleFoodItemChange(dayIndex, meal, idx, "food", v)} 
                                         placeholderTextColor="rgba(255,255,255,0.1)" 
                                         className={`bg-black/30 p-4 rounded-xl text-white mb-4 font-bold border border-white/5 ${isViewOnly ? 'opacity-50' : ''}`} 
                                      />
@@ -935,7 +972,7 @@ export default function DietPlans() {
                                            placeholder="Quantity" 
                                            value={String(item.quantity || "")} 
                                            editable={!isViewOnly}
-                                           onChangeText={v => handleFoodItemChange(day, meal, idx, "quantity", v)} 
+                                           onChangeText={v => handleFoodItemChange(dayIndex, meal, idx, "quantity", v)} 
                                            placeholderTextColor="rgba(255,255,255,0.1)" 
                                            className={`flex-1 bg-black/30 p-4 rounded-xl text-white font-bold border border-white/5 ${isViewOnly ? 'opacity-50' : ''}`} 
                                         />
@@ -943,7 +980,7 @@ export default function DietPlans() {
                                            placeholder="Kcal" 
                                            value={String(item.calories || "")} 
                                            editable={!isViewOnly}
-                                           onChangeText={v => handleFoodItemChange(day, meal, idx, "calories", v.replace(/[^0-9]/g, ""))} 
+                                           onChangeText={v => handleFoodItemChange(dayIndex, meal, idx, "calories", v.replace(/[^0-9]/g, ""))} 
                                            keyboardType="numeric" 
                                            placeholderTextColor="rgba(255,255,255,0.1)" 
                                            className={`flex-1 bg-black/30 p-4 rounded-xl text-white font-black text-center border border-white/5 ${isViewOnly ? 'opacity-50' : ''}`} 
@@ -952,14 +989,14 @@ export default function DietPlans() {
                                         {!isViewOnly && (
                                           <View className="flex-row gap-2">
                                             <TouchableOpacity 
-                                              onPress={() => handleAddFoodItem(day, meal)}
+                                              onPress={() => handleAddFoodItem(dayIndex, meal)}
                                               className="w-10 h-10 bg-emerald-500/10 rounded-xl items-center justify-center border border-emerald-500/20"
                                             >
                                               <Ionicons name="add" size={18} color="#10b981" />
                                             </TouchableOpacity>
                                             {mealItems.length > 1 && (
                                               <TouchableOpacity 
-                                                onPress={() => handleRemoveFoodItem(day, meal, idx)}
+                                                onPress={() => handleRemoveFoodItem(dayIndex, meal, idx)}
                                                 className="w-10 h-10 bg-red-500/10 rounded-xl items-center justify-center border border-red-500/20"
                                               >
                                                 <Ionicons name="remove" size={18} color="#ef4444" />
@@ -994,9 +1031,12 @@ export default function DietPlans() {
                       </>
                     )}
 
-                    {showTimePicker && (
+                    {showTimePicker && selectedTimeField && (
                       <DateTimePicker
-                        value={new Date()} mode="time" is24Hour={false} display="default"
+                        value={parseTimeToDate(form.days[selectedTimeField.dayIndex][selectedTimeField.meal]?.time)} 
+                        mode="time" 
+                        is24Hour={false} 
+                        display="default"
                         onChange={(event, date) => {
                           setShowTimePicker(false);
                           if (event.type === "set" && date && selectedTimeField) {
@@ -1004,9 +1044,10 @@ export default function DietPlans() {
                             const m = date.getMinutes();
                             const ampm = h >= 12 ? 'PM' : 'AM';
                             const h12 = h % 12 || 12;
-                            const mStr = m < 10 ? `0${m}` : m;
-                            const formatted = `${h12}:${mStr} ${ampm}`;
-                            handleMealChange(selectedTimeField.day, selectedTimeField.meal, "time", formatted);
+                            const mStr = String(m).padStart(2, '0');
+                            const hStr = String(h12).padStart(2, '0');
+                            const formatted = `${hStr}:${mStr} ${ampm}`;
+                            handleMealChange(selectedTimeField.dayIndex, selectedTimeField.meal, "time", formatted);
                           }
                         }}
                       />
