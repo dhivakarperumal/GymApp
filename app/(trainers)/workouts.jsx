@@ -51,8 +51,11 @@ export default function Workouts() {
   const [editingId, setEditingId] = useState(null);
   const [memberId, setMemberId] = useState("");
   const [memberName, setMemberName] = useState("");
+  const [memberEmail, setMemberEmail] = useState("");
+  const [memberMobile, setMemberMobile] = useState("");
   const [workoutGoal, setWorkoutGoal] = useState("");
-  const [trainingLevel, setTrainingLevel] = useState("Beginner");
+  const [trainingLevel, setTrainingLevel] = useState("beginner");
+  const [category, setCategory] = useState("General");
   const [days, setDays] = useState({ Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
 
   // ... (existing functions)
@@ -113,8 +116,11 @@ export default function Workouts() {
     setEditingId(null);
     setMemberId("");
     setMemberName("");
-    setTrainingLevel("Beginner");
+    setMemberEmail("");
+    setMemberMobile("");
+    setTrainingLevel("beginner");
     setWorkoutGoal("");
+    setCategory("General");
     setDays({ Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
     setIsViewOnly(false);
     setIsModalOpen(true);
@@ -128,9 +134,12 @@ export default function Workouts() {
 
     setEditingId(workout.id);
     setMemberId(String(workout.member_id || workout.memberId));
-    setMemberName(workout.member_name);
-    setTrainingLevel(workout.training_level || workout.trainingLevel || "Beginner");
-    setWorkoutGoal(workout.workout_goal || workout.workoutGoal || "");
+    setMemberName(workout.member_name || workout.memberName);
+    setMemberEmail(workout.member_email || workout.memberEmail || "");
+    setMemberMobile(workout.member_mobile || workout.memberMobile || "");
+    setTrainingLevel(workout.level || workout.training_level || workout.trainingLevel || "beginner");
+    setWorkoutGoal(workout.goal || workout.workout_goal || workout.workoutGoal || "");
+    setCategory(workout.category || "General");
     setDays(daysData || { Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
     setIsViewOnly(false);
     setIsModalOpen(true);
@@ -144,9 +153,12 @@ export default function Workouts() {
 
     setEditingId(workout.id);
     setMemberId(String(workout.member_id || workout.memberId));
-    setMemberName(workout.member_name);
-    setTrainingLevel(workout.training_level || workout.trainingLevel || "Beginner");
-    setWorkoutGoal(workout.workout_goal || workout.workoutGoal || "");
+    setMemberName(workout.member_name || workout.memberName);
+    setMemberEmail(workout.member_email || workout.memberEmail || "");
+    setMemberMobile(workout.member_mobile || workout.memberMobile || "");
+    setTrainingLevel(workout.level || workout.training_level || workout.trainingLevel || "beginner");
+    setWorkoutGoal(workout.goal || workout.workout_goal || workout.workoutGoal || "");
+    setCategory(workout.category || "General");
     setDays(daysData || { Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
     setIsViewOnly(true);
     setIsModalOpen(true);
@@ -220,24 +232,28 @@ export default function Workouts() {
   const saveProgram = async () => {
     if (!memberId) { Alert.alert("Missing Selection", "Please select a member first."); return; }
     try {
+      const calculatedWeeks = Math.ceil(Object.keys(days).length / 7);
       const payload = {
-        trainer_id: user.id,
         trainerId: user.id,
-        trainer_name: user.username,
         trainerName: user.username,
-        member_id: Number(memberId),
         memberId: Number(memberId),
-        user_id: Number(memberId),
-        member_name: memberName,
         memberName: memberName,
+        memberEmail: memberEmail,
+        memberMobile: memberMobile,
+        level: trainingLevel,
+        category: category,
+        goal: workoutGoal,
+        durationWeeks: calculatedWeeks,
+        days,
+        status: "active",
+        // Fallbacks for older backend versions
+        trainer_id: user.id,
+        trainer_name: user.username,
+        member_id: Number(memberId),
+        member_name: memberName,
         title: workoutGoal || "Training Program",
-        training_level: trainingLevel,
-        trainingLevel: trainingLevel,
-        workout_goal: workoutGoal,
-        workoutGoal: workoutGoal,
         duration: Object.keys(days).length,
-        days: JSON.stringify(days),
-        status: "active"
+        training_days: JSON.stringify(days)
       };
 
       if (editingId) {
@@ -271,7 +287,7 @@ export default function Workouts() {
             <View className="ml-4">
               <Text className="text-white font-black text-base uppercase tracking-tight">{item.member_name}</Text>
               <Text className="text-orange-500/60 text-[9px] font-black uppercase tracking-widest">
-                 {item.training_level || item.trainingLevel || "Beginner"} • {item.workout_goal || item.workoutGoal || "General Training"}
+                 {(item.level || item.training_level || item.trainingLevel || "beginner").charAt(0).toUpperCase() + (item.level || item.training_level || item.trainingLevel || "beginner").slice(1)} • {item.goal || item.workout_goal || item.workoutGoal || "General Training"}
               </Text>
             </View>
           </View>
@@ -373,8 +389,15 @@ export default function Workouts() {
                 </TouchableOpacity>
              </View>
 
-             <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className="flex-1">
-                <ScrollView className="flex-1 px-4 py-8" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+             <KeyboardAvoidingView 
+                behavior={Platform.OS === "ios" ? "padding" : undefined} 
+                className="flex-1"
+             >
+                <ScrollView 
+                   className="flex-1 px-4 py-8" 
+                   showsVerticalScrollIndicator={false}
+                   keyboardShouldPersistTaps="handled"
+                >
                    
                    <Text className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-4 px-1">Assignment</Text>
                    <View className={`bg-white/5 rounded-2xl mb-6 border border-white/5 overflow-hidden ${isViewOnly ? 'opacity-50' : ''}`}>
@@ -394,16 +417,16 @@ export default function Workouts() {
                    </View>
 
                    <Text className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-4 px-1">Training Level</Text>
-                   <View className={`bg-white/5 rounded-2xl mb-8 border border-white/5 overflow-hidden ${isViewOnly ? 'opacity-50' : ''}`}>
+                   <View className={`bg-white/5 rounded-2xl mb-8 border border-white/5 ${isViewOnly ? 'opacity-50' : ''}`}>
                       <Picker 
                          selectedValue={trainingLevel} 
                          enabled={!isViewOnly}
                          dropdownIconColor="#f97316" 
                          style={{ color: "white" }} 
-                         onValueChange={setTrainingLevel}>
-                        <Picker.Item label="Beginner" value="Beginner" />
-                        <Picker.Item label="Intermediate" value="Intermediate" />
-                        <Picker.Item label="Advanced" value="Advanced" />
+                         onValueChange={(itemValue) => setTrainingLevel(itemValue)}>
+                        <Picker.Item label="Beginner" value="beginner" />
+                        <Picker.Item label="Intermediate" value="intermediate" />
+                        <Picker.Item label="Advanced" value="advanced" />
                       </Picker>
                    </View>
 
@@ -418,7 +441,11 @@ export default function Workouts() {
                    />
 
                    {/* DAYS ORCHESTRATOR */}
-                   {Object.keys(days).sort((a,b) => parseInt(a.slice(3)) - parseInt(b.slice(3))).map((dayKey) => (
+                   {days && Object.keys(days).length > 0 && Object.keys(days).sort((a,b) => {
+                      const numA = parseInt(a.replace(/\D/g, "")) || 0;
+                      const numB = parseInt(b.replace(/\D/g, "")) || 0;
+                      return numA - numB;
+                   }).map((dayKey) => (
                      <View key={dayKey} className="mb-10">
                         <View className="flex-row justify-between items-center mb-6 px-2">
                            <Text className="text-orange-500 font-black text-xl uppercase tracking-tighter">{dayKey}</Text>
