@@ -29,15 +29,7 @@ const timeOptions = [
   "20:00-22:00",
 ];
 
-const categories = [
-  "Strength Training",
-  "Fat Loss",
-  "Muscle Gain",
-  "Cardio",
-  "Functional Training",
-  "CrossFit",
-  "Yoga",
-];
+
 
 const workoutTypes = [
   "Weight Training",
@@ -45,10 +37,13 @@ const workoutTypes = [
   "Yoga / Stretching",
   "HIIT",
   "Bodyweight",
+  "Mobility",
+  "Activity",
+  "Stability",
   "Warm Up",
   "Cool Down",
   "Rest Day",
-];
+]; 
 
 export default function Workouts() {
   const { user } = useAuth();
