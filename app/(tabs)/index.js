@@ -561,36 +561,63 @@ export default function Home() {
               );
 
               return (
-                <View
-                  key={meal}
-                  className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]"
-                >
-                  <View className="flex-row justify-between items-center">
-                    <Text className="text-white font-semibold">{meal}</Text>
+              <View
+  key={meal}
+  className="bg-[#1c1c1c] rounded-2xl border border-[#262626] mb-4"
+>
+  {/* HEADER */}
+  <View className="flex-row justify-between items-center bg-black/40 px-5 py-4 border-b border-[#262626]">
+    <Text className="text-white font-semibold text-lg">{meal}</Text>
 
-                    <Text className="text-red-500 text-sm">
-                      {value?.time || "No time"}
-                    </Text>
-                  </View>
+    <Text className="text-red-500 text-sm">
+      {value?.time || "No time"}
+    </Text>
+  </View>
 
-                  {mealItems.length > 0 ? (
-                    <>
-                      {mealItems.map((item, idx) => (
-                        <Text key={idx} className="text-gray-300 text-sm mt-2">
-                          • {item.food || "Food item"} ({item.quantity || "-"})
-                        </Text>
-                      ))}
+  {/* ITEMS */}
+  <View className="px-5 py-4 space-y-3">
+    {mealItems.length > 0 ? (
+      mealItems.map((item, idx) => (
+        <View
+          key={idx}
+          className="flex-row justify-between items-start pb-3 border-b border-white/5 last:border-0"
+        >
+          <View className="flex-1">
+            <Text className="text-white text-sm font-medium">
+              {item.food || "Food item"}
+            </Text>
 
-                      <Text className="text-gray-500 text-xs mt-2">
-                        {totalCalories} calories
-                      </Text>
-                    </>
-                  ) : (
-                    <Text className="text-gray-300 text-sm mt-3">
-                      No food items assigned for this meal.
-                    </Text>
-                  )}
-                </View>
+            <Text className="text-white/40 text-[12px] mt-1">
+              Qty:{" "}
+              <Text className="text-white/60">
+                {item.quantity || "-"}
+              </Text>
+            </Text>
+          </View>
+
+          <Text className="text-xs font-semibold text-emerald-400">
+            {item.calories || "0"} kcal
+          </Text>
+        </View>
+      ))
+    ) : (
+      <Text className="text-white/60 text-sm">No food items</Text>
+    )}
+
+    {/* TOTAL */}
+    {mealItems.length > 0 && (
+      <View className="mt-3 pt-3 border-t border-red-500/20 flex-row justify-between">
+        <Text className="text-[10px] text-white/30 uppercase font-semibold">
+          Total
+        </Text>
+
+        <Text className="text-xs font-bold text-red-500">
+          {totalCalories} kcal
+        </Text>
+      </View>
+    )}
+  </View>
+</View>
               );
             })}
           </View>
