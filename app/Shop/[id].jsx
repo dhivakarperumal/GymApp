@@ -17,7 +17,7 @@ import { useAuth } from "../../context/AuthContext";
 import BackButton from "../BackButton";
 import Toast from "react-native-toast-message";
 
-const BASE_URL = "https://mygym.qtechx.com/api";
+const BASE_URL = "https://dap.qtechx.com/api";
 
 const { width } = Dimensions.get("window");
 

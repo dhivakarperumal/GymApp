@@ -62,6 +62,18 @@ const menuItems = [
     borderAccent: "#10b98130",
   },
   {
+    id: "session-tracking",
+    title: "Session Tracking",
+    subtitle: "Track PT sessions & view profile",
+    icon: "reader",
+    route: "/(trainers)/session-tracking",
+    iconBg: "#f97316",
+    glowBg: "#f9731618",
+    arrowBg: "#f9731620",
+    arrowColor: "#fb923c",
+    borderAccent: "#f9731630",
+  },
+  {
     id: "logout",
     title: "Logout",
     subtitle: "Sign out of your account",

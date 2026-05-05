@@ -5,7 +5,7 @@ import { Image, Modal, Pressable, Text, TouchableOpacity, View } from "react-nat
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 
-const BASE_URL = "https://mygym.qtechx.com";
+const BASE_URL = "https://dap.qtechx.com";
 
 function TrainerHeader() {
   const router = useRouter();
@@ -35,14 +35,14 @@ function TrainerHeader() {
 
     const fetchMembers = async () => {
       try {
-        const res = await fetch("https://mygym.qtechx.com/api/assignments");
-        const data = await res.json();
-        // console.log("API DATA:", data);
+        const res = await fetch("https://dap.qtechx.com/api/assignments");
+        const json = await res.json();
+        const data = Array.isArray(json) ? json : (json?.data || json?.assignments || []);
 
         const now = new Date();
         const last24HoursMembers = data
           .filter((m) => {
-            if (!m.updatedAt) return false;
+            if (!m || !m.updatedAt) return false;
 
             const diffHours =
               (Date.now() - new Date(m.updatedAt).getTime()) /
@@ -448,6 +448,15 @@ export default function TrainersLayout() {
         name="pt-form"
         options={{
           href: null,
+          headerShown: false
+        }}
+      />
+
+      <Tabs.Screen
+        name="session-tracking"
+        options={{
+          href: null,
+          tabBarStyle: { display: "none" },
           headerShown: false
         }}
       />

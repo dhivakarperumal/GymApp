@@ -181,8 +181,8 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
   }, [onNext, form]);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "black" }}>
-      <View style={{ padding: 20 }}>
+    <View style={{ flex: 1, backgroundColor: "black" }}>
+      <View style={{ paddingVertical: 16 }}>
 
         {/* RESTING */}
         <Text style={title}>Resting Parameters</Text>
@@ -299,7 +299,7 @@ const FitnessScreening = ({ onNext, onPrevious, initialData = {} }) => {
         </View>
 
       </View>
-    </ScrollView>
+    </View>
   );
 };
 

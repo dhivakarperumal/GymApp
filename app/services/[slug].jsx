@@ -38,7 +38,7 @@ export default function ServiceDetails() {
     if (img.startsWith("http")) return img;
 
     // relative path
-    const base = "https://mygym.qtechx.com";
+    const base = "https://dap.qtechx.com";
     return `${base}/${img}`;
   };
 
