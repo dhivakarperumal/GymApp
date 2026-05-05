@@ -775,17 +775,7 @@ export default function DietPlans() {
               <Text className="text-white text-3xl font-black tracking-tight">Diet Plans</Text>
               <Text className="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1">Nutrition Hub</Text>
             </View>
-            <View className="flex-row gap-2">
-              <TouchableOpacity 
-                onPress={handleAddWithTestData}
-                className="bg-emerald-500/20 p-3 rounded-2xl border border-emerald-500/30"
-              >
-                <Ionicons name="flask-outline" size={20} color="#10b981" />
-              </TouchableOpacity>
-              <TouchableOpacity className="bg-white/5 p-3 rounded-2xl border border-white/5">
-                <Ionicons name="search" size={20} color="white" />
-              </TouchableOpacity>
-            </View>
+
           </View>
 
           <FlatList
