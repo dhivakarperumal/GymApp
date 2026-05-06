@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import dayjs from "dayjs";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
     Dimensions,
     Image,
@@ -56,7 +56,7 @@ const getDayIndex = (dayKey, allKeys = []) => {
   return hasZeroKey ? rawNumber : Math.max(0, rawNumber - 1);
 };
 
-  const fetchUserPlan = async () => {
+  const fetchUserPlan = useCallback(async () => {
     try {
       if (!user?.id) return;
 
@@ -88,7 +88,7 @@ const getDayIndex = (dayKey, allKeys = []) => {
     } catch (error) {
       console.log("Plan Fetch Error:", error);
     }
-  };
+  }, [user]);
 
   // Parse planDetails if present
   const purchasedPlan = planDetails ? JSON.parse(planDetails) : null;
@@ -102,7 +102,7 @@ const getDayIndex = (dayKey, allKeys = []) => {
     }
   }, [user]);
 
-  const fetchTodayDiet = async () => {
+  const fetchTodayDiet = useCallback(async () => {
     try {
       const data = await getDietPlans();
 
@@ -172,9 +172,9 @@ const getDayIndex = (dayKey, allKeys = []) => {
       setTodayDay("");
       setDietTitle("");
     }
-  };
+  }, [user]);
 
-  const fetchTodayWorkout = async () => {
+  const fetchTodayWorkout = useCallback(async () => {
     try {
       const data = await getTrainerWorkouts();
 
@@ -236,7 +236,7 @@ const getDayIndex = (dayKey, allKeys = []) => {
       console.log("Workout fetch error:", err);
       setTodayWorkout([]);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -306,7 +306,7 @@ const getDayIndex = (dayKey, allKeys = []) => {
     }
   };
 
-  const fetchAssignment = async () => {
+  const fetchAssignment = useCallback(async () => {
     try {
       const data = await getUserAssignment();
 
@@ -322,9 +322,9 @@ const getDayIndex = (dayKey, allKeys = []) => {
     } catch (err) {
       console.log("Assignment fetch error:", err);
     }
-  };
+  }, [user]);
 
-  const initializeUserData = async () => {
+  const initializeUserData = useCallback(async () => {
     try {
       await fetchUserPlan(); // load plan first
       await fetchAssignment();
@@ -333,7 +333,7 @@ const getDayIndex = (dayKey, allKeys = []) => {
     } catch (err) {
       console.log("Initialization error:", err);
     }
-  };
+  }, [fetchUserPlan, fetchAssignment, fetchTodayDiet, fetchTodayWorkout]);
 
   const hasPlan = Boolean(
     userPlan ||
