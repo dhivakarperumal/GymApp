@@ -486,15 +486,18 @@ export default function Orders() {
                         </Text>
 
                         <Text style={{ color: "#aaa", fontSize: 12 }}>
+                          <Text style={{ fontWeight: "bold", color: "#fff" }}>Name: </Text>
                           {details.name}
                         </Text>
 
                         <Text style={{ color: "#aaa", fontSize: 12 }}>
+                          <Text style={{ fontWeight: "bold", color: "#fff" }}>Phone: </Text>
                           {details.phone}
                         </Text>
 
                         {details.email ? (
                           <Text style={{ color: "#aaa", fontSize: 12 }}>
+                            <Text style={{ fontWeight: "bold", color: "#fff" }}>Email: </Text>
                             {details.email}
                           </Text>
                         ) : null}
@@ -502,7 +505,7 @@ export default function Orders() {
                         {isPickupOrder ? null : (
                           <>
                             <Text style={{ color: "#aaa", fontSize: 12 }}>
-                              {details.address}
+                              Address: {details.address}
                             </Text>
 
                             <Text style={{ color: "#aaa", fontSize: 12 }}>
