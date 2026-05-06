@@ -38,7 +38,7 @@ import Header from "./Header";
 export default function Checkout() {
   const [cartItems, setCartItems] = useState([]);
   const router = useRouter();
-  const [paymentMethod, setPaymentMethod] = useState("ONLINE");
+  const [paymentMethod, setPaymentMethod] = useState("COD");
   const { buyNow } = useLocalSearchParams();
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
@@ -509,7 +509,7 @@ export default function Checkout() {
         <View className="bg-[#111] p-4 rounded-2xl mb-4 flex-row justify-between">
 
           {/* ONLINE PAYMENT */}
-          <TouchableOpacity
+          {/*<TouchableOpacity
             className="flex-row items-center w-[48%]"
             onPress={() => setPaymentMethod("ONLINE")}
           >
@@ -518,7 +518,7 @@ export default function Checkout() {
                 }`}
             />
             <Text className="text-white">Pay Online</Text>
-          </TouchableOpacity>
+          </TouchableOpacity>*/}
 
           {/* COD */}
           <TouchableOpacity
