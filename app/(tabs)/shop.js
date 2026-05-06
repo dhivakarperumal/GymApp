@@ -1,17 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  Image,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  ActivityIndicator,
-  Modal,
-  KeyboardAvoidingView,
-  Platform,
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native";
 import { getAllProducts } from "../../services/api";
 import ProductCard from "../ProductCard";
@@ -28,6 +27,8 @@ export default function Shop() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [minRating, setMinRating] = useState("");
+
+  const [activeTab, setActiveTab] = useState("All Products");
 
   const isFilterActive =
     selectedCategory !== "" ||
@@ -67,6 +68,8 @@ export default function Shop() {
         ? item.category === selectedCategory
         : true;
 
+      const tabMatch = activeTab === "All Products" || item.category === "Food";
+
       let price = Number(item.offer_price || item.mrp || 0);
 
       const priceMatch =
@@ -77,9 +80,9 @@ export default function Shop() {
 
       const ratingMatch = minRating ? ratingValue >= Number(minRating) : true;
 
-      return nameMatch && categoryMatch && priceMatch && ratingMatch;
+      return nameMatch && categoryMatch && tabMatch && priceMatch && ratingMatch;
     });
-  }, [search, products, selectedCategory, minPrice, maxPrice, minRating]);
+  }, [search, products, selectedCategory, minPrice, maxPrice, minRating, activeTab]);
 
   return (
     <KeyboardAvoidingView
@@ -92,6 +95,27 @@ export default function Shop() {
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
+        {/* TABS */}
+        <View className="flex-row bg-darkcard rounded-xl p-1 mb-5">
+          {["All Products", "Meal Plan"].map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              onPress={() => setActiveTab(tab)}
+              className={`flex-1 py-2 px-4 rounded-lg ${
+                activeTab === tab ? "bg-primary" : "bg-transparent"
+              }`}
+            >
+              <Text
+                className={`text-center font-medium ${
+                  activeTab === tab ? "text-white" : "text-gray-400"
+                }`}
+              >
+                {tab}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
         {/* SEARCH */}
         <View className="flex-row items-center bg-darkcard rounded-xl px-4 py-3 mb-5">
           {/* FILTER BUTTON */}
@@ -124,7 +148,11 @@ export default function Shop() {
           <Ionicons name="search" size={18} color="#777" />
 
           <TextInput
-            placeholder="Search supplements & gear..."
+            placeholder={
+              activeTab === "Meal Plan"
+                ? "Search meal plans..."
+                : "Search supplements & gear..."
+            }
             placeholderTextColor="#777"
             value={search}
             onChangeText={setSearch}
