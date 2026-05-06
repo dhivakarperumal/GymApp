@@ -100,7 +100,7 @@ const getDayIndex = (dayKey, allKeys = []) => {
     if (user?.id) {
       initializeUserData();
     }
-  }, [user]);
+  }, [user, initializeUserData]);
 
   const fetchTodayDiet = useCallback(async () => {
     try {

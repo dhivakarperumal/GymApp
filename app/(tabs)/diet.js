@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import dayjs from "dayjs";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import { getDietPlans } from "../../services/api";
@@ -46,7 +46,7 @@ export default function DietChartScreen() {
   const [activeDay, setActiveDay] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchDietPlan = async () => {
+  const fetchDietPlan = useCallback(async () => {
     setLoading(true);
 
     try {
@@ -102,13 +102,13 @@ export default function DietChartScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user) {
       fetchDietPlan();
     }
-  }, [user]);
+  }, [user, fetchDietPlan]);
 
   const dayKeys = diet ? Object.keys(diet) : [];
   const selectedDay = activeDay || dayKeys[0];
