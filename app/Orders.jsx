@@ -441,60 +441,82 @@ export default function Orders() {
                     </Text>
                   )}
 
-                  {/* SHIPPING DETAILS */}
-                  {selectedOrder.shipping &&
-                    (() => {
-                      const shipping =
-                        typeof selectedOrder.shipping === "string"
-                          ? JSON.parse(selectedOrder.shipping)
-                          : selectedOrder.shipping;
+                  {/* SHIPPING / PICKUP DETAILS */}
+                  {(() => {
+                    const isPickupOrder =
+                      selectedOrder.order_type?.toUpperCase() === "PICKUP";
+                    const shipping =
+                      selectedOrder.shipping &&
+                      (typeof selectedOrder.shipping === "string"
+                        ? JSON.parse(selectedOrder.shipping)
+                        : selectedOrder.shipping);
+                    const pickup =
+                      selectedOrder.pickup &&
+                      (typeof selectedOrder.pickup === "string"
+                        ? JSON.parse(selectedOrder.pickup)
+                        : selectedOrder.pickup);
 
-                      return (
-                        <>
-                          <View
-                            style={{
-                              height: 1,
-                              backgroundColor: "#222",
-                              marginVertical: 16,
-                            }}
-                          />
+                    if (!shipping && !pickup && !isPickupOrder) return null;
 
-                          <Text
-                            style={{
-                              color: "#e11d1d",
-                              fontWeight: "600",
-                              marginBottom: 8,
-                            }}
-                          >
-                            Shipping Details
-                          </Text>
+                    const detailsLabel = isPickupOrder
+                      ? "Pickup Details"
+                      : "Shipping Details";
+                    const details = isPickupOrder ? pickup || shipping : shipping;
 
+                    if (!details) return null;
+
+                    return (
+                      <>
+                        <View
+                          style={{
+                            height: 1,
+                            backgroundColor: "#222",
+                            marginVertical: 16,
+                          }}
+                        />
+
+                        <Text
+                          style={{
+                            color: "#e11d1d",
+                            fontWeight: "600",
+                            marginBottom: 8,
+                          }}
+                        >
+                          {detailsLabel}
+                        </Text>
+
+                        <Text style={{ color: "#aaa", fontSize: 12 }}>
+                          {details.name}
+                        </Text>
+
+                        <Text style={{ color: "#aaa", fontSize: 12 }}>
+                          {details.phone}
+                        </Text>
+
+                        {details.email ? (
                           <Text style={{ color: "#aaa", fontSize: 12 }}>
-                            {shipping.name}
+                            {details.email}
                           </Text>
+                        ) : null}
 
-                          <Text style={{ color: "#aaa", fontSize: 12 }}>
-                            {shipping.phone}
-                          </Text>
+                        {isPickupOrder ? null : (
+                          <>
+                            <Text style={{ color: "#aaa", fontSize: 12 }}>
+                              {details.address}
+                            </Text>
 
-                          <Text style={{ color: "#aaa", fontSize: 12 }}>
-                            {shipping.email}
-                          </Text>
+                            <Text style={{ color: "#aaa", fontSize: 12 }}>
+                              {details.city}, {details.state} {details.zip}
+                            </Text>
 
-                          <Text style={{ color: "#aaa", fontSize: 12 }}>
-                            {shipping.address}
-                          </Text>
-
-                          <Text style={{ color: "#aaa", fontSize: 12 }}>
-                            {shipping.city}, {shipping.state} {shipping.zip}
-                          </Text>
-
-                          <Text style={{ color: "#aaa", fontSize: 12 }}>
-                            {shipping.country}
-                          </Text>
-                        </>
-                      );
-                    })()}
+                            <Text style={{ color: "#aaa", fontSize: 12 }}>
+                              {details.country}
+                            </Text>
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
 
                   {/* TOTAL */}
                   <View
