@@ -2,21 +2,21 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Picker } from "@react-native-picker/picker";
 import { useLocalSearchParams } from "expo-router";
 import {
+  ActivityIndicator,
   Image,
+  Modal,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Modal,
-  ActivityIndicator,
 } from "react-native";
 import Toast from "react-native-toast-message";
 
 import { Ionicons } from "@expo/vector-icons";
 
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import RazorpayCheckout from "react-native-razorpay";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../context/AuthContext";
@@ -39,6 +39,7 @@ export default function Checkout() {
   const [cartItems, setCartItems] = useState([]);
   const router = useRouter();
   const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [orderType, setOrderType] = useState("DELIVERY");
   const { buyNow } = useLocalSearchParams();
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
@@ -48,6 +49,25 @@ export default function Checkout() {
   const { user } = useAuth();
   const userId = user?.id;
   const [placing, setPlacing] = useState(false);
+
+  // Check if user came from meal plan (forces restrictions)
+  const fromMealPlan = useLocalSearchParams().fromMealPlan === 'true';
+
+  // Check if user came from all products (forces shop pickup and COD only)
+  const fromAllProducts = useLocalSearchParams().fromAllProducts === 'true';
+
+  // Check if any item is food category
+  const hasFoodItems = cartItems.some(item => item.category === 'Food');
+
+  // For meal plan purchases, force CASH payment and SHOP pickup
+  // For all products purchases, also force CASH payment and SHOP pickup
+  // For regular purchases with food items, allow user choice
+  useEffect(() => {
+    if ((fromMealPlan && hasFoodItems) || fromAllProducts) {
+      setPaymentMethod("COD");
+      setOrderType("PICKUP");
+    }
+  }, [fromMealPlan, hasFoodItems, fromAllProducts]);
   const states = [
     "Andhra Pradesh",
     "Arunachal Pradesh",
@@ -91,11 +111,11 @@ export default function Checkout() {
   });
 
   /* FETCH CART */
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     const data = await getCart(userId);
     // console.log("CART DATA 👉", data);
     setCartItems(data);
-  };
+  }, [userId]);
 
   useEffect(() => {
 
@@ -106,7 +126,7 @@ export default function Checkout() {
       fetchCart();
     }
 
-  }, [userId, buyNow]);
+  }, [userId, buyNow, fetchCart]);
 
   useEffect(() => {
     if (!userId) return;
@@ -214,10 +234,10 @@ export default function Checkout() {
         name: shipping.name,
         phone: shipping.phone,
         email: shipping.email,
-        address: shipping.address,
-        city: shipping.city,
-        state: shipping.state,
-        zip: shipping.zip,
+        address: orderType === "PICKUP" ? "SHOP PICKUP" : shipping.address,
+        city: orderType === "PICKUP" ? "" : shipping.city,
+        state: orderType === "PICKUP" ? "" : shipping.state,
+        zip: orderType === "PICKUP" ? "" : shipping.zip,
         country: shipping.country,
       };
 
@@ -247,46 +267,37 @@ export default function Checkout() {
         return;
       }
 
+      // When coming from all products, only pickup is allowed
+      if (fromAllProducts && orderType !== "PICKUP") {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "Only shop pickup is available for products",
+        });
+        return;
+      }
+
       /* VALIDATE SHIPPING */
 
-      if (!shipping.name.trim()) {
-        Toast.show({ type: "error", text1: "Validation Error", text2: "Please enter your name" });
-        return;
-      }
+      if (orderType === "DELIVERY") {
+        // Check each field individually for better error messages
+        if (!shipping.name || shipping.name.trim() === "")
+          return Toast.show({ type: "error", text1: "Validation Error", text2: "Please enter your name" });
 
-      if (!/^[6-9]\d{9}$/.test(shipping.phone)) {
-        Toast.show({ type: "error", text1: "Validation Error", text2: "Enter a valid 10 digit phone number" });
-        return;
-      }
+        if (!shipping.phone || shipping.phone.trim() === "")
+          return Toast.show({ type: "error", text1: "Validation Error", text2: "Please enter your phone number" });
 
-      if (!/^\S+@\S+\.\S+$/.test(shipping.email)) {
-        Toast.show({ type: "error", text1: "Validation Error", text2: "Enter a valid email address" });
-        return;
-      }
+        if (!shipping.address || shipping.address.trim() === "")
+          return Toast.show({ type: "error", text1: "Validation Error", text2: "Please enter your address" });
 
-      if (!shipping.address.trim()) {
-        Toast.show({ type: "error", text1: "Validation Error", text2: "Please enter your address" });
-        return;
-      }
+        if (!shipping.state || shipping.state.trim() === "")
+          return Toast.show({ type: "error", text1: "Validation Error", text2: "Please select your state" });
+      } else {
+        if (!shipping.name || shipping.name.trim() === "")
+          return Toast.show({ type: "error", text1: "Validation Error", text2: "Please enter your name" });
 
-      if (!shipping.city.trim()) {
-        Toast.show({ type: "error", text1: "Validation Error", text2: "Please enter your city" });
-        return;
-      }
-
-      if (!shipping.state.trim()) {
-        Toast.show({ type: "error", text1: "Validation Error", text2: "Please enter your state" });
-        return;
-      }
-
-      if (!/^\d{6}$/.test(shipping.zip)) {
-        Toast.show({ type: "error", text1: "Validation Error", text2: "Enter a valid 6 digit ZIP code" });
-        return;
-      }
-
-      if (!shipping.country.trim()) {
-        Toast.show({ type: "error", text1: "Validation Error", text2: "Please enter your country" });
-        return;
+        if (!shipping.phone || shipping.phone.trim() === "")
+          return Toast.show({ type: "error", text1: "Validation Error", text2: "Please enter your phone number" });
       }
 
       await saveCheckoutAddress();
@@ -327,8 +338,13 @@ export default function Checkout() {
         status: "Order Placed",
         payment_status: paymentStatus,
         total: total,
-        order_type: paymentMethod,
-        shipping: shipping,
+        order_type: orderType,
+        shipping: orderType === "DELIVERY" ? shipping : null,
+        pickup: orderType === "PICKUP" ? {
+          name: shipping.name,
+          phone: shipping.phone,
+          email: shipping.email,
+        } : null,
 
         order_track: [
           {
@@ -401,6 +417,19 @@ export default function Checkout() {
     country: "Country",
   };
 
+  // 🔍 Helper to check if all delivery fields are filled
+  const areDeliveryFieldsFilled = () => {
+    if (orderType === "DELIVERY") {
+      return (
+        shipping.name?.trim() &&
+        shipping.phone?.trim() &&
+        shipping.address?.trim() &&
+        shipping.state?.trim()
+      );
+    }
+    return shipping.name?.trim() && shipping.phone?.trim();
+  };
+
   const selectAddress = (addr) => {
 
     setShipping({
@@ -446,61 +475,156 @@ export default function Checkout() {
 
         {/* SHIPPING */}
 
-        <Text className="text-white text-lg mb-4">Shipping Details</Text>
+        <Text className="text-white text-lg mb-4">
+          {orderType === "DELIVERY" ? "SHIPPING" : "SHOP PICKUP"}
+        </Text>
 
-        {Object.keys(shipping).map((key) => {
-          if (key === "state") return null; // we will use dropdown
+        {/* ⚠️ WARNING BANNER - Show when fields incomplete */}
+        {!areDeliveryFieldsFilled() && (
+          <View className="mb-6 p-4 rounded-xl bg-red-600/30 border border-red-500 flex-row">
+            <Text className="text-xl mr-3">⚠️</Text>
+            <View className="flex-1">
+              <Text className="font-semibold text-red-400">
+                Fill all fields to continue
+              </Text>
+              <Text className="text-xs text-red-300 mt-1">
+                {fromAllProducts ? "Name & Phone are required for shop pickup" :
+                 orderType === "DELIVERY"
+                  ? "Name, Phone, Address & State are required"
+                  : "Name & Phone are required"}
+              </Text>
+            </View>
+          </View>
+        )}
 
-          return (
-            <TextInput
-              key={key}
-              placeholder={fieldLabels[key]}
-              placeholderTextColor="#888"
-              value={shipping[key]}
-              keyboardType={key === "phone" ? "number-pad" : "default"}
-              maxLength={key === "phone" ? 10 : undefined}
-              onChangeText={(text) => {
-                if (key === "phone") {
-                  // allow only numbers
-                  const numeric = text.replace(/[^0-9]/g, "");
-
-                  // prevent first digit < 6
-                  if (numeric.length === 1 && !/[6-9]/.test(numeric)) {
-                    return;
-                  }
-
-                  // max 10 digits
-                  if (numeric.length <= 10) {
-                    setShipping({ ...shipping, phone: numeric });
-                  }
-                } else {
-                  setShipping({ ...shipping, [key]: text })
-                    ;
-                }
-              }}
-              className="bg-[#111] text-white p-4 rounded-xl mb-4"
-            />
-          );
-        })}
-
-        <Text className="text-white mb-2">State</Text>
-
-        <View className="bg-[#111] rounded-xl mb-4">
-          <Picker
-            selectedValue={shipping.state}
-            dropdownIconColor="white"
-            style={{ color: "white" }}
-            onValueChange={(value) =>
-              setShipping({ ...shipping, state: value })
-            }
+        {/* ORDER TYPE */}
+        <View className="flex-row mb-6">
+          <TouchableOpacity
+            onPress={() => setOrderType("DELIVERY")}
+            disabled={(fromMealPlan && hasFoodItems) || fromAllProducts}
+            className={`flex-1 py-3 rounded-xl border mr-2 ${
+              orderType === "DELIVERY"
+                ? "bg-red-600 border-red-600"
+                : "border-red-500/40"
+            } ${((fromMealPlan && hasFoodItems) || fromAllProducts) ? "opacity-50" : ""}`}
           >
-            <Picker.Item label="Select State" value="" />
+            <Text className="text-center text-white">
+              Delivery
+              {((fromMealPlan && hasFoodItems) || fromAllProducts) ? " (Not available)" : ""}
+            </Text>
+          </TouchableOpacity>
 
-            {states.map((state) => (
-              <Picker.Item key={state} label={state} value={state} />
-            ))}
-          </Picker>
+          <TouchableOpacity
+            onPress={() => setOrderType("PICKUP")}
+            className={`flex-1 py-3 rounded-xl border ml-2 ${
+              orderType === "PICKUP"
+                ? "bg-red-600 border-red-600"
+                : "border-red-500/40"
+            }`}
+          >
+            <Text className="text-center text-white">
+              Shop Pickup
+              {((fromMealPlan && hasFoodItems) || fromAllProducts) ? " (Required)" : ""}
+            </Text>
+          </TouchableOpacity>
         </View>
+
+        {/* FORM FIELDS */}
+        {orderType === "DELIVERY" ? (
+          // DELIVERY FORM
+          <>
+            {Object.keys(shipping).map((key) => {
+              if (key === "state") return null; // we will use dropdown
+
+              return (
+                <TextInput
+                  key={key}
+                  placeholder={fieldLabels[key]}
+                  placeholderTextColor="#888"
+                  value={shipping[key]}
+                  keyboardType={key === "phone" ? "number-pad" : key === "zip" ? "number-pad" : "default"}
+                  maxLength={key === "phone" ? 10 : key === "zip" ? 6 : undefined}
+                  onChangeText={(text) => {
+                    if (key === "phone") {
+                      // allow only numbers
+                      const numeric = text.replace(/[^0-9]/g, "");
+
+                      // prevent first digit < 6
+                      if (numeric.length === 1 && !/[6-9]/.test(numeric)) {
+                        return;
+                      }
+
+                      // max 10 digits
+                      if (numeric.length <= 10) {
+                        setShipping({ ...shipping, phone: numeric });
+                      }
+                    } else if (key === "zip") {
+                      const numeric = text.replace(/[^0-9]/g, "");
+                      if (numeric.length <= 6) {
+                        setShipping({ ...shipping, zip: numeric });
+                      }
+                    } else {
+                      setShipping({ ...shipping, [key]: text });
+                    }
+                  }}
+                  className="bg-[#111] text-white p-4 rounded-xl mb-4"
+                />
+              );
+            })}
+
+            <Text className="text-white mb-2">State</Text>
+
+            <View className="bg-[#111] rounded-xl mb-4">
+              <Picker
+                selectedValue={shipping.state}
+                dropdownIconColor="white"
+                style={{ color: "white" }}
+                onValueChange={(value) =>
+                  setShipping({ ...shipping, state: value })
+                }
+              >
+                <Picker.Item label="Select State" value="" />
+
+                {states.map((state) => (
+                  <Picker.Item key={state} label={state} value={state} />
+                ))}
+              </Picker>
+            </View>
+          </>
+        ) : (
+          // PICKUP FORM
+          <>
+            {["name", "phone", "email"].map((key) => (
+              <TextInput
+                key={key}
+                placeholder={fieldLabels[key]}
+                placeholderTextColor="#888"
+                value={shipping[key]}
+                keyboardType={key === "phone" ? "number-pad" : "default"}
+                maxLength={key === "phone" ? 10 : undefined}
+                onChangeText={(text) => {
+                  if (key === "phone") {
+                    // allow only numbers
+                    const numeric = text.replace(/[^0-9]/g, "");
+
+                    // prevent first digit < 6
+                    if (numeric.length === 1 && !/[6-9]/.test(numeric)) {
+                      return;
+                    }
+
+                    // max 10 digits
+                    if (numeric.length <= 10) {
+                      setShipping({ ...shipping, phone: numeric });
+                    }
+                  } else {
+                    setShipping({ ...shipping, [key]: text });
+                  }
+                }}
+                className="bg-[#111] text-white p-4 rounded-xl mb-4"
+              />
+            ))}
+          </>
+        )}
 
         <Text className="text-white text-lg mt-6 mb-4">
           Payment Method
@@ -508,28 +632,22 @@ export default function Checkout() {
 
         <View className="bg-[#111] p-4 rounded-2xl mb-4 flex-row justify-between">
 
-          {/* ONLINE PAYMENT */}
-          {/*<TouchableOpacity
-            className="flex-row items-center w-[48%]"
-            onPress={() => setPaymentMethod("ONLINE")}
-          >
-            <View
-              className={`w-5 h-5 rounded-full border-2 mr-3 ${paymentMethod === "ONLINE" ? "border-red-500 bg-red-500" : "border-gray-400"
-                }`}
-            />
-            <Text className="text-white">Pay Online</Text>
-          </TouchableOpacity>*/}
-
           {/* COD */}
           <TouchableOpacity
-            className="flex-row items-center w-[48%]"
+            className="flex-row items-center w-full"
             onPress={() => setPaymentMethod("COD")}
+            disabled={(fromMealPlan && hasFoodItems) || fromAllProducts}
           >
             <View
               className={`w-5 h-5 rounded-full border-2 mr-3 ${paymentMethod === "COD" ? "border-red-500 bg-red-500" : "border-gray-400"
                 }`}
             />
-            <Text className="text-white">Cash on Delivery</Text>
+            <View className="flex-1">
+              <Text className="text-white">Cash on Delivery</Text>
+              {((fromMealPlan && hasFoodItems) || fromAllProducts) && (
+                <Text className="text-xs text-gray-400">(Required for meal plan items / all products)</Text>
+              )}
+            </View>
           </TouchableOpacity>
 
         </View>
@@ -594,8 +712,7 @@ export default function Checkout() {
         {/* PLACE ORDER */}
 
         <TouchableOpacity
-          disabled={loading}
-          disabled={placing}
+          disabled={loading || placing || !areDeliveryFieldsFilled()}
           onPress={() => {
             if (paymentMethod === "ONLINE") {
               handleOnlinePayment();
@@ -604,13 +721,15 @@ export default function Checkout() {
             }
           }}
           className={`py-5 rounded-2xl items-center mt-6 ${
-            placing ? "bg-red-800" : "bg-red-600"
+            placing || !areDeliveryFieldsFilled() ? "bg-red-800" : "bg-red-600"
           }`}
         >
           {placing ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-white font-bold text-lg">Place Order</Text>
+            <Text className="text-white font-bold text-lg">
+              {areDeliveryFieldsFilled() ? "Place Order" : "Fill Required Fields"}
+            </Text>
           )}
         </TouchableOpacity>
       </ScrollView>
@@ -648,19 +767,31 @@ export default function Checkout() {
                     : "border-gray-700 bg-[#111]"
                     }`}
                 >
-                  <Text className="text-white font-bold">{addr.name}</Text>
-                  <Text className="text-gray-400">{addr.address}</Text>
-                  <Text className="text-gray-400">
-                    {addr.city}, {addr.state} - {addr.zip}
-                  </Text>
-                  <Text className="text-gray-400">
-                    {addr.country}
-                  </Text>
+                  {/* DELIVERY / PICKUP LABEL */}
+                  <View className="flex-row justify-between items-center mb-2">
+                    <Text className="text-white font-bold">{addr.name}</Text>
+                    <Text className="text-xs px-2 py-1 rounded-full bg-red-500/20 text-red-400">
+                      {addr.address === "SHOP PICKUP" ? "PICKUP" : "DELIVERY"}
+                    </Text>
+                  </View>
 
-                  <Text className="text-gray-400">
-                    {addr.email}
-                  </Text>
-                  <Text className="text-gray-400">{addr.phone}</Text>
+                  {/* Address only for DELIVERY */}
+                  {addr.address !== "SHOP PICKUP" && (
+                    <>
+                      <Text className="text-gray-400">{addr.address}</Text>
+                      <Text className="text-gray-400">
+                        {addr.city}, {addr.state} - {addr.zip}
+                      </Text>
+                      <Text className="text-gray-400">{addr.country}</Text>
+                    </>
+                  )}
+
+                  <Text className="text-gray-400">📞 {addr.phone}</Text>
+
+                  {/* Show email only for pickup */}
+                  {addr.address === "SHOP PICKUP" && addr.email && (
+                    <Text className="text-gray-400 mt-1">✉ {addr.email}</Text>
+                  )}
                 </TouchableOpacity>
               ))}
             </ScrollView>
