@@ -254,6 +254,25 @@ export const updateUserApi = async (id, data) => {
   return res.json();
 };
 
+// SET PASSWORD
+export const setPasswordApi = async ({ userId, oldPassword, newPassword }) => {
+  const res = await fetch(`${BASE_URL}/auth/set-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ userId, oldPassword, newPassword }),
+  });
+
+  const body = await res.json();
+
+  if (!res.ok) {
+    throw new Error(body?.message || "Failed to update password");
+  }
+
+  return body;
+};
+
 /* ------------------ ASSIGNMENTS ------------------ */
 
 /* ------------------ TRAINER MEMBERS ------------------ */

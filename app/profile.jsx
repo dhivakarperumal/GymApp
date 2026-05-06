@@ -3,20 +3,19 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Alert,
-  Modal,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Modal,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../context/AuthContext";
 import { updateUserApi } from "../services/api";
 import BackButton from "./BackButton";
-import Header from "./Header";
 
 export default function Profile() {
   const router = useRouter();
@@ -365,6 +364,14 @@ export default function Profile() {
             className="flex-row justify-between items-center py-4 border-b border-[#222]"
           >
             <Text className="text-white">Address</Text>
+            <Ionicons name="chevron-forward" size={18} color="#888" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push("/set-password")}
+            className="flex-row justify-between items-center py-4 border-b border-[#222]"
+          >
+            <Text className="text-white">Set Password</Text>
             <Ionicons name="chevron-forward" size={18} color="#888" />
           </TouchableOpacity>
 
