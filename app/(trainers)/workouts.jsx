@@ -45,6 +45,7 @@ export default function Workouts() {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedTimeField, setSelectedTimeField] = useState(null);
   const [isViewOnly, setIsViewOnly] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   // -- FORM STATE --
   const [editingId, setEditingId] = useState(null);
@@ -228,6 +229,132 @@ export default function Workouts() {
     });
   };
 
+  const handleImportExcel = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'],
+      });
+      if (result.canceled || !result.assets) return;
+      
+      setImporting(true);
+      const fileUri = result.assets[0].uri;
+      const response = await fetch(fileUri);
+      const arrayBuffer = await response.arrayBuffer();
+      
+      const workbook = XLSX.read(arrayBuffer, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+      if (!rows || rows.length === 0) {
+        Alert.alert("Error", "Excel file is empty or invalid.");
+        setImporting(false);
+        return;
+      }
+
+      const parsedDays = {};
+      let rowsParsed = 0;
+
+      rows.forEach((row) => {
+        const dayRaw = row.Day || row.day || "Day1";
+        const time = row.Time || row.time || "";
+        const type = row.Type || row.type || "Weight Training";
+        const name = row["Exercise Name"] || row.exercise || row.name || "";
+        const sets = row.Sets || row.sets || "";
+        const count = row.Count || row.count || row.Reps || row.reps || "";
+        const media = row.Media || row.media || "";
+
+        if (!name) return;
+
+        if (!parsedDays[dayRaw]) parsedDays[dayRaw] = [];
+        
+        parsedDays[dayRaw].push({
+          time,
+          type,
+          name,
+          sets,
+          count,
+          media,
+          mediaType: "url"
+        });
+
+        rowsParsed += 1;
+      });
+
+      if (Object.keys(parsedDays).length === 0 || rowsParsed === 0) {
+        Alert.alert("Error", "No valid exercises found in file.");
+        setImporting(false);
+        return;
+      }
+
+      const newDays = {};
+      Object.keys(parsedDays).sort((a, b) => {
+        const numA = parseInt(a.replace(/\D/g, "")) || 0;
+        const numB = parseInt(b.replace(/\D/g, "")) || 0;
+        return numA - numB;
+      }).forEach((dayKey) => {
+        newDays[dayKey] = parsedDays[dayKey];
+      });
+
+      setDays(newDays);
+      Alert.alert("Success", `Imported workout plan for ${Object.keys(newDays).length} day(s)!`);
+      setImporting(false);
+    } catch (err) {
+      console.log("Import error:", err);
+      Alert.alert("Error", "Failed to import Excel file.");
+      setImporting(false);
+    }
+  };
+
+  const downloadExcelTemplate = () => {
+    try {
+      const template = [
+        {
+          "Day": "Day1",
+          "Time": "10:00",
+          "Type": "Weight Training",
+          "Exercise Name": "Bench Press",
+          "Sets": "3",
+          "Count": "12",
+          "Media": ""
+        },
+        {
+          "Day": "Day1",
+          "Time": "10:15",
+          "Type": "Weight Training",
+          "Exercise Name": "Squats",
+          "Sets": "4",
+          "Count": "15",
+          "Media": ""
+        },
+        {
+          "Day": "Day2",
+          "Time": "10:00",
+          "Type": "Cardio",
+          "Exercise Name": "Running",
+          "Sets": "1",
+          "Count": "20 mins",
+          "Media": ""
+        }
+      ];
+
+      const ws = XLSX.utils.json_to_sheet(template);
+      const wscols = [
+        { wch: 8 }, { wch: 10 }, { wch: 15 }, { wch: 20 },
+        { wch: 8 }, { wch: 12 }, { wch: 20 }
+      ];
+      ws['!cols'] = wscols;
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Workout_Template");
+      XLSX.writeFile(wb, "Gym_Workout_Template.xlsx");
+      Alert.alert("Success", "Template downloaded! 📥");
+    } catch (err) {
+      console.log("Download error:", err);
+      Alert.alert("Error", "Failed to download template.");
+    }
+  };
+
   const saveProgram = async () => {
     if (!memberId) { Alert.alert("Missing Selection", "Please select a member first."); return; }
     try {
@@ -347,7 +474,23 @@ export default function Workouts() {
               <Text className="text-white text-3xl font-black tracking-tight">Workouts</Text>
               <Text className="text-[#e11d1d] text-[10px] font-black uppercase tracking-[0.3em] mt-1">Trainer Panel</Text>
             </View>
-           
+            <View className="flex-row gap-3 items-center">
+              <TouchableOpacity
+                onPress={handleImportExcel}
+                disabled={importing}
+                className="px-4 py-2 bg-blue-500/10 rounded-xl border border-blue-500/20"
+              >
+                <Text className="text-blue-500 text-[10px] font-black uppercase tracking-widest">
+                  {importing ? "Importing..." : "Import"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={downloadExcelTemplate}
+                className="px-4 py-2 bg-white/5 rounded-xl border border-white/10"
+              >
+                <Text className="text-white/60 text-[10px] font-black uppercase tracking-widest">Template</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <FlatList
