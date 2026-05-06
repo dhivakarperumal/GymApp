@@ -39,7 +39,7 @@ export default function Checkout() {
   const [cartItems, setCartItems] = useState([]);
   const router = useRouter();
   const [paymentMethod, setPaymentMethod] = useState("COD");
-  const [orderType, setOrderType] = useState("DELIVERY");
+  const [orderType, setOrderType] = useState("PICKUP");
   const { buyNow } = useLocalSearchParams();
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
@@ -461,14 +461,14 @@ export default function Checkout() {
             Checkout
           </Text>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => setShowAddressModal(true)}
             className="bg-red-600 px-4 py-2 rounded-xl"
           >
             <Text className="text-white text-md font-semibold">
               Show Addresses
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
         </View>
 
@@ -499,7 +499,7 @@ export default function Checkout() {
 
         {/* ORDER TYPE */}
         <View className="flex-row mb-6">
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => setOrderType("DELIVERY")}
             disabled={(fromMealPlan && hasFoodItems) || fromAllProducts}
             className={`flex-1 py-3 rounded-xl border mr-2 ${
@@ -512,7 +512,7 @@ export default function Checkout() {
               Delivery
               {((fromMealPlan && hasFoodItems) || fromAllProducts) ? " (Not available)" : ""}
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <TouchableOpacity
             onPress={() => setOrderType("PICKUP")}
