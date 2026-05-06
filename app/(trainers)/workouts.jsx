@@ -1,23 +1,22 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Picker } from "@react-native-picker/picker";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
   ActivityIndicator,
-  Modal,
+  Alert,
   FlatList,
   KeyboardAvoidingView,
+  Modal,
   Platform,
-  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
-import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
-import { useRouter } from "expo-router";
-import * as ImagePicker from "expo-image-picker";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import api, { getTrainerMembers, getTrainerWorkouts } from "../../services/api";
 
 const workoutTypes = [
