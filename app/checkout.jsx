@@ -170,7 +170,7 @@ export default function Checkout() {
 
     const options = {
       description: "Order Payment",
-      image: "https://yourlogo.com/logo.png",
+      image: "/assets/images/logo.png",
       currency: "INR",
       key: "rzp_test_SGj8n5SyKSE10b",
       amount: total * 100,
