@@ -473,15 +473,6 @@ export default function Workouts() {
             </View>
             <View className="flex-row gap-3 items-center">
               <TouchableOpacity
-                onPress={handleImportExcel}
-                disabled={importing}
-                className="px-4 py-2 bg-blue-500/10 rounded-xl border border-blue-500/20"
-              >
-                <Text className="text-blue-500 text-[10px] font-black uppercase tracking-widest">
-                  {importing ? "Importing..." : "Import"}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
                 onPress={downloadExcelTemplate}
                 className="px-4 py-2 bg-white/5 rounded-xl border border-white/10"
               >
@@ -520,9 +511,24 @@ export default function Workouts() {
         <View className="flex-1 justify-end bg-black/80">
           <View className="bg-[#111] rounded-t-[32px] h-[92%] border-t border-white/10">
              <View className="flex-row justify-between items-center px-6 py-8 border-b border-white/5">
-                <Text className="text-white font-black uppercase tracking-widest text-xs">
-                   {isViewOnly ? 'View Program' : (editingId ? 'Edit Program' : 'New Program')}
-                </Text>
+                <View className="flex-1">
+                  <View className="flex-row items-center gap-3">
+                    <Text className="text-white font-black uppercase tracking-widest text-xs">
+                       {isViewOnly ? 'View Program' : (editingId ? 'Edit Program' : 'New Program')}
+                    </Text>
+                    {!isViewOnly && (
+                      <TouchableOpacity
+                        onPress={handleImportExcel}
+                        disabled={importing}
+                        className="px-3 py-1 bg-blue-500/20 rounded-lg border border-blue-500/40"
+                      >
+                        <Text className="text-blue-500 text-[9px] font-black uppercase tracking-widest">
+                          {importing ? "Importing..." : "Import"}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
                 <TouchableOpacity onPress={() => setIsModalOpen(false)} className="bg-white/10 p-2 rounded-full">
                    <Ionicons name="close" size={22} color="white" />
                 </TouchableOpacity>
