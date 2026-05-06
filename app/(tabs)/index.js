@@ -3,22 +3,22 @@ import dayjs from "dayjs";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-  Dimensions,
-  Image,
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    Image,
+    ScrollView,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import {
-  getAllProducts,
-  getAllReviews,
-  getDietPlans,
-  getTrainerWorkouts,
-  getUserAssignment,
-  getUserMemberships,
+    getAllProducts,
+    getAllReviews,
+    getDietPlans,
+    getTrainerWorkouts,
+    getUserAssignment,
+    getUserMemberships,
 } from "../../services/api";
 import ProductCard from "../ProductCard";
 
@@ -47,6 +47,14 @@ export default function Home() {
   const [userPlan, setUserPlan] = useState(null);
 
   const formatDate = (date) => dayjs(date).format("DD-MM-YYYY");
+
+const getDayIndex = (dayKey, allKeys = []) => {
+  const digits = String(dayKey).match(/\d+/g);
+  const rawNumber = digits ? Number(digits.join("")) : NaN;
+  if (Number.isNaN(rawNumber)) return 0;
+  const hasZeroKey = allKeys.some((key) => String(key).trim() === "0");
+  return hasZeroKey ? rawNumber : Math.max(0, rawNumber - 1);
+};
 
   const fetchUserPlan = async () => {
     try {
@@ -146,7 +154,7 @@ export default function Home() {
       let foundDate = "";
 
       Object.entries(days).forEach(([day, meals]) => {
-        const index = Number(day.replace("Day", "")) - 1;
+        const index = getDayIndex(day, Object.keys(days));
         const date = baseDate.add(index, "day");
 
         if (date.isSame(today, "day")) {
@@ -454,7 +462,7 @@ export default function Home() {
             <View className="flex-row justify-between items-center mb-4">
               <View>
                 <Text className="text-white text-lg font-bold">
-                  TODAY'S WORKOUT
+                  {"TODAY'S WORKOUT"}
                 </Text>
 
                 <Text className="text-gray-400 text-sm mt-1">
@@ -508,7 +516,7 @@ export default function Home() {
                 color="#ff3c00"
               />
               <Text className="text-white text-lg font-bold ml-2">
-                TODAY'S WORKOUT
+                {"TODAY'S WORKOUT"}
               </Text>
             </View>
 
@@ -536,8 +544,14 @@ export default function Home() {
             <View className="flex-row justify-between items-center mb-4">
               <View>
                 <Text className="text-white text-lg font-bold">
-                  TODAY'S DIET
+                  {"TODAY'S DIET"}
                 </Text>
+
+                {dietTitle ? (
+                  <Text className="text-gray-500 text-xs mt-1">
+                    {dietTitle}
+                  </Text>
+                ) : null}
 
                 {todayDay && (
                   <Text className="text-gray-400 text-sm mt-1">
@@ -636,7 +650,7 @@ export default function Home() {
             <View className="flex-row items-center mb-3">
               <Ionicons name="restaurant-outline" size={20} color="#ff3c00" />
               <Text className="text-white text-lg font-bold ml-2">
-                TODAY'S DIET
+                {"TODAY'S DIET"}
               </Text>
             </View>
 
@@ -738,7 +752,7 @@ export default function Home() {
                   ellipsizeMode="tail"
                   className="text-gray-300 text-sm leading-5"
                 >
-                  "{review.message}"
+                  {`"${review.message}"`}
                 </Text>
               </View>
             ))}

@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import dayjs from "dayjs";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -19,6 +20,20 @@ const format12h = (time) => {
   const ampm = h >= 12 ? "PM" : "AM";
   h = h % 12 || 12;
   return `${h}:${minutes} ${ampm}`;
+};
+
+const getDayIndex = (dayKey, allKeys = []) => {
+  const digits = String(dayKey).match(/\d+/g);
+  const rawNumber = digits ? Number(digits.join("")) : NaN;
+  if (Number.isNaN(rawNumber)) return 0;
+  const hasZeroKey = allKeys.some((key) => String(key).trim() === "0");
+  return hasZeroKey ? rawNumber : Math.max(0, rawNumber - 1);
+};
+
+const formatPlanDay = (dayKey, createdAt, allKeys = []) => {
+  if (!createdAt) return String(dayKey);
+  const index = getDayIndex(dayKey, allKeys);
+  return dayjs(createdAt).add(index, "day").format("DD MMM");
 };
 
 export default function DietChartScreen() {
@@ -72,10 +87,15 @@ export default function DietChartScreen() {
       }
 
       const dayKeys = Object.keys(daysData);
+      const todayKey = dayKeys.find((key) => {
+        const index = getDayIndex(key, dayKeys);
+        return dayjs(latestPlan.created_at).add(index, "day").isSame(dayjs(), "day");
+      });
+
       setTitle(latestPlan.title || "My Diet Plan");
       setDiet(daysData);
       setCreatedAt(latestPlan.created_at || null);
-      setActiveDay((prev) => prev || dayKeys[0] || null);
+      setActiveDay((prev) => prev || todayKey || dayKeys[0] || null);
     } catch (err) {
       console.log("Diet fetch error:", err);
       setDiet(null);
@@ -128,7 +148,7 @@ export default function DietChartScreen() {
                 className={`px-4 py-2 rounded-full mr-2 ${activeDay === day ? "bg-primary" : "bg-[#222]"}`}
               >
                 <Text className={`text-sm font-semibold ${activeDay === day ? "text-white" : "text-gray-400"}`}>
-                  {day}
+                  {formatPlanDay(day, createdAt, dayKeys)}
                 </Text>
               </TouchableOpacity>
             ))}
