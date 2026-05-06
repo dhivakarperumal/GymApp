@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
+import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -16,6 +17,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import * as XLSX from "xlsx";
 import { useAuth } from "../../context/AuthContext";
 import api, { getTrainerMembers, getTrainerWorkouts } from "../../services/api";
 
@@ -46,6 +48,7 @@ export default function Workouts() {
   const [selectedTimeField, setSelectedTimeField] = useState(null);
   const [isViewOnly, setIsViewOnly] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // -- FORM STATE --
   const [editingId, setEditingId] = useState(null);
@@ -60,25 +63,129 @@ export default function Workouts() {
 
   // ... (existing functions)
 
-  const pickMedia = async (dayKey, index) => {
+  const handleImportExcel = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert("Permission Denied", "We need library permissions to upload media.");
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'],
+      });
+      if (result.canceled || !result.assets) return;
+      
+      setImporting(true);
+      const fileUri = result.assets[0].uri;
+      const response = await fetch(fileUri);
+      const arrayBuffer = await response.arrayBuffer();
+      
+      const workbook = XLSX.read(arrayBuffer, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+      if (!rows || rows.length === 0) {
+        Alert.alert("Error", "Excel file is empty or invalid.");
+        setImporting(false);
         return;
       }
 
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsEditing: true,
-        quality: 1,
+      const parsedDays = {};
+      let rowsParsed = 0;
+
+      rows.forEach((row) => {
+        const dayRaw = row.Day || row.day || "Day1";
+        const time = row.Time || row.time || "";
+        const type = row.Type || row.type || "Weight Training";
+        const name = row["Exercise Name"] || row.exercise || row.name || "";
+        const sets = row.Sets || row.sets || "";
+        const count = row.Count || row.count || row.Reps || row.reps || "";
+        const media = row.Media || row.media || "";
+
+        if (!name) return;
+
+        if (!parsedDays[dayRaw]) parsedDays[dayRaw] = [];
+        
+        parsedDays[dayRaw].push({
+          time,
+          type,
+          name,
+          sets,
+          count,
+          media,
+          mediaType: "url"
+        });
+
+        rowsParsed += 1;
       });
 
-      if (!result.canceled) {
-        updateExercise(dayKey, index, "media", result.assets[0].uri);
+      if (Object.keys(parsedDays).length === 0 || rowsParsed === 0) {
+        Alert.alert("Error", "No valid exercises found in file.");
+        setImporting(false);
+        return;
       }
-    } catch (error) {
-      Alert.alert("Error", "Failed to pick media.");
+
+      const newDays = {};
+      Object.keys(parsedDays).sort((a, b) => {
+        const numA = parseInt(a.replace(/\D/g, "")) || 0;
+        const numB = parseInt(b.replace(/\D/g, "")) || 0;
+        return numA - numB;
+      }).forEach((dayKey) => {
+        newDays[dayKey] = parsedDays[dayKey];
+      });
+
+      setDays(newDays);
+      Alert.alert("Success", `Imported workout plan for ${Object.keys(newDays).length} day(s)!`);
+      setImporting(false);
+    } catch (err) {
+      console.log("Import error:", err);
+      Alert.alert("Error", "Failed to import Excel file: " + err.message);
+      setImporting(false);
+    }
+  };
+
+  const downloadExcelTemplate = () => {
+    try {
+      const template = [
+        {
+          "Day": "Day1",
+          "Time": "10:00",
+          "Type": "Weight Training",
+          "Exercise Name": "Bench Press",
+          "Sets": "3",
+          "Count": "12",
+          "Media": ""
+        },
+        {
+          "Day": "Day1",
+          "Time": "10:15",
+          "Type": "Weight Training",
+          "Exercise Name": "Squats",
+          "Sets": "4",
+          "Count": "15",
+          "Media": ""
+        },
+        {
+          "Day": "Day2",
+          "Time": "10:00",
+          "Type": "Cardio",
+          "Exercise Name": "Running",
+          "Sets": "1",
+          "Count": "20 mins",
+          "Media": ""
+        }
+      ];
+
+      const ws = XLSX.utils.json_to_sheet(template);
+      const wscols = [
+        { wch: 8 }, { wch: 10 }, { wch: 15 }, { wch: 20 },
+        { wch: 8 }, { wch: 12 }, { wch: 20 }
+      ];
+      ws['!cols'] = wscols;
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Workout_Template");
+      XLSX.writeFile(wb, "Gym_Workout_Template.xlsx");
+      Alert.alert("Success", "Template downloaded! 📥");
+    } catch (err) {
+      console.log("Download error:", err);
+      Alert.alert("Error", "Failed to download template.");
     }
   };
 
@@ -229,134 +336,22 @@ export default function Workouts() {
     });
   };
 
-  const handleImportExcel = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'],
-      });
-      if (result.canceled || !result.assets) return;
-      
-      setImporting(true);
-      const fileUri = result.assets[0].uri;
-      const response = await fetch(fileUri);
-      const arrayBuffer = await response.arrayBuffer();
-      
-      const workbook = XLSX.read(arrayBuffer, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-
-      if (!rows || rows.length === 0) {
-        Alert.alert("Error", "Excel file is empty or invalid.");
-        setImporting(false);
-        return;
-      }
-
-      const parsedDays = {};
-      let rowsParsed = 0;
-
-      rows.forEach((row) => {
-        const dayRaw = row.Day || row.day || "Day1";
-        const time = row.Time || row.time || "";
-        const type = row.Type || row.type || "Weight Training";
-        const name = row["Exercise Name"] || row.exercise || row.name || "";
-        const sets = row.Sets || row.sets || "";
-        const count = row.Count || row.count || row.Reps || row.reps || "";
-        const media = row.Media || row.media || "";
-
-        if (!name) return;
-
-        if (!parsedDays[dayRaw]) parsedDays[dayRaw] = [];
-        
-        parsedDays[dayRaw].push({
-          time,
-          type,
-          name,
-          sets,
-          count,
-          media,
-          mediaType: "url"
-        });
-
-        rowsParsed += 1;
-      });
-
-      if (Object.keys(parsedDays).length === 0 || rowsParsed === 0) {
-        Alert.alert("Error", "No valid exercises found in file.");
-        setImporting(false);
-        return;
-      }
-
-      const newDays = {};
-      Object.keys(parsedDays).sort((a, b) => {
-        const numA = parseInt(a.replace(/\D/g, "")) || 0;
-        const numB = parseInt(b.replace(/\D/g, "")) || 0;
-        return numA - numB;
-      }).forEach((dayKey) => {
-        newDays[dayKey] = parsedDays[dayKey];
-      });
-
-      setDays(newDays);
-      Alert.alert("Success", `Imported workout plan for ${Object.keys(newDays).length} day(s)!`);
-      setImporting(false);
-    } catch (err) {
-      console.log("Import error:", err);
-      Alert.alert("Error", "Failed to import Excel file.");
-      setImporting(false);
-    }
-  };
-
-  const downloadExcelTemplate = () => {
-    try {
-      const template = [
-        {
-          "Day": "Day1",
-          "Time": "10:00",
-          "Type": "Weight Training",
-          "Exercise Name": "Bench Press",
-          "Sets": "3",
-          "Count": "12",
-          "Media": ""
-        },
-        {
-          "Day": "Day1",
-          "Time": "10:15",
-          "Type": "Weight Training",
-          "Exercise Name": "Squats",
-          "Sets": "4",
-          "Count": "15",
-          "Media": ""
-        },
-        {
-          "Day": "Day2",
-          "Time": "10:00",
-          "Type": "Cardio",
-          "Exercise Name": "Running",
-          "Sets": "1",
-          "Count": "20 mins",
-          "Media": ""
-        }
-      ];
-
-      const ws = XLSX.utils.json_to_sheet(template);
-      const wscols = [
-        { wch: 8 }, { wch: 10 }, { wch: 15 }, { wch: 20 },
-        { wch: 8 }, { wch: 12 }, { wch: 20 }
-      ];
-      ws['!cols'] = wscols;
-
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Workout_Template");
-      XLSX.writeFile(wb, "Gym_Workout_Template.xlsx");
-      Alert.alert("Success", "Template downloaded! 📥");
-    } catch (err) {
-      console.log("Download error:", err);
-      Alert.alert("Error", "Failed to download template.");
-    }
-  };
 
   const saveProgram = async () => {
     if (!memberId) { Alert.alert("Missing Selection", "Please select a member first."); return; }
+    
+    // Check if there are any exercises
+    let totalExercises = 0;
+    Object.values(days).forEach(dayExercises => {
+      totalExercises += (dayExercises || []).length;
+    });
+    
+    if (totalExercises === 0) {
+      Alert.alert("No Exercises", "Please add at least one exercise before saving.");
+      return;
+    }
+
+    setSubmitting(true);
     try {
       const calculatedWeeks = Math.ceil(Object.keys(days).length / 7);
       const payload = {
@@ -397,6 +392,8 @@ export default function Workouts() {
       console.log("SYNC ERROR:", err.response?.data || err.message);
       const serverMsg = err.response?.data?.message || err.response?.data?.error;
       Alert.alert("Sync Error", serverMsg || "Server rejected the program. Please check all fields.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -695,14 +692,13 @@ export default function Workouts() {
                                  />
                                ) : (
                                  <TouchableOpacity 
-                                   onPress={() => pickMedia(dayKey, idx)}
                                    disabled={isViewOnly}
                                    className={`bg-black/40 p-4 rounded-xl border border-white/5 flex-row items-center justify-between ${isViewOnly ? 'opacity-50' : ''}`}
                                  >
                                     <Text className="text-white/60 font-medium text-[10px]">
-                                      {ex.media ? "Media Selected (Ready to Sync)" : "Select Video or Image from Library"}
+                                      Upload not available on mobile. Use URL instead.
                                     </Text>
-                                    <Ionicons name={ex.media ? "checkmark-circle" : "cloud-upload-outline"} size={16} color={ex.media ? "#22c55e" : "#e11d1d"} />
+                                    <Ionicons name="cloud-upload-outline" size={16} color="#e11d1d" />
                                  </TouchableOpacity>
                                )}
                             </View>
@@ -727,15 +723,22 @@ export default function Workouts() {
 
                     {!isViewOnly && (
                       <>
-                        <TouchableOpacity onPress={addDay} className="bg-white/5 p-6 rounded-2xl mb-8 items-center justify-center border border-dashed border-white/10">
+                        <TouchableOpacity onPress={addDay} disabled={submitting} className="bg-white/5 p-6 rounded-2xl mb-8 items-center justify-center border border-dashed border-white/10">
                            <View className="flex-row items-center">
                               <Ionicons name="calendar-outline" size={20} color="#e11d1d" />
                               <Text className="text-white font-black uppercase tracking-widest text-[10px] ml-3">Add Training Day</Text>
                            </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={saveProgram} className="bg-[#e11d1d] p-6 rounded-2xl items-center justify-center mb-24 shadow-xl shadow-[#e11d1d]/40">
-                          <Text className="text-white font-black uppercase tracking-[0.1em]">Publish Training Program</Text>
+                        <TouchableOpacity 
+                          onPress={saveProgram} 
+                          disabled={submitting}
+                          className={`${submitting ? 'bg-[#e11d1d]/50' : 'bg-[#e11d1d]'} p-6 rounded-2xl items-center justify-center mb-24 shadow-xl shadow-[#e11d1d]/40 flex-row gap-2`}
+                        >
+                          {submitting && <ActivityIndicator size="small" color="white" />}
+                          <Text className="text-white font-black uppercase tracking-[0.1em]">
+                            {submitting ? 'Publishing...' : 'Publish Training Program'}
+                          </Text>
                         </TouchableOpacity>
                       </>
                     )}
