@@ -3,13 +3,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    Alert,
-    Modal,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Modal,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -26,7 +26,7 @@ export default function Profile() {
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
   const [logoutVisible, setLogoutVisible] = useState(false);
-  const { user: authUser } = useAuth();
+  const { user: authUser, logout } = useAuth();
   const currentUser = authUser || user;
   const currentUserName = currentUser?.username || currentUser?.name || "User";
 
@@ -241,12 +241,15 @@ export default function Profile() {
   };
 
   const handleLogout = async () => {
-    setLogoutVisible(false);
+    try {
+      setLogoutVisible(false);
 
-    await AsyncStorage.removeItem("token");
-    await AsyncStorage.removeItem("user");
+      await logout();
 
-    router.replace("/login");
+      router.replace("/(auth)/login");
+    } catch (error) {
+      console.log("Logout Error:", error);
+    }
   };
 
   const handleDeleteAccount = () => {
