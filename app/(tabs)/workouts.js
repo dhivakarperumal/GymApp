@@ -110,20 +110,20 @@
 //   );
 // }
 
+import { Ionicons } from "@expo/vector-icons";
+import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  ImageBackground,
-  Image,
-  TouchableOpacity,
+    Image,
+    ImageBackground,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { getTrainerWorkouts } from "../../services/api";
-import { useAuth } from "../../context/AuthContext";
 import { SafeAreaView } from "react-native-safe-area-context";
-import dayjs from "dayjs";
+import { useAuth } from "../../context/AuthContext";
+import { getTrainerWorkouts } from "../../services/api";
 
 export default function Workouts() {
   const { user } = useAuth();
@@ -166,9 +166,11 @@ export default function Workouts() {
 
       if (!Array.isArray(data)) return;
 
-      const myWorkouts = data.filter(
-        (item) => item.member_email === user.email,
-      );
+      const myWorkouts = data
+        .filter(
+          (item) => (item.member_email || item.memberEmail) === user.email && item.status === "active",
+        )
+        .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)); // latest first
 
       setWorkouts(myWorkouts);
     } catch (err) {
