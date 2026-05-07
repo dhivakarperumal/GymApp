@@ -48,19 +48,6 @@ export default function Home() {
 
   const formatDate = (date) => dayjs(date).format("DD-MM-YYYY");
 
-const getPlanEndDate = (plan) =>
-  plan?.endDate || plan?.end_date || plan?.expiryDate || plan?.expiry_date || plan?.valid_to;
-
-const isPlanActive = (plan) => {
-  const endDate = getPlanEndDate(plan);
-  return endDate && dayjs(endDate).isSameOrAfter(dayjs(), "day");
-};
-
-const isPlanExpired = (plan) => {
-  const endDate = getPlanEndDate(plan);
-  return endDate && dayjs(endDate).isBefore(dayjs(), "day");
-};
-
 const getDayIndex = (dayKey, allKeys = []) => {
   const digits = String(dayKey).match(/\d+/g);
   const rawNumber = digits ? Number(digits.join("")) : NaN;
@@ -92,12 +79,12 @@ const getDayIndex = (dayKey, allKeys = []) => {
         return;
       }
 
-      const activePlan = myPlans.find((plan) => isPlanActive(plan));
-      const latestPlan = myPlans.sort((a, b) =>
-        new Date(getPlanEndDate(b) || 0) - new Date(getPlanEndDate(a) || 0)
-      )[0];
+      // find active plan
+      const activePlan = myPlans.find(
+        (plan) => new Date(plan.endDate) > new Date(),
+      );
 
-      setUserPlan(activePlan || latestPlan || null);
+      setUserPlan(activePlan || myPlans[0]);
     } catch (error) {
       console.log("Plan Fetch Error:", error);
     }
@@ -348,24 +335,8 @@ const getDayIndex = (dayKey, allKeys = []) => {
     }
   }, [fetchUserPlan, fetchAssignment, fetchTodayDiet, fetchTodayWorkout]);
 
-  const planHasExpired = Boolean(userPlan && isPlanExpired(userPlan));
-  const planExpiresToday = Boolean(
-    userPlan && dayjs(getPlanEndDate(userPlan)).isSame(dayjs(), "day")
-  );
-  const planExpiredYesterday = Boolean(
-    userPlan && dayjs(getPlanEndDate(userPlan)).isSame(dayjs().subtract(1, "day"), "day")
-  );
-
-  const planExpiryMessage = planHasExpired
-    ? planExpiredYesterday
-      ? "Your plan expired yesterday. Please buy a plan to enjoy workouts."
-      : `Your plan expired on ${dayjs(getPlanEndDate(userPlan)).format("DD MMM YYYY")}. Please buy a plan to enjoy workouts.`
-    : planExpiresToday
-    ? "Your plan expires today. Renew now to continue workouts."
-    : "";
-
   const hasPlan = Boolean(
-    (userPlan && !planHasExpired) ||
+    userPlan ||
     purchasedPlan ||
     todayWorkout.length > 0 ||
     Object.keys(todayDiet).length > 0,
@@ -395,7 +366,7 @@ const getDayIndex = (dayKey, allKeys = []) => {
 
           {/* Gradient Overlay */}
           <View className="absolute inset-0 bg-black/60 p-6 justify-between">
-            {userPlan && !planHasExpired ? (
+            {userPlan ? (
               <>
                 {/* Badge */}
                 <View className="bg-primary self-start px-4 py-1 rounded-full">
@@ -432,8 +403,6 @@ const getDayIndex = (dayKey, allKeys = []) => {
                       <Text className="text-white text-sm font-semibold">
                         {userPlan.startDate
                           ? new Date(userPlan.startDate).toLocaleDateString()
-                          : userPlan.start_date
-                          ? new Date(userPlan.start_date).toLocaleDateString()
                           : "N/A"}
                       </Text>
                     </View>
@@ -444,35 +413,12 @@ const getDayIndex = (dayKey, allKeys = []) => {
                       </Text>
 
                       <Text className="text-white text-sm font-semibold">
-                        {getPlanEndDate(userPlan)
-                          ? dayjs(getPlanEndDate(userPlan)).format("DD-MM-YYYY")
+                        {userPlan.endDate
+                          ? new Date(userPlan.endDate).toLocaleDateString()
                           : "N/A"}
                       </Text>
                     </View>
                   </View>
-                </View>
-              </>
-            ) : userPlan && planHasExpired ? (
-              <>
-                <View className="bg-red-500 self-start px-4 py-1 rounded-full">
-                  <Text className="text-white text-xs font-bold">
-                    PLAN EXPIRED
-                  </Text>
-                </View>
-
-                <View className="mt-4">
-                  <Text className="text-white text-3xl font-extrabold mb-2">
-                    {planExpiryMessage}
-                  </Text>
-
-                  <TouchableOpacity
-                    onPress={() => router.push("/Pages/Pricing")}
-                    className="bg-primary py-4 rounded-2xl items-center mt-6"
-                  >
-                    <Text className="text-white font-bold text-lg">
-                      Explore Plans
-                    </Text>
-                  </TouchableOpacity>
                 </View>
               </>
             ) : (
