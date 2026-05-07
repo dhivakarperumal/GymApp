@@ -151,7 +151,7 @@ export default function Pricing() {
               </View>
 
               {/* Trainer Status */}
-              <View className="mb-6">
+              {/* <View className="mb-6">
                 {plan?.trainer_included === 1 ? (
                   <View className="bg-green-600/20 px-4 py-1.5 rounded-full self-start">
                     <Text className="text-green-400 text-xs font-semibold">
@@ -165,7 +165,7 @@ export default function Pricing() {
                     </Text>
                   </View>
                 )}
-              </View>
+              </View> */}
 
               {/* Facilities (From DB) */}
               <View className="mb-8">
@@ -180,7 +180,7 @@ export default function Pricing() {
                   ))}
               </View>
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 disabled={hasActivePlan || checkingPlan}
                 onPress={() => {
                   if (hasActivePlan) {
@@ -199,7 +199,7 @@ export default function Pricing() {
                 <Text className="text-white font-bold text-xl tracking-wide">
                   {hasActivePlan ? "PLAN ACTIVE" : "BUY PLAN"}
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </View>
         ))}
