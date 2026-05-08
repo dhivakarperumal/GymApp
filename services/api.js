@@ -388,6 +388,16 @@ export const getUserOrders = async (userId) => {
   return res.json();
 };
 
+export const getAllOrders = async () => {
+  const res = await fetch(`${BASE_URL}/orders`);
+  return res.json();
+};
+
+export const getMessageHistory = async () => {
+  const res = await fetch(`${BASE_URL}/send-message/history`);
+  return res.json();
+};
+
 /* ------------------ TRAINER DASHBOARD ------------------ */
 
 export const getTrainerDashboard = async (trainerId, user) => {

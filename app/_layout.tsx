@@ -1,15 +1,18 @@
 import { Stack, useRouter, useSegments } from "expo-router";
+import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { AuthProvider, useAuth } from "../context/AuthContext";
-import { useEffect } from "react";
 import "./global.css";
+import useNotificationSync from "./useNotificationSync";
 
 function RootContent() {
   const { user, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+
+  useNotificationSync();
 
   useEffect(() => {
     if (loading) return;
