@@ -1,15 +1,38 @@
 import { Stack, useRouter, useSegments } from "expo-router";
+import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { AuthProvider, useAuth } from "../context/AuthContext";
-import { useEffect } from "react";
+import { useNotifications } from "../hooks/useNotifications";
+import { useStatusPolling } from "../hooks/useStatusPolling";
+import { configureNotifications, registerDeviceForPushNotifications } from "../services/notificationService";
 import "./global.css";
 
 function RootContent() {
   const { user, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+
+  // Configure and register notifications
+  useEffect(() => {
+    if (!loading) {
+      // Configure notification handler
+      configureNotifications();
+
+      // Register for push notifications when user logs in
+      if (user?.id) {
+        console.log('Registering device for push notifications with user ID:', user.id);
+        registerDeviceForPushNotifications(user.id);
+      }
+    }
+  }, [user?.id, loading]);
+
+  // Set up notification listeners
+  useNotifications();
+
+  // Enable status polling
+  useStatusPolling(!!user?.id);
 
   useEffect(() => {
     if (loading) return;
