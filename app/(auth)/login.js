@@ -136,7 +136,7 @@ const LoginScreen = () => {
                 className="absolute bottom-0 w-full bg-black rounded-t-3xl px-6 pt-8 pb-6 min-h-[50%]"
               >
                 <Text className="text-white text-2xl font-bold text-center">
-                  Welcome Back, Leo
+                  Welcome Back
                 </Text>
 
                 <Text className="text-gray-400 text-center mt-1 mb-6">
