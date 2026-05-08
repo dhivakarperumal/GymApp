@@ -1,23 +1,24 @@
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import {
-    View,
-    Text,
-    ScrollView,
-    TouchableOpacity,
-    Modal,
     ActivityIndicator,
+    Modal,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import api from "../services/api";
-import { Ionicons } from "@expo/vector-icons";
-import BackButton from "./BackButton";
 import { SafeAreaView } from "react-native-safe-area-context";
+import api from "../services/api";
+import BackButton from "./BackButton";
 
 export default function Notifications() {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedMessage, setSelectedMessage] = useState(null);
     const [userEmail, setUserEmail] = useState("");
+    const [totalMessages, setTotalMessages] = useState(0);
 
     useEffect(() => {
         loadUserAndMessages();
@@ -30,17 +31,23 @@ export default function Notifications() {
 
             const parsed = JSON.parse(storedUser);
             const userData = Array.isArray(parsed) ? parsed[0] : parsed;
+            const email = userData.email || userData.user_email || userData.userEmail || "";
+            const userId = userData.id || userData.userId || userData.user_id || null;
+            const memberId = userData.memberId || userData.member_id || null;
 
-            const email = userData.email || userData.user_email;
             setUserEmail(email);
 
             const res = await api.get("/send-message/history");
             const allMessages = Array.isArray(res.data) ? res.data : [];
+            setTotalMessages(allMessages.length);
 
             const filtered = allMessages.filter((msg) => {
+                // Direct match by top-level fields
+                if (userId && Number(msg.userId) === Number(userId)) return true;
+                if (memberId && Number(msg.memberId) === Number(memberId)) return true;
+
                 try {
                     let recipients = msg.recipients_json;
-
                     if (typeof recipients === "string") {
                         recipients = JSON.parse(recipients);
                     }
@@ -48,9 +55,14 @@ export default function Notifications() {
                     if (!Array.isArray(recipients)) return false;
 
                     return recipients.some((r) => {
-                        const rEmail = String(r.email || "").toLowerCase().trim();
-                        const uEmail = String(email || "").toLowerCase().trim();
-                        return rEmail === uEmail && uEmail !== "";
+                        const recipientUserId = Number(r.userId || r.u_id || r.user_id || r.id || 0);
+                        const recipientMemberId = Number(r.memberId || r.member_id || 0);
+                        const recipientEmail = String(r.email || r.user_email || r.userEmail || "").toLowerCase().trim();
+                        const normalizedEmail = String(email || "").toLowerCase().trim();
+
+                        if (userId && recipientUserId === Number(userId)) return true;
+                        if (memberId && recipientMemberId === Number(memberId)) return true;
+                        return normalizedEmail !== "" && recipientEmail === normalizedEmail;
                     });
                 } catch {
                     return false;
@@ -86,6 +98,9 @@ export default function Notifications() {
                     <View>
                         <Text style={{ color: "#fff", fontSize: 20, fontWeight: "900", letterSpacing: -0.3 }}>Notifications</Text>
                         <Text style={{ color: "#4b5563", fontSize: 10, textTransform: "uppercase", letterSpacing: 2 }}>Recent Updates</Text>
+                        <Text style={{ color: "#6b7280", fontSize: 12, marginTop: 4 }}>
+                            Showing {messages.length} of {totalMessages} total messages
+                        </Text>
                     </View>
                 </View>
                 <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#e11d1d", alignItems: "center", justifyContent: "center", shadowColor: "#e11d1d", shadowOpacity: 0.4, shadowRadius: 10, elevation: 6 }}>
@@ -96,10 +111,13 @@ export default function Notifications() {
             <View className="flex-1 px-5 pt-4">
 
                 {messages.length === 0 ? (
-                    <View className="flex-1 justify-center items-center">
+                    <View className="flex-1 justify-center items-center px-4">
                         <Ionicons name="mail-open-outline" size={60} color="#555" />
                         <Text className="text-gray-500 mt-4 text-center">
-                            No notifications found
+                            No notifications found for {userEmail || "this account"}.
+                        </Text>
+                        <Text className="text-gray-500 mt-2 text-center text-xs">
+                            {totalMessages} total system messages checked.
                         </Text>
                     </View>
                 ) : (
