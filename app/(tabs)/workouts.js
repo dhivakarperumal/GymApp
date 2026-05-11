@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import dayjs from "dayjs";
+import { Video } from "expo-av";
 import { useEffect, useState } from "react";
 import {
   Image,
@@ -10,10 +11,9 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import YoutubePlayer from "react-native-youtube-iframe";
 import { useAuth } from "../../context/AuthContext";
 import { getTrainerWorkouts } from "../../services/api";
-import { Video } from "expo-av";
-import YoutubePlayer from "react-native-youtube-iframe";
 
 export default function Workouts() {
   const { user } = useAuth();
@@ -21,6 +21,26 @@ export default function Workouts() {
   const [filter, setFilter] = useState("TODAY");
 
   const workoutData = workouts[0];
+
+  const normalizeMediaUrl = (media) => {
+    if (!media) return "";
+
+    const uri = String(media).trim();
+    if (uri.startsWith("data:")) return uri;
+    if (uri.startsWith("//")) return `https:${uri}`;
+    if (uri.startsWith("/")) return `https://dap.qtechx.com${uri}`;
+    if (!uri.match(/^https?:\/\//i)) return `https://${uri}`;
+    return encodeURI(uri);
+  };
+
+  const getYoutubeId = (media) => {
+    if (!media) return null;
+    const uri = String(media).trim();
+    const match = uri.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|watch\?(?:.*&)?v=))([A-Za-z0-9_-]{11})/);
+    if (match?.[1]) return match[1];
+    const queryMatch = uri.match(/[?&]v=([^&]+)/);
+    return queryMatch?.[1] || null;
+  };
 
   const getFilteredDays = () => {
     if (!workoutData?.days || !workoutData?.created_at) return [];
@@ -242,53 +262,57 @@ export default function Workouts() {
                     </View>
 
                     {ex.media ? (
-                      ex.media.startsWith("data:video") ||
-                        ex.media.match(/\.(mp4|webm|ogg)$/i) ||
-                        ex.media.includes("youtube.com") ||
-                        ex.media.includes("youtu.be") ? (
+                      (() => {
+                        const mediaUri = normalizeMediaUrl(ex.media);
+                        const youtubeId = getYoutubeId(ex.media);
+                        const isVideoFile = /\.(mp4|webm|ogg)(?:\?|$)/i.test(ex.media);
+                        const isYoutube = Boolean(youtubeId);
+                        const isDataVideo = ex.media.startsWith("data:video");
 
-                        ex.media.includes("youtube.com") ||
-                          ex.media.includes("youtu.be") ? (
+                        if (isYoutube && youtubeId) {
+                          return (
+                            <YoutubePlayer
+                              height={220}
+                              play={false}
+                              videoId={youtubeId}
+                            />
+                          );
+                        }
 
-                          <YoutubePlayer
-                            height={220}
-                            play={false}
-                            videoId={
-                              ex.media.includes("youtu.be")
-                                ? ex.media.split("youtu.be/")[1]
-                                : ex.media.split("v=")[1]
-                            }
-                          />
+                        if (isDataVideo || isVideoFile) {
+                          return (
+                            <Video
+                              source={{ uri: mediaUri }}
+                              style={{
+                                width: "100%",
+                                height: 220,
+                                borderRadius: 12,
+                                marginTop: 10,
+                              }}
+                              useNativeControls
+                              resizeMode="contain"
+                              shouldPlay={false}
+                            />
+                          );
+                        }
 
-                        ) : (
+                        if (mediaUri) {
+                          return (
+                            <Image
+                              source={{ uri: mediaUri }}
+                              style={{
+                                width: "100%",
+                                height: 150,
+                                borderRadius: 12,
+                                marginTop: 10,
+                              }}
+                              resizeMode="cover"
+                            />
+                          );
+                        }
 
-                          <Video
-                            source={{ uri: ex.media }}
-                            style={{
-                              width: "100%",
-                              height: 220,
-                              borderRadius: 12,
-                              marginTop: 10,
-                            }}
-                            useNativeControls
-                            resizeMode="cover"
-                            shouldPlay={false}
-                          />
-
-                        )
-
-                      ) : (
-                        <Image
-                          source={{ uri: ex.media }}
-                          style={{
-                            width: "100%",
-                            height: 150,
-                            borderRadius: 12,
-                            marginTop: 10,
-                          }}
-                          resizeMode="cover"
-                        />
-                      )
+                        return null;
+                      })()
                     ) : null}
                   </View>
                 ))}
