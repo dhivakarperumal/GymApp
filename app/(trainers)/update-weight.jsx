@@ -145,7 +145,8 @@ export default function UpdateWeight() {
         (m) =>
             m.name.toLowerCase().includes(search.toLowerCase()) ||
             m.phone.includes(search)
-    );    return (
+    );
+    return (
         <View style={{ flex: 1, backgroundColor: "#000" }}>
             <ScrollView
                 style={{ flex: 1, paddingHorizontal: 16, paddingTop: 24 }}
@@ -270,7 +271,17 @@ export default function UpdateWeight() {
                         behavior={Platform.OS === "ios" ? "padding" : "height"}
                         style={{ width: '100%' }}
                     >
-                        <View style={{ backgroundColor: '#111', borderTopLeftRadius: 40, borderTopRightRadius: 40, padding: 24, borderWidth: 1, borderColor: '#222' }}>
+                        <View style={{
+                            backgroundColor: '#111',
+                            borderTopLeftRadius: 32,
+                            borderTopRightRadius: 32,
+                            paddingHorizontal: 20,
+                            paddingTop: 18,
+                            paddingBottom: 12,
+                            borderWidth: 1,
+                            borderColor: '#222',
+                            maxHeight: '50%',
+                        }}>
                             {/* Modal Header */}
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
                                 <View>
