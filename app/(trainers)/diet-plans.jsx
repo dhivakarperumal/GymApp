@@ -197,11 +197,10 @@ export default function DietPlans() {
       const planList = await getTrainerDietPlans(user.id);
       const memberList = await getTrainerMembers(user.id, user);
       
-      setMembers(memberList);
+      setMembers(memberList || []);
       
-      const assignedMemberIds = memberList.map(m => String(m.id));
-      const filteredPlans = (Array.isArray(planList) ? planList : (planList.data || []))
-        .filter(p => assignedMemberIds.includes(String(p.member_id || p.memberId)));
+      // Use all plans returned by the trainer-specific API call
+      const filteredPlans = (Array.isArray(planList) ? planList : (planList.data || []));
         
       setDietPlans(filteredPlans);
     } catch (err) {

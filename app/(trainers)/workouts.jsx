@@ -198,19 +198,14 @@ export default function Workouts() {
     if (!user?.id) return;
     setLoading(true);
     try {
-      const workoutList = await getTrainerWorkouts();
+      const workoutList = await getTrainerWorkouts({ trainerId: user.id });
       const memberList = await getTrainerMembers(user.id, user);
 
       setMembers(memberList || []);
 
-      const assignedMemberIds = (memberList || []).map(m => String(m.id));
+      // Use all workouts returned by the trainer-specific API call
       const workoutArray = Array.isArray(workoutList) ? workoutList : (workoutList?.data || []);
-
-      const filteredWorkouts = workoutArray.filter(w =>
-        assignedMemberIds.includes(String(w.member_id || w.memberId))
-      );
-
-      setWorkouts(filteredWorkouts);
+      setWorkouts(workoutArray);
     } catch (err) {
       console.log("Dashboard Error:", err);
     } finally {
