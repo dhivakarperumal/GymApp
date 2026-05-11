@@ -1,20 +1,19 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    FlatList,
     ActivityIndicator,
     Alert,
     KeyboardAvoidingView,
+    Modal,
     Platform,
     ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
-import { Dropdown } from "react-native-element-dropdown";
 
 export default function UpdateWeight() {
     const { user } = useAuth();
@@ -24,6 +23,7 @@ export default function UpdateWeight() {
     const [selectedMember, setSelectedMember] = useState(null);
     const [search, setSearch] = useState("");
     const [submitting, setSubmitting] = useState(false);
+    const [isModalVisible, setIsModalVisible] = useState(false);
 
     const [measurements, setMeasurements] = useState({
         weight: "",
@@ -91,6 +91,7 @@ export default function UpdateWeight() {
 
     const selectMember = async (member) => {
         setSelectedMember(member);
+        setIsModalVisible(true);
 
         try {
             const res = await api.get(`/members/${member.gmId}`);
@@ -102,7 +103,9 @@ export default function UpdateWeight() {
                 bmi: data.bmi?.toString() || "",
             });
         } catch (err) {
-            Alert.alert("Error", "Failed to fetch member data");
+            console.log("Error fetching member data:", err);
+            // Default to empty if fetch fails
+            setMeasurements({ weight: "", height: "", bmi: "" });
         }
     };
 
@@ -125,8 +128,10 @@ export default function UpdateWeight() {
 
             Alert.alert("Success", "Updated successfully 🚀");
 
+            setIsModalVisible(false);
             setSelectedMember(null);
             setMeasurements({ weight: "", height: "", bmi: "" });
+            fetchMembers(); // Refresh list if needed
         } catch (err) {
             Alert.alert("Error", "Update failed");
         } finally {
@@ -139,14 +144,14 @@ export default function UpdateWeight() {
             m.name.toLowerCase().includes(search.toLowerCase()) ||
             m.phone.includes(search)
     );
-
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={{ flex: 1, backgroundColor: "#000" }}
-        >
-            <ScrollView style={{ flex: 1, paddingHorizontal: 16, paddingTop: 24 }} showsVerticalScrollIndicator={false}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 32, marginTop: 8 }}>
+        <View style={{ flex: 1, backgroundColor: "#000" }}>
+            <ScrollView
+                style={{ flex: 1, paddingHorizontal: 16, paddingTop: 24 }}
+                showsVerticalScrollIndicator={false}
+            >
+                {/* HEADER */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24, marginTop: 8 }}>
                     <View style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: "#111", alignItems: "center", justifyContent: "center", marginRight: 16, borderWidth: 1, borderColor: "#222" }}>
                         <Ionicons name="scale-outline" size={24} color="#e11d1d" />
                     </View>
@@ -156,166 +161,202 @@ export default function UpdateWeight() {
                     </View>
                 </View>
 
-            {/* MEMBER LIST */}
-            {loading ? (
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 80 }}>
-                    <ActivityIndicator size="large" color="#e11d1d" />
-                    <Text style={{ color: '#9ca3af', marginTop: 16, fontSize: 14, fontWeight: '600' }}>Loading members...</Text>
+                {/* SEARCH BOX (Compact) */}
+                <View style={{ backgroundColor: '#0d0d0d', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 20, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#222' }}>
+                    <Ionicons name="search-outline" size={16} color="#444" />
+                    <TextInput
+                        placeholder="Search members..."
+                        placeholderTextColor="#444"
+                        value={search}
+                        onChangeText={setSearch}
+                        style={{ flex: 1, color: 'white', marginLeft: 10, fontSize: 14, height: 32 }}
+                    />
                 </View>
-            ) : (
-                <View style={{ backgroundColor: '#111', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: '#1a1a1a', marginBottom: 24, shadowColor: 'rgba(0,0,0,0.5)', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 1, shadowRadius: 4, elevation: 6 }}>
-                    <Text style={{ color: '#e11d1d', fontWeight: 'bold', fontSize: 12, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 16 }}>Select Member</Text>
-                    <Dropdown
-                    style={{ backgroundColor: "#111", borderRadius: 12, paddingHorizontal: 12, paddingVertical: 16, marginBottom: 16 }}
 
-                    containerStyle={{
-                        backgroundColor: "#111",
-                        borderRadius: 12,
-                    }}
+                {/* MEMBER LIST */}
+                {loading ? (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 80 }}>
+                        <ActivityIndicator size="large" color="#e11d1d" />
+                        <Text style={{ color: '#9ca3af', marginTop: 16, fontSize: 14, fontWeight: '600' }}>Loading members...</Text>
+                    </View>
+                ) : filtered.length === 0 ? (
+                    <View style={{ alignItems: 'center', paddingVertical: 60 }}>
+                        <Ionicons name="people-outline" size={48} color="#222" />
+                        <Text style={{ color: '#444', marginTop: 16 }}>No members found</Text>
+                    </View>
+                ) : (
+                    filtered.map((item) => (
+                        <TouchableOpacity
+                            key={item.id}
+                            onPress={() => selectMember(item)}
+                            activeOpacity={0.85}
+                            style={{
+                                backgroundColor: '#141414',
+                                borderRadius: 24,
+                                padding: 20,
+                                marginBottom: 16,
+                                borderWidth: 1,
+                                borderColor: '#262626',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                shadowColor: "#ff3c00",
+                                shadowOffset: { width: 0, height: 10 },
+                                shadowOpacity: 0.1,
+                                shadowRadius: 20,
+                                elevation: 5,
+                            }}
+                        >
+                            {/* Avatar with Glow */}
+                            <View style={{
+                                width: 56,
+                                height: 56,
+                                borderRadius: 28,
+                                backgroundColor: '#1a1a1a',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginRight: 16,
+                                borderWidth: 1,
+                                borderColor: '#333',
+                                position: 'relative'
+                            }}>
+                                <View style={{
+                                    position: 'absolute',
+                                    width: '100%',
+                                    height: '100%',
+                                    borderRadius: 28,
+                                    backgroundColor: '#e11d1d',
+                                    opacity: 0.1,
+                                }} />
+                                <Text style={{ color: 'white', fontWeight: '900', fontSize: 20 }}>{item.name.charAt(0).toUpperCase()}</Text>
+                            </View>
 
-                    itemContainerStyle={{
-                        backgroundColor: "#111",
-                    }}
+                            <View style={{ flex: 1 }}>
+                                <Text style={{ color: 'white', fontWeight: '800', fontSize: 18, letterSpacing: -0.5 }}>{item.name}</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                                    <Ionicons name="call-outline" size={12} color="#666" style={{ marginRight: 4 }} />
+                                    <Text style={{ color: '#666', fontSize: 13, fontWeight: '500' }}>{item.phone || "No Phone"}</Text>
+                                </View>
+                            </View>
 
-                    activeColor="#222" // ✅ no more white selection
+                            <View style={{
+                                width: 44,
+                                height: 44,
+                                borderRadius: 22,
+                                backgroundColor: '#1a1a1a',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderWidth: 1,
+                                borderColor: '#262626'
+                            }}>
+                                <Ionicons name="arrow-forward" size={20} color="#e11d1d" />
+                            </View>
+                        </TouchableOpacity>
+                    ))
+                )}
 
-                    placeholderStyle={{ color: "#aaa" }}
-                    selectedTextStyle={{ color: "white" }}
+                <View style={{ height: 100 }} />
+            </ScrollView>
 
-                    inputSearchStyle={{
-                        color: "black",
-                        backgroundColor: "white",
-                        borderRadius: 8,
-                        paddingHorizontal: 10,
-                    }}
+            {/* ─── UPDATE WEIGHT MODAL (Bottom Sheet Style) ─── */}
+            <Modal
+                visible={isModalVisible}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={() => setIsModalVisible(false)}
+            >
+                <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.95)' }}>
+                    <KeyboardAvoidingView
+                        behavior={Platform.OS === "ios" ? "padding" : "height"}
+                        style={{ flex: 1, width: '100%' }}
+                    >
+                        <View style={{
+                            backgroundColor: '#111',
+                            borderTopLeftRadius: 32,
+                            borderTopRightRadius: 32,
+                            paddingHorizontal: 20,
+                            paddingTop: 18,
+                            paddingBottom: 12,
+                            borderWidth: 1,
+                            borderColor: '#222',
+                            height: '42%',
+                        }}>
+                            {/* Modal Header */}
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                                <View>
+                                    <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold' }}>Update Metrics</Text>
+                                    <Text style={{ color: '#e11d1d', fontSize: 10, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, marginTop: 4 }}>{selectedMember?.name}</Text>
+                                </View>
+                                <TouchableOpacity onPress={() => setIsModalVisible(false)} style={{ backgroundColor: '#222', padding: 8, borderRadius: 12 }}>
+                                    <Ionicons name="close" size={24} color="#666" />
+                                </TouchableOpacity>
+                            </View>
 
-                    iconStyle={{ tintColor: "white" }}
+                            {/* WEIGHT */}
+                            <Text style={{ color: '#9ca3af', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, fontWeight: 'bold', marginLeft: 4 }}>Current Weight (KG)</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#0d0d0d', borderWidth: 1, borderColor: '#222', borderRadius: 16, marginBottom: 20, paddingHorizontal: 16, height: 56 }}>
+                                <Ionicons name="fitness-outline" size={20} color="#444" style={{ marginRight: 12 }} />
+                                <TextInput
+                                    placeholder="e.g. 75"
+                                    placeholderTextColor="#333"
+                                    keyboardType="numeric"
+                                    style={{ flex: 1, color: "white", fontWeight: "600", fontSize: 18 }}
+                                    value={measurements.weight}
+                                    onChangeText={(v) => handleChange("weight", v)}
+                                />
+                            </View>
 
-                    data={members}
-                    search
-                    maxHeight={400}
+                            {/* HEIGHT */}
+                            <Text style={{ color: '#9ca3af', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, fontWeight: 'bold', marginLeft: 4 }}>Current Height (CM)</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#0d0d0d', borderWidth: 1, borderColor: '#222', borderRadius: 16, marginBottom: 20, paddingHorizontal: 16, height: 56 }}>
+                                <Ionicons name="resize-outline" size={20} color="#444" style={{ marginRight: 12 }} />
+                                <TextInput
+                                    placeholder="e.g. 175"
+                                    placeholderTextColor="#333"
+                                    keyboardType="numeric"
+                                    style={{ flex: 1, color: "white", fontWeight: "600", fontSize: 18 }}
+                                    value={measurements.height}
+                                    onChangeText={(v) => handleChange("height", v)}
+                                />
+                            </View>
 
-                    labelField="name"
-                    valueField="id"
+                            {/* BMI RESULT */}
+                            <View style={{ backgroundColor: '#1a1a1a', padding: 20, borderRadius: 20, marginBottom: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: '#262626' }}>
+                                <View>
+                                    <Text style={{ color: '#666', fontSize: 10, textTransform: 'uppercase', letterSpacing: 1, fontWeight: 'bold', marginBottom: 4 }}>Body Mass Index</Text>
+                                    <Text style={{ color: 'white', fontSize: 32, fontWeight: '900' }}>{measurements.bmi || "0.0"}</Text>
+                                </View>
+                                <View style={{ backgroundColor: '#000', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999, borderWidth: 1, borderColor: '#333' }}>
+                                    <Text style={{ color: getBmiStatus(measurements.bmi).color, fontWeight: 'bold', fontSize: 11, textTransform: 'uppercase' }}>
+                                        {getBmiStatus(measurements.bmi).label}
+                                    </Text>
+                                </View>
+                            </View>
 
-                    placeholder="Select Member"
-                    searchPlaceholder="Search member..."
-
-                    value={selectedMember?.id}
-
-                    onChange={(item) => selectMember(item)}
-
-                    renderItem={(item) => {
-                        const isSelected = selectedMember?.id === item.id;
-
-                        return (
-                            <View
+                            {/* SAVE BUTTON */}
+                            <TouchableOpacity
+                                onPress={handleSave}
+                                disabled={submitting}
                                 style={{
-                                    padding: 12,
-                                    borderRadius: 8,
-                                    backgroundColor: isSelected ? "#222" : "transparent"
+                                    backgroundColor: "#e11d1d", padding: 18, borderRadius: 20,
+                                    flexDirection: "row", alignItems: "center", justifyContent: "center",
+                                    shadowColor: "#e11d1d", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 8
                                 }}
                             >
-                                <Text
-                                    style={{
-                                        fontWeight: "bold",
-                                        color: isSelected ? "white" : "white"
-                                    }}
-                                >
-                                    {item.name || "No Name"}
-                                </Text>
+                                {submitting ? (
+                                    <ActivityIndicator color="#fff" />
+                                ) : (
+                                    <>
+                                        <Text style={{ color: "white", fontWeight: "900", fontSize: 18, marginRight: 8, textTransform: "uppercase", letterSpacing: 1 }}>Save Changes</Text>
+                                        <Ionicons name="checkmark-circle" size={22} color="#fff" />
+                                    </>
+                                )}
+                            </TouchableOpacity>
 
-                                <Text style={{ fontSize: 12, color: "#9ca3af", marginTop: 2 }}>
-                                    {item.phone || "No Phone"}
-                                </Text>
-                            </View>
-                        );
-                    }}
-                />
+                            <View style={{ height: Platform.OS === 'ios' ? 40 : 20 }} />
+                        </View>
+                    </KeyboardAvoidingView>
                 </View>
-            )}
-
-            {/* FORM */}
-            {selectedMember && (
-                <View style={{ backgroundColor: '#111', padding: 20, borderRadius: 24, borderWidth: 1, borderColor: '#1a1a1a', marginBottom: 32, shadowColor: 'rgba(0,0,0,0.5)', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 1, shadowRadius: 4, elevation: 6 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24, borderBottomWidth: 1, borderBottomColor: '#222', paddingBottom: 20 }}>
-                        <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: '#1a1a1a', borderWidth: 1, borderColor: '#333', justifyContent: 'center', alignItems: 'center', marginRight: 16 }}>
-                            <Ionicons name="person" size={20} color="#e11d1d" />
-                        </View>
-                        <View>
-                            <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 18 }}>{selectedMember.name}</Text>
-                            <Text style={{ color: '#9ca3af', fontSize: 12, marginTop: 4 }}>{selectedMember.phone}</Text>
-                        </View>
-                    </View>
-
-                    {/* WEIGHT */}
-                    <Text style={{ color: '#9ca3af', fontSize: 12, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, fontWeight: 'bold', marginLeft: 4 }}>Current Weight</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#0d0d0d', borderWidth: 1, borderColor: '#222', borderRadius: 16, marginBottom: 20, paddingHorizontal: 16, height: 56 }}>
-                        <Ionicons name="fitness-outline" size={20} color="#888" style={{ marginRight: 12 }} />
-                        <TextInput
-                            placeholder="e.g. 75"
-                            placeholderTextColor="#555"
-                            keyboardType="numeric"
-                            style={{ flex: 1, color: "white", fontWeight: "600", fontSize: 18 }}
-                            value={measurements.weight}
-                            onChangeText={(v) => handleChange("weight", v)}
-                        />
-                        <Text style={{ color: '#555', fontWeight: 'bold', fontSize: 14 }}>KG</Text>
-                    </View>
-
-                    {/* HEIGHT */}
-                    <Text style={{ color: '#9ca3af', fontSize: 12, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, fontWeight: 'bold', marginLeft: 4 }}>Current Height</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#0d0d0d', borderWidth: 1, borderColor: '#222', borderRadius: 16, marginBottom: 24, paddingHorizontal: 16, height: 56 }}>
-                        <Ionicons name="resize-outline" size={20} color="#888" style={{ marginRight: 12 }} />
-                        <TextInput
-                            placeholder="e.g. 175"
-                            placeholderTextColor="#555"
-                            keyboardType="numeric"
-                            style={{ flex: 1, color: "white", fontWeight: "600", fontSize: 18 }}
-                            value={measurements.height}
-                            onChangeText={(v) => handleChange("height", v)}
-                        />
-                        <Text style={{ color: '#555', fontWeight: 'bold', fontSize: 14 }}>CM</Text>
-                    </View>
-
-                    {/* BMI */}
-                    <View style={{ backgroundColor: '#1a1a1a', borderWidth: 1, borderColor: '#222', padding: 20, borderRadius: 16, marginBottom: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <View>
-                            <Text style={{ color: '#9ca3af', fontSize: 12, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 4, fontWeight: 'bold' }}>Calculated BMI</Text>
-                            <Text style={{ color: 'white', fontSize: 30, fontWeight: '900' }}>
-                                {measurements.bmi || "0.0"}
-                            </Text>
-                        </View>
-                        <View style={{ backgroundColor: '#000', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 9999, borderWidth: 1, borderColor: '#333' }}>
-                            <Text style={{ color: getBmiStatus(measurements.bmi).color, fontWeight: 'bold', fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 }}>
-                                {getBmiStatus(measurements.bmi).label}
-                            </Text>
-                        </View>
-                    </View>
-
-                    {/* SAVE BUTTON */}
-                    <TouchableOpacity
-                        onPress={handleSave}
-                        disabled={submitting}
-                        style={{
-                            backgroundColor: "#e11d1d", padding: 16, borderRadius: 16,
-                            flexDirection: "row", alignItems: "center", justifyContent: "center",
-                            shadowColor: "#e11d1d", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 6
-                        }}
-                    >
-                        {submitting ? (
-                            <ActivityIndicator color="#fff" />
-                        ) : (
-                            <>
-                                <Text style={{ color: "white", fontWeight: "900", fontSize: 18, marginRight: 8, textTransform: "uppercase", letterSpacing: 1 }}>Save Stats</Text>
-                                <Ionicons name="checkmark-circle-outline" size={22} color="#fff" />
-                            </>
-                        )}
-                    </TouchableOpacity>
-                </View>
-            )}
-            <View style={{ height: 40 }} />
-            </ScrollView>
-        </KeyboardAvoidingView>
+            </Modal>
+        </View>
     );
 }
