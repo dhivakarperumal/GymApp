@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -6,16 +7,16 @@ import {
     KeyboardAvoidingView,
     Modal,
     Platform,
+    Pressable,
     ScrollView,
     Text,
     TextInput,
     TouchableOpacity,
     View
 } from "react-native";
+import { Dropdown } from "react-native-element-dropdown";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
-import { Dropdown } from "react-native-element-dropdown";
-import { LinearGradient } from "expo-linear-gradient";
 
 export default function UpdateWeight() {
     const { user } = useAuth();
