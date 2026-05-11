@@ -325,15 +325,19 @@ export const getUserAssignment = async () => {
   return res.json();
 };
 
-// get all diet plans
-export const getDietPlans = async () => {
-  const res = await fetch(`${BASE_URL}/diet-plans`);
+// get all diet plans (supports filtering by memberId, email, mobile, trainerId)
+export const getDietPlans = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const url = `${BASE_URL}/diet-plans${query ? `?${query}` : ""}`;
+  const res = await fetch(url);
   return res.json();
 };
 
-// get all workouts
-export const getTrainerWorkouts = async () => {
-  const res = await fetch(`${BASE_URL}/workouts`);
+// get all workouts (supports filtering by memberId, email, mobile, trainerId)
+export const getTrainerWorkouts = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const url = `${BASE_URL}/workouts${query ? `?${query}` : ""}`;
+  const res = await fetch(url);
   return res.json();
 };
 

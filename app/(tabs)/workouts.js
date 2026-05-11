@@ -162,13 +162,29 @@ export default function Workouts() {
 
   const fetchWorkouts = async () => {
     try {
-      const data = await getTrainerWorkouts();
+      const identifier = user?.user_id || user?.id;
+      const params = {};
+      if (identifier) params.memberId = identifier;
+      if (user?.email) params.email = user.email;
+      if (user?.mobile) params.mobile = user.mobile;
+
+      const data = await getTrainerWorkouts(params);
 
       if (!Array.isArray(data)) return;
 
+      const userEmail = user?.email?.toLowerCase() || "";
+      const userMobile = user?.mobile || "";
+      const userId = String(user?.id || "");
+      const userUuid = user?.user_id || "";
+
       const myWorkouts = data
         .filter(
-          (item) => (item.member_email || item.memberEmail) === user.email && item.status === "active",
+          (item) =>
+            ((item.member_email || item.memberEmail || "").toLowerCase() === userEmail ||
+              (item.member_mobile || item.memberMobile) === userMobile ||
+              String(item.user_id || item.userId) === userId ||
+              (item.user_id_uuid || item.userIdUuid) === userUuid) &&
+            item.status === "active",
         )
         .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)); // latest first
 
