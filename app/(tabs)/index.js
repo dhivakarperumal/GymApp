@@ -104,20 +104,32 @@ export default function Home() {
 
   const fetchTodayDiet = useCallback(async () => {
     try {
-      const data = await getDietPlans();
+      const identifier = user?.user_id || user?.id;
+      const params = {};
+      if (identifier) params.memberId = identifier;
+      if (user?.email) params.email = user.email;
+      if (user?.mobile) params.mobile = user.mobile;
 
-      if (!Array.isArray(data) || !user?.email) {
+      const data = await getDietPlans(params);
+
+      if (!Array.isArray(data)) {
         setTodayDiet({});
         setTodayDay("");
         setDietTitle("");
         return;
       }
 
-      const userEmail = user.email.toLowerCase();
+      const userEmail = user?.email?.toLowerCase() || "";
+      const userMobile = user?.mobile || "";
+      const userId = String(user?.id || "");
+      const userUuid = user?.user_id || "";
+
       const userPlans = data.filter(
         (item) =>
-          item.member_email &&
-          item.member_email.toLowerCase() === userEmail
+          (item.member_email && item.member_email.toLowerCase() === userEmail) ||
+          (item.member_mobile && item.member_mobile === userMobile) ||
+          (String(item.user_id) === userId) ||
+          (item.user_id_uuid === userUuid)
       );
 
       if (!userPlans.length) {
@@ -176,14 +188,31 @@ export default function Home() {
 
   const fetchTodayWorkout = useCallback(async () => {
     try {
-      const data = await getTrainerWorkouts();
+      const identifier = user?.user_id || user?.id;
+      const params = {};
+      if (identifier) params.memberId = identifier;
+      if (user?.email) params.email = user.email;
+      if (user?.mobile) params.mobile = user.mobile;
 
-      if (!Array.isArray(data) || !user?.email) {
+      const data = await getTrainerWorkouts(params);
+
+      if (!Array.isArray(data)) {
         setTodayWorkout([]);
         return;
       }
 
-      const myWorkout = data.find((item) => item.member_email === user.email);
+      const userEmail = user?.email?.toLowerCase() || "";
+      const userMobile = user?.mobile || "";
+      const userId = String(user?.id || "");
+      const userUuid = user?.user_id || "";
+
+      const myWorkout = data.find(
+        (item) =>
+          (item.member_email || item.memberEmail || "").toLowerCase() === userEmail ||
+          (item.member_mobile || item.memberMobile) === userMobile ||
+          String(item.user_id || item.userId) === userId ||
+          (item.user_id_uuid || item.userIdUuid) === userUuid
+      );
 
       if (!myWorkout || !myWorkout.days || !myWorkout.created_at) {
         setTodayWorkout([]);

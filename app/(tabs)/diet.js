@@ -50,14 +50,26 @@ export default function DietChartScreen() {
     setLoading(true);
 
     try {
-      const data = await getDietPlans();
+      const identifier = user?.user_id || user?.id;
+      const params = {};
+      if (identifier) params.memberId = identifier;
+      if (user?.email) params.email = user.email;
+      if (user?.mobile) params.mobile = user.mobile;
+
+      const data = await getDietPlans(params);
       const plans = Array.isArray(data) ? data : data?.data || [];
+      
       const userEmail = user?.email?.toLowerCase() || "";
+      const userMobile = user?.mobile || "";
+      const userId = String(user?.id || "");
+      const userUuid = user?.user_id || "";
 
       const userPlans = plans.filter(
         (item) =>
-          item.member_email &&
-          item.member_email.toLowerCase() === userEmail
+          (item.member_email && item.member_email.toLowerCase() === userEmail) ||
+          (item.member_mobile && item.member_mobile === userMobile) ||
+          (String(item.user_id) === userId) ||
+          (item.user_id_uuid === userUuid)
       );
 
       if (!userPlans.length) {
