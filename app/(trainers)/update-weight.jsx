@@ -1,21 +1,19 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    FlatList,
     ActivityIndicator,
     Alert,
     KeyboardAvoidingView,
+    Modal,
     Platform,
     ScrollView,
-    Modal,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
-import { Dropdown } from "react-native-element-dropdown";
 
 export default function UpdateWeight() {
     const { user } = useAuth();
@@ -266,10 +264,10 @@ export default function UpdateWeight() {
                 transparent={true}
                 onRequestClose={() => setIsModalVisible(false)}
             >
-                <View style={{ flex: 1, justifyContent: 'end', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+                <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.95)' }}>
                     <KeyboardAvoidingView
                         behavior={Platform.OS === "ios" ? "padding" : "height"}
-                        style={{ width: '100%' }}
+                        style={{ flex: 1, width: '100%' }}
                     >
                         <View style={{
                             backgroundColor: '#111',
@@ -280,7 +278,7 @@ export default function UpdateWeight() {
                             paddingBottom: 12,
                             borderWidth: 1,
                             borderColor: '#222',
-                            maxHeight: '50%',
+                            height: '42%',
                         }}>
                             {/* Modal Header */}
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
