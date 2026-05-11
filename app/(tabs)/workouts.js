@@ -114,12 +114,12 @@ import { Ionicons } from "@expo/vector-icons";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import {
-    Image,
-    ImageBackground,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  ImageBackground,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
@@ -290,14 +290,12 @@ export default function Workouts() {
               <TouchableOpacity
                 key={f}
                 onPress={() => setFilter(f)}
-                className={`px-4 py-2 rounded-full mr-2 ${
-                  filter === f ? "bg-primary" : "bg-[#222]"
-                }`}
+                className={`px-4 py-2 rounded-full mr-2 ${filter === f ? "bg-primary" : "bg-[#222]"
+                  }`}
               >
                 <Text
-                  className={`text-sm font-semibold ${
-                    filter === f ? "text-white" : "text-gray-400"
-                  }`}
+                  className={`text-sm font-semibold ${filter === f ? "text-white" : "text-gray-400"
+                    }`}
                 >
                   {f === "ALL" ? "All" : f === "TODAY" ? "Today" : "This Week"}
                 </Text>
@@ -353,17 +351,27 @@ export default function Workouts() {
                       </View>
                     </View>
 
-                    {ex.media && ex.mediaType?.includes("image") && (
-                      <Image
-                        source={{ uri: ex.media }}
-                        style={{
-                          width: "100%",
-                          height: 150,
-                          borderRadius: 12,
-                          marginTop: 10,
-                        }}
-                      />
-                    )}
+                    {ex.media ? (
+                      ex.media.startsWith("data:video") ||
+                        ex.media.match(/\.(mp4|webm|ogg)$/i) ||
+                        ex.media.includes("youtube.com") ||
+                        ex.media.includes("youtu.be") ? (
+                        <View className="w-full h-[150px] rounded-xl mt-3 bg-black items-center justify-center">
+                          <Ionicons name="barbell-outline" size={30} color="#ff3c00" />
+                        </View>
+                      ) : (
+                        <Image
+                          source={{ uri: ex.media }}
+                          style={{
+                            width: "100%",
+                            height: 150,
+                            borderRadius: 12,
+                            marginTop: 10,
+                          }}
+                          resizeMode="cover"
+                        />
+                      )
+                    ) : null}
                   </View>
                 ))}
               </View>
