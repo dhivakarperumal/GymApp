@@ -130,7 +130,7 @@ export default function Workouts() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }} edges={["left", "right"]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* HERO IMAGE */}
         <ImageBackground
