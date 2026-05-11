@@ -1,19 +1,17 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    FlatList,
     ActivityIndicator,
     Alert,
     KeyboardAvoidingView,
+    Modal,
     Platform,
     ScrollView,
-    Modal,
-    Pressable,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
 import { Dropdown } from "react-native-element-dropdown";
@@ -317,7 +315,7 @@ export default function UpdateWeight() {
                 >
                     <KeyboardAvoidingView
                         behavior={Platform.OS === "ios" ? "padding" : "height"}
-                        style={{ width: '100%' }}
+                        style={{ width: '100%', justifyContent: 'flex-end' }}
                     >
                         <Pressable onPress={(e) => e.stopPropagation()}>
                             <LinearGradient

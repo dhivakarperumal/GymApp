@@ -31,6 +31,11 @@
       "favicon": "./assets/images/logo.png",
       "bundler": "metro"
     },
+    "extra": {
+      "eas": {
+        "projectId": "347b991e-229c-4481-9a45-19b55a06e24e"
+      }
+    },
     "plugins": [
       "expo-router",
       [
@@ -45,7 +50,14 @@
           }
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/logo.png",
+          "color": "#ffffff"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
