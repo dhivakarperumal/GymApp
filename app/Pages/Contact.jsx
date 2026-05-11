@@ -52,7 +52,7 @@ export default function Contact() {
               <Ionicons name="location-outline" size={20} color="#e11d1d" />
             </View>
             <Text className="text-background flex-1">
-              No.58 Vaitheeshwaran Nagar, Tirupattur - 635653
+              No 9, 2nd floor Rajiv Ghandhi Salai (Next to Accenture Company) OMR, Sholinganallur Chennai 600119
             </Text>
           </View>
 
@@ -60,14 +60,14 @@ export default function Contact() {
             <View className="bg-card p-3 rounded-xl mr-4 border border-border">
               <Ionicons name="call-outline" size={20} color="#e11d1d" />
             </View>
-            <Text className="text-background flex-1">+91 96591 33504</Text>
+            <Text className="text-background flex-1">+91 8189821029</Text>
           </View>
 
           <View className="flex-row items-center bg-darkcard p-4 rounded-2xl border border-border">
             <View className="bg-card p-3 rounded-xl mr-4 border border-border">
               <Ionicons name="mail-outline" size={20} color="#e11d1d" />
             </View>
-            <Text className="text-background flex-1">info@qtechx.com</Text>
+            <Text className="text-background flex-1">dapfitnessstudio@gmail.com</Text>
           </View>
         </View>
 
