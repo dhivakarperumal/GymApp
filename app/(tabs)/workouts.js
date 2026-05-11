@@ -36,8 +36,10 @@ export default function Workouts() {
   const getYoutubeId = (media) => {
     if (!media) return null;
     const uri = String(media).trim();
-    const match = uri.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|watch\?(?:.*&)?v=))([A-Za-z0-9_-]{11})/);
+
+    const match = uri.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|watch\?(?:.*&)?v=|shorts\/|v\/)|youtube-nocookie\.com\/(?:embed\/))([A-Za-z0-9_-]{11})/);
     if (match?.[1]) return match[1];
+
     const queryMatch = uri.match(/[?&]v=([^&]+)/);
     return queryMatch?.[1] || null;
   };
@@ -263,11 +265,12 @@ export default function Workouts() {
 
                     {ex.media ? (
                       (() => {
-                        const mediaUri = normalizeMediaUrl(ex.media);
-                        const youtubeId = getYoutubeId(ex.media);
-                        const isVideoFile = /\.(mp4|webm|ogg)(?:\?|$)/i.test(ex.media);
+                        const mediaString = String(ex.media).trim();
+                        const mediaUri = normalizeMediaUrl(mediaString);
+                        const youtubeId = getYoutubeId(mediaString);
+                        const isVideoFile = /\.(mp4|webm|ogg)(?:\?.*|$)/i.test(mediaString);
                         const isYoutube = Boolean(youtubeId);
-                        const isDataVideo = ex.media.startsWith("data:video");
+                        const isDataVideo = mediaString.startsWith("data:video");
 
                         if (isYoutube && youtubeId) {
                           return (
@@ -288,10 +291,15 @@ export default function Workouts() {
                                 height: 220,
                                 borderRadius: 12,
                                 marginTop: 10,
+                                backgroundColor: "black",
                               }}
                               useNativeControls
                               resizeMode="contain"
                               shouldPlay={false}
+                              isMuted={false}
+                              onError={({ nativeEvent }) => {
+                                console.log("Video playback error:", nativeEvent);
+                              }}
                             />
                           );
                         }
