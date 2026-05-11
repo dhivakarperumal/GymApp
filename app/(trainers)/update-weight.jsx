@@ -267,7 +267,7 @@ export default function UpdateWeight() {
                 <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.95)' }}>
                     <KeyboardAvoidingView
                         behavior={Platform.OS === "ios" ? "padding" : "height"}
-                        style={{ flex: 1, width: '100%' }}
+                        style={{ width: '100%', justifyContent: 'flex-end' }}
                     >
                         <View style={{
                             backgroundColor: '#111',
