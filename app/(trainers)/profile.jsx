@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  ActivityIndicator,
-  TouchableOpacity,
-  Modal,
-  Alert,
-} from "react-native";
-import { useRouter } from "expo-router";
-import { useAuth } from "../../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Modal,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
+import { useAuth } from "../../context/AuthContext";
+import { updateUserApi } from "../../services/api";
 
 const API_BASE = "https://dap.qtechx.com/api";
 
@@ -22,56 +25,98 @@ export default function Profile() {
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
   /* ---------------- FETCH PROFILE ---------------- */
 
+  const fetchProfile = async () => {
+    try {
+      if (!user?.email) return;
+
+      const res = await fetch(`${API_BASE}/staff`);
+      const json = await res.json();
+
+      const staffList = Array.isArray(json)
+        ? json
+        : json.data || json.staff || [];
+
+      const trainer = staffList.find(
+        (s) => s.email?.toLowerCase() === user.email?.toLowerCase(),
+      );
+
+      setProfile(trainer || null);
+    } catch (err) {
+      console.log("Profile fetch error:", err);
+    }
+  };
+
   useEffect(() => {
     if (!user?.email) return;
 
-    const fetchProfile = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/staff`);
-        const json = await res.json();
-
-        const staffList = Array.isArray(json)
-          ? json
-          : json.data || json.staff || [];
-
-        const trainer = staffList.find(
-          (s) => s.email?.toLowerCase() === user.email?.toLowerCase(),
-        );
-
-        setProfile(trainer || null);
-      } catch (err) {
-        console.log("Profile fetch error:", err);
-      } finally {
-        setLoading(false);
-      }
+    const loadProfile = async () => {
+      await fetchProfile();
+      setLoading(false);
     };
 
-    fetchProfile();
+    loadProfile();
   }, [user]);
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchProfile();
+    setRefreshing(false);
+  };
+
   const handleLogout = async () => {
+    setLogoutModalVisible(false);
     await logout();
-    router.replace("/login");
+    router.replace("/(auth)/login");
   };
 
   const handleDeleteAccount = () => {
     Alert.alert(
       "Delete Account",
-      "Are you sure you want to delete your account? This action is permanent and cannot be undone.",
+      "Are you sure you want to delete your account? This action will deactivate your account and you can no longer login.",
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            // Here you would typically call your delete API
-            await logout();
-            router.replace("/login");
+            try {
+              if (!profile?.id) {
+                Toast.show({
+                  type: "error",
+                  text1: "Error",
+                  text2: "Profile information not found",
+                });
+                return;
+              }
+
+              // Update trainer status to inactive
+              await updateUserApi(profile.id, {
+                status: "inactive",
+              });
+
+              Toast.show({
+                type: "success",
+                text1: "Account Deactivated",
+                text2: "Your account has been deactivated successfully",
+              });
+
+              // Logout after deactivation
+              await logout();
+              router.replace("/(auth)/login");
+            } catch (error) {
+              console.log("Delete Account Error:", error);
+              Toast.show({
+                type: "error",
+                text1: "Deactivation Failed",
+                text2: error?.response?.data?.message || "Could not deactivate account",
+              });
+            }
           },
         },
       ],
@@ -99,6 +144,9 @@ export default function Profile() {
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 40 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ff3b3b" />
+        }
       >
         <View className="bg-[#111] pt-6 pb-10 px-6 rounded-b-[40px]">
           <View className="flex-row items-center mb-8">
