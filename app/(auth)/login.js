@@ -3,10 +3,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-    ActivityIndicator, Image, Keyboard, KeyboardAvoidingView,
-    Platform, Text,
-    TextInput,
-    TouchableOpacity, TouchableWithoutFeedback, View
+  ActivityIndicator, Image, Keyboard, KeyboardAvoidingView,
+  Platform, Text,
+  TextInput,
+  TouchableOpacity, TouchableWithoutFeedback, View
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -77,9 +77,23 @@ const LoginScreen = () => {
       redirectByRole(userData.role);
     } catch (err) {
       console.log("login error", err);
+      const responseData = err?.response?.data;
+      let errorMessage = err.message || "Login failed";
+
+      if (typeof responseData === "string") {
+        if (responseData.trim().startsWith("<")) {
+          errorMessage = "Server unavailable. Please try again later.";
+          console.log("login server HTML error response:", responseData.slice(0, 500));
+        } else if (responseData) {
+          errorMessage = responseData;
+        }
+      } else if (responseData?.message) {
+        errorMessage = responseData.message;
+      }
+
       Toast.show({
         type: "error",
-        text1: err?.response?.data?.message || err.message || "Login failed",
+        text1: errorMessage,
       });
     } finally {
       setLoading(false);
