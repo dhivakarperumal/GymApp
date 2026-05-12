@@ -3,10 +3,18 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  ActivityIndicator, Image, Keyboard, KeyboardAvoidingView,
-  Platform, Text,
+  ActivityIndicator,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  Text,
   TextInput,
-  TouchableOpacity, TouchableWithoutFeedback, View
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -22,6 +30,14 @@ const LoginScreen = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setIdentifier("");
+    setPassword("");
+    setTimeout(() => setRefreshing(false), 500);
+  };
 
   // 🔹 Role redirect
   const redirectByRole = (role) => {
@@ -106,9 +122,20 @@ const LoginScreen = () => {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View className="flex-1">
-            {/* 🔥 HERO IMAGE */}
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#ff3c00"
+            />
+          }
+          keyboardShouldPersistTaps="handled"
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View className="flex-1">
+              {/* 🔥 HERO IMAGE */}
             <View className="flex-1">
               <View className="absolute inset-0">
                 <Image
@@ -218,8 +245,9 @@ const LoginScreen = () => {
             </View>
           </View>
         </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  </SafeAreaView>
 
   );
 };

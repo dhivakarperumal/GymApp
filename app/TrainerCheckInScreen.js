@@ -1,17 +1,17 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import dayjs from "dayjs";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
+import { useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    Text,
+    TouchableOpacity,
+    View
+} from "react-native";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-import dayjs from "dayjs";
-import { Ionicons } from "@expo/vector-icons";
 
 const GYM_LOCATION = {
   lat: 12.479724,
@@ -39,6 +39,12 @@ export default function TrainerCheckInScreen() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 500);
+  };
 
   const name =
     (user?.name || user?.username || "Trainer")
@@ -124,8 +130,17 @@ export default function TrainerCheckInScreen() {
   };
 
   return (
-    <View className="flex-1 bg-black justify-center px-6">
-      
+    <ScrollView
+      className="flex-1 bg-black"
+      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24 }}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor="#ff3c00"
+        />
+      }
+    >
       {/* CARD */}
       <View className="bg-[#141414] border border-[#262626] rounded-3xl p-6 relative">
         
@@ -193,6 +208,6 @@ export default function TrainerCheckInScreen() {
       <Text className="text-gray-500 text-xs text-center mt-6">
         Location access is required for attendance verification
       </Text>
-    </View>
+    </ScrollView>
   );
 }
