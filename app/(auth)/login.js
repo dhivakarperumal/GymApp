@@ -1,25 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { Image } from "react-native";
 import { useState } from "react";
 import {
-  ActivityIndicator,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator, Image, Keyboard, KeyboardAvoidingView,
+    Platform, Text,
+    TextInput,
+    TouchableOpacity, TouchableWithoutFeedback, View
 } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
-} from "react-native";
 
 const LoginScreen = () => {
   const router = useRouter();
@@ -33,10 +25,11 @@ const LoginScreen = () => {
 
   // 🔹 Role redirect
   const redirectByRole = (role) => {
-    if (role === "admin") {
+    const normalizedRole = String(role || "").toLowerCase();
+    if (normalizedRole === "admin") {
       router.replace("/(admin)");
-    } else if (role === "trainer") {
-      router.replace("/TrainerCheckInScreen");
+    } else if (normalizedRole === "trainer") {
+      router.replace("/(trainers)/dashboard");
     } else {
       router.replace("/(tabs)");
     }

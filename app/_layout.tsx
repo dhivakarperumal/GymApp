@@ -43,6 +43,17 @@ function RootContent() {
     const inTrainerGroup = rootSegment === "(trainers)";
     const inTabsGroup = rootSegment === "(tabs)";
 
+    const normalizedRole = String(user?.role || "").toLowerCase();
+    const redirectToRoleHome = () => {
+      if (normalizedRole === "admin") {
+        router.replace("/(admin)");
+      } else if (normalizedRole === "trainer") {
+        router.replace("/(trainers)/dashboard");
+      } else {
+        router.replace("/(tabs)");
+      }
+    };
+
     if (!user) {
       // 🚫 Not logged in -> Must be in auth group
       if (!inAuthGroup) {
@@ -50,20 +61,17 @@ function RootContent() {
       }
     } else {
       // ✅ Logged in
-      if (inAuthGroup) {
-        // Redirect to role home if they try to access login/register while logged in
-        if (user.role === "admin") router.replace("/(admin)");
-        else if (user.role === "trainer") router.replace("/(trainers)/dashboard");
-        else router.replace("/(tabs)");
+      if (inAuthGroup || segments.length === 0 || rootSegment === undefined) {
+        // Redirect from auth or root to the correct role home
+        redirectToRoleHome();
       } else {
-        // Protect roles
-        if (user.role === "admin" && (inTabsGroup || inTrainerGroup)) {
-           // Admin can go anywhere? Usually yes, but let's keep them in admin for consistency
-           // router.replace("/(admin)"); 
-        } else if (user.role === "trainer" && (inTabsGroup || inAdminGroup)) {
-           router.replace("/(trainers)/dashboard");
-        } else if (user.role === "member" && (inAdminGroup || inTrainerGroup)) {
-           router.replace("/(tabs)");
+        // Protect role-specific areas
+        if (normalizedRole === "admin" && (inTabsGroup || inTrainerGroup)) {
+          router.replace("/(admin)");
+        } else if (normalizedRole === "trainer" && (inTabsGroup || inAdminGroup)) {
+          router.replace("/(trainers)/dashboard");
+        } else if (normalizedRole !== "admin" && normalizedRole !== "trainer" && inAdminGroup) {
+          router.replace("/(tabs)");
         }
       }
     }
