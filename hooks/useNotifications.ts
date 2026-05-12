@@ -1,5 +1,4 @@
 import Constants from 'expo-constants';
-import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
@@ -21,14 +20,17 @@ export const useNotifications = () => {
     }
 
     try {
+      // Dynamically import expo-notifications only when needed
+      const Notifications = require('expo-notifications');
+
       // Handle notification when app is open (foreground)
-      const subscription = Notifications.addNotificationReceivedListener(notification => {
+      const subscription = Notifications.addNotificationReceivedListener((notification: any) => {
         console.log('Notification received (app in foreground):', notification);
         // The notification will be displayed automatically due to our handler configuration
       });
 
       // Handle notification tap (when user taps on the notification)
-      const responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
+      const responseSubscription = Notifications.addNotificationResponseReceivedListener((response: any) => {
         const data = response.notification.request.content.data;
         console.log('Notification tapped:', data);
 

@@ -1,6 +1,5 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 const BASE_URL = "https://dap.qtechx.com/api";
@@ -10,9 +9,35 @@ const isExpoGo = (): boolean => {
   return Constants.appOwnership === 'expo';
 };
 
+// Safe lazy loader for expo-notifications
+let NotificationsModule: any = null;
+const getNotificationsModule = () => {
+  if (!NotificationsModule) {
+    try {
+      NotificationsModule = require('expo-notifications');
+    } catch (error) {
+      console.warn('Failed to load expo-notifications module:', error);
+      return null;
+    }
+  }
+  return NotificationsModule;
+};
+
 // Configure notification handling
 export const configureNotifications = () => {
   try {
+    // Skip in Expo Go on Android
+    if (isExpoGo() && Platform.OS === 'android') {
+      console.log('Skipping notification configuration in Expo Go on Android');
+      return;
+    }
+
+    const Notifications = getNotificationsModule();
+    if (!Notifications) {
+      console.warn('Notifications module not available');
+      return;
+    }
+
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
         shouldShowAlert: true,
@@ -23,7 +48,7 @@ export const configureNotifications = () => {
       }),
     });
   } catch (error) {
-    console.warn('Error configuring notifications (may occur in Expo Go on Android):', error);
+    console.warn('Error configuring notifications:', error);
     // Continue even if notification configuration fails
   }
 };
@@ -36,6 +61,12 @@ export const registerForPushNotificationsAsync = async (): Promise<string | unde
     // Skip push notifications in Expo Go on Android
     if (isExpoGo() && Platform.OS === 'android') {
       console.log('Expo Go detected on Android - Push notifications not supported. Using local notifications only.');
+      return undefined;
+    }
+
+    const Notifications = getNotificationsModule();
+    if (!Notifications) {
+      console.warn('Notifications module not available');
       return undefined;
     }
 
@@ -134,16 +165,28 @@ export const sendLocalNotification = (
   body: string,
   data?: Record<string, string>
 ) => {
-  Notifications.scheduleNotificationAsync({
-    content: {
-      title,
-      body,
-      data: data || {},
-      sound: 'default',
-      badge: 1,
-    },
-    trigger: null, // Immediate notification
-  });
+  try {
+    const Notifications = getNotificationsModule();
+    if (!Notifications) {
+      console.warn('Notifications module not available, skipping local notification');
+      return;
+    }
+
+    Notifications.scheduleNotificationAsync({
+      content: {
+        title,
+        body,
+        data: data || {},
+        sound: 'default',
+        badge: 1,
+      },
+      trigger: null, // Immediate notification
+    }).catch((error: any) => {
+      console.warn('Error scheduling notification:', error);
+    });
+  } catch (error) {
+    console.warn('Error sending local notification:', error);
+  }
 };
 
 // ============================================
