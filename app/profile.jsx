@@ -284,6 +284,12 @@ export default function Profile() {
       onPress: () => router.push("/pt-form"),
     },
     {
+      title: "Session Tracker",
+      icon: "calendar-outline",
+      subtitle: "View and update PT session history",
+      onPress: () => router.push("/session-tracker"),
+    },
+    {
       title: "My Orders",
       icon: "cube-outline",
       subtitle: "Track your purchases",
