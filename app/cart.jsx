@@ -8,6 +8,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  RefreshControl
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -31,6 +32,17 @@ export default function Cart() {
 
   const [cartItems, setCartItems] = useState([]);
   const [products, setProducts] = useState([]);
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+
+    await fetchProducts();
+    await fetchCart();
+
+    setRefreshing(false);
+  };
 
   const fetchProducts = async () => {
     const data = await getAllProducts();
@@ -143,6 +155,13 @@ export default function Cart() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#ff3c00"
+          />
+        }
       >
         {cartItems.length === 0 && (
           <View className="items-center mt-24">

@@ -10,6 +10,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  RefreshControl,
 } from "react-native";
 import Toast from "react-native-toast-message";
 
@@ -45,6 +46,30 @@ export default function Checkout() {
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+
+    try {
+      if (buyNow) {
+        const item = JSON.parse(buyNow);
+        setCartItems([item]);
+      } else if (userId) {
+        await fetchCart();
+      }
+
+      // refresh addresses
+      if (userId) {
+        const res = await api.get(`/addresses/user/${userId}`);
+        setSavedAddresses(Array.isArray(res.data) ? res.data : []);
+      }
+    } catch (err) {
+      console.log("Refresh error:", err);
+    }
+
+    setRefreshing(false);
+  };
 
   const { user } = useAuth();
   const userId = user?.id;
@@ -165,6 +190,8 @@ export default function Checkout() {
 
     fetchAddresses();
   }, [userId]);
+
+
 
   /* PRICE CALCULATION */
 
@@ -446,6 +473,8 @@ export default function Checkout() {
     setSelectedAddressId(addr.id);
   };
 
+
+
   return (
     <SafeAreaView className="flex-1 bg-black">
       <Header />
@@ -453,6 +482,13 @@ export default function Checkout() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#ff3c00"
+          />
+        }
       >
         <BackButton style={{ marginBottom: 20 }} />
         <View className="flex-row items-center justify-between mb-8">
@@ -489,9 +525,9 @@ export default function Checkout() {
               </Text>
               <Text className="text-xs text-red-300 mt-1">
                 {fromAllProducts ? "Name & Phone are required for shop pickup" :
-                 orderType === "DELIVERY"
-                  ? "Name, Phone, Address & State are required"
-                  : "Name & Phone are required"}
+                  orderType === "DELIVERY"
+                    ? "Name, Phone, Address & State are required"
+                    : "Name & Phone are required"}
               </Text>
             </View>
           </View>
@@ -516,11 +552,10 @@ export default function Checkout() {
 
           <TouchableOpacity
             onPress={() => setOrderType("PICKUP")}
-            className={`flex-1 py-3 rounded-xl border ml-2 ${
-              orderType === "PICKUP"
-                ? "bg-red-600 border-red-600"
-                : "border-red-500/40"
-            }`}
+            className={`flex-1 py-3 rounded-xl border ml-2 ${orderType === "PICKUP"
+              ? "bg-red-600 border-red-600"
+              : "border-red-500/40"
+              }`}
           >
             <Text className="text-center text-white">
               Shop Pickup
@@ -720,9 +755,8 @@ export default function Checkout() {
               placeOrder("pending");
             }
           }}
-          className={`py-5 rounded-2xl items-center mt-6 ${
-            placing || !areDeliveryFieldsFilled() ? "bg-red-800" : "bg-red-600"
-          }`}
+          className={`py-5 rounded-2xl items-center mt-6 ${placing || !areDeliveryFieldsFilled() ? "bg-red-800" : "bg-red-600"
+            }`}
         >
           {placing ? (
             <ActivityIndicator color="white" />
