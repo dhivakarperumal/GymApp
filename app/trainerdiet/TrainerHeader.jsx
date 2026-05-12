@@ -19,7 +19,7 @@ export default function TrainerHeader() {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const res = await fetch("https://mygym.qtechx.com/api/assignments");
+        const res = await fetch("https://dap.qtechx.com/api/assignments");
         const data = await res.json();
 
         const now = new Date();

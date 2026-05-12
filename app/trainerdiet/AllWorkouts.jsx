@@ -17,7 +17,7 @@ import TrainerHeader from "./TrainerHeader";
 import { Image } from "react-native";
 import BackButton from "../BackButton";
 
-const API_BASE = "https://mygym.qtechx.com/api";
+const API_BASE = "https://dap.qtechx.com/api";
 
 export default function AllWorkouts() {
   const { user } = useAuth();
