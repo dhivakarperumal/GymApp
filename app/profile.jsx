@@ -3,13 +3,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Alert,
-  Modal,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Modal,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -270,6 +270,45 @@ export default function Profile() {
     );
   };
 
+  const profileOptions = [
+    {
+      title: "Edit Profile",
+      icon: "create-outline",
+      subtitle: "Update your personal details",
+      onPress: () => setEditVisible(true),
+    },
+    {
+      title: "PT Form",
+      icon: "document-text-outline",
+      subtitle: "Complete your PT data",
+      onPress: () => router.push("/pt-form"),
+    },
+    {
+      title: "My Orders",
+      icon: "cube-outline",
+      subtitle: "Track your purchases",
+      onPress: () => router.push("/Orders"),
+    },
+    {
+      title: "Address",
+      icon: "location-outline",
+      subtitle: "Manage your shipping address",
+      onPress: () => router.push("/Address"),
+    },
+    {
+      title: "Set Password",
+      icon: "key-outline",
+      subtitle: "Update your login credentials",
+      onPress: () => router.push("/set-password"),
+    },
+    {
+      title: "Notifications",
+      icon: "notifications-outline",
+      subtitle: "View your alerts",
+      onPress: () => router.push("/Notifications"),
+    },
+  ];
+
   const userName = user?.username || "User";
   const phone = user?.mobile || "No phone number";
   const initial = userName.charAt(0).toUpperCase();
@@ -337,54 +376,52 @@ export default function Profile() {
         </View>
 
         {/* OPTIONS */}
-        <View className="bg-[#111] rounded-3xl p-5 mb-6">
-          <TouchableOpacity
-            onPress={() => setEditVisible(true)}
-            className="flex-row justify-between items-center py-4 border-b border-[#222]"
-          >
-            <Text className="text-white">Edit Profile</Text>
-            <Ionicons name="chevron-forward" size={18} color="#888" />
-          </TouchableOpacity>
+        <View style={{
+          backgroundColor: "#0d0d0d",
+          borderRadius: 24,
+          paddingHorizontal: 20,
+          borderWidth: 1,
+          borderColor: "#1a1a1a",
+          marginBottom: 20,
+        }}>
+          {profileOptions.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              activeOpacity={0.75}
+              onPress={item.onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingVertical: 18,
+                borderBottomWidth: index === profileOptions.length - 1 ? 0 : 1,
+                borderBottomColor: "#1a1a1a",
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                <View style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 16,
+                  backgroundColor: "#111",
+                  borderWidth: 1,
+                  borderColor: "#222",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: 16,
+                }}>
+                  <Ionicons name={item.icon} size={22} color="#e11d1d" />
+                </View>
 
-          <TouchableOpacity
-            onPress={() => router.push("/pt-form")}
-            className="flex-row justify-between items-center py-4 border-b border-[#222]"
-          >
-            <Text className="text-white">PT Form</Text>
-            <Ionicons name="chevron-forward" size={18} color="#888" />
-          </TouchableOpacity>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "#fff", fontSize: 16, fontWeight: "700", marginBottom: 2 }}>{item.title}</Text>
+                  <Text style={{ color: "#6b7280", fontSize: 12 }}>{item.subtitle}</Text>
+                </View>
+              </View>
 
-          <TouchableOpacity
-            onPress={() => router.push("/Orders")}
-            className="flex-row justify-between items-center py-4 border-b border-[#222]"
-          >
-            <Text className="text-white">My Orders</Text>
-            <Ionicons name="chevron-forward" size={18} color="#888" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.push("/Address")}
-            className="flex-row justify-between items-center py-4 border-b border-[#222]"
-          >
-            <Text className="text-white">Address</Text>
-            <Ionicons name="chevron-forward" size={18} color="#888" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.push("/set-password")}
-            className="flex-row justify-between items-center py-4 border-b border-[#222]"
-          >
-            <Text className="text-white">Set Password</Text>
-            <Ionicons name="chevron-forward" size={18} color="#888" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.push("/Notifications")}
-            className="flex-row justify-between items-center py-4 border-b border-[#222]"
-          >
-            <Text className="text-white">Notifications</Text>
-            <Ionicons name="chevron-forward" size={18} color="#888" />
-          </TouchableOpacity>
+              <Ionicons name="chevron-forward" size={20} color="#444" />
+            </TouchableOpacity>
+          ))}
         </View>
 
         {/* LOGOUT */}
