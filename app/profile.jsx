@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import {
     Alert,
     Modal,
+    RefreshControl,
     ScrollView,
     Text,
     TextInput,
@@ -26,6 +27,7 @@ export default function Profile() {
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
   const [logoutVisible, setLogoutVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const { user: authUser, logout } = useAuth();
   const currentUser = authUser || user;
   const currentUserName = currentUser?.username || currentUser?.name || "User";
@@ -190,22 +192,28 @@ export default function Profile() {
     });
   };
 
+  const loadUserData = async () => {
+    const storedUser = await AsyncStorage.getItem("user");
+
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      const userData = Array.isArray(parsed) ? parsed[0] : parsed;
+
+      setUser(userData);
+      setName(userData.username || "");
+      setMobile(userData.mobile || "");
+    }
+  };
+
   useEffect(() => {
-    const loadUser = async () => {
-      const storedUser = await AsyncStorage.getItem("user");
-
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        const userData = Array.isArray(parsed) ? parsed[0] : parsed;
-
-        setUser(userData);
-        setName(userData.username || "");
-        setMobile(userData.mobile || "");
-      }
-    };
-
-    loadUser();
+    loadUserData();
   }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadUserData();
+    setRefreshing(false);
+  };
 
   const saveProfile = async () => {
     try {
@@ -366,6 +374,13 @@ export default function Profile() {
           padding: 20,
           paddingBottom: 120,
         }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#e11d1d"
+          />
+        }
       >
 
         {/* PROFILE CARD */}

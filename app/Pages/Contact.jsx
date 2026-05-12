@@ -1,15 +1,24 @@
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
+import {
+    RefreshControl,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BackButton from "../BackButton";
 
 export default function Contact() {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 300);
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
 
@@ -31,7 +40,18 @@ export default function Contact() {
         </View>
       </View>
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 80 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: 20, paddingBottom: 80 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#e11d1d"
+          />
+        }
+      >
 
         {/* SUBTITLE */}
         <Text style={{ color: "#e11d1d", fontSize: 11, fontWeight: "700", textTransform: "uppercase", letterSpacing: 3, marginBottom: 8, marginTop: 8 }}>

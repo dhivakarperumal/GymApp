@@ -1,11 +1,11 @@
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import BackButton from "../BackButton";
-import { getAllPlans, getUserMemberships } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
+import { getAllPlans, getUserMemberships } from "../../services/api";
+import BackButton from "../BackButton";
 
 export default function Pricing() {
   const [plans, setPlans] = useState([]);
@@ -15,10 +15,17 @@ export default function Pricing() {
 
   const [hasActivePlan, setHasActivePlan] = useState(false);
   const [checkingPlan, setCheckingPlan] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchPlans();
   }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchPlans();
+    setRefreshing(false);
+  };
 
   useEffect(() => {
     if (!user?.id) {
@@ -101,6 +108,13 @@ export default function Pricing() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#e11d1d"
+          />
+        }
       >
 
         {plans.length === 0 && (

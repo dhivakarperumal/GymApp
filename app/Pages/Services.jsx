@@ -1,22 +1,24 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Dimensions,
-  TouchableOpacity,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { getAllServices } from "../../services/api";
-import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+    Dimensions,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getAllServices } from "../../services/api";
 import BackButton from "../BackButton";
 
 const { width } = Dimensions.get("window");
 
 export default function Services() {
   const [services, setServices] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -31,7 +33,14 @@ export default function Services() {
     } catch (err) {
       console.log("Services fetch error:", err.message);
       setServices([]);
+    } finally {
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchServices();
   };
 
   // ✅ FINAL IMAGE FIX
@@ -80,6 +89,13 @@ export default function Services() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#e11d1d"
+          />
+        }
       >
 
         {services.length === 0 && (
