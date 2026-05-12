@@ -28,7 +28,7 @@ function MainStack({ role }) {
 }
 
 function DrawerLayout() {
-  const role = "admin"; // 🔥 get this from Firebase later
+  const role = "user"; 
 
   return (
     <Drawer.Navigator screenOptions={{ headerShown: false }}>
