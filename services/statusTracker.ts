@@ -72,7 +72,9 @@ export const checkOrderStatusChanges = async (
   let hasChanges = false;
 
   currentOrders.forEach(order => {
-    const id = order.id.toString();
+    const id = (order.order_id || order.id || order.orderId || order.id)?.toString();
+    if (!id) return;
+
     const oldOrder = cache.orders[id];
 
     if (oldOrder && oldOrder.status !== order.status) {
@@ -87,9 +89,7 @@ export const checkOrderStatusChanges = async (
     };
   });
 
-  if (hasChanges) {
-    await saveStatusCache(cache);
-  }
+  await saveStatusCache(cache);
 
   return hasChanges;
 };

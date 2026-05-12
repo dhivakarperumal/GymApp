@@ -32,7 +32,7 @@ export const useStatusPolling = (enabled: boolean = true) => {
         sessionTrackersRes,
         ptFormsRes,
       ] = await Promise.all([
-        api.get(`/orders?userId=${user.id}`, token).catch(() => ({ data: [] })),
+        api.get(`/orders/user/${user.id}`, token).catch(() => ({ data: [] })),
         api.get(`/diet-plans?userId=${user.id}`, token).catch(() => ({ data: [] })),
         api.get(`/workouts?userId=${user.id}`, token).catch(() => ({ data: [] })),
         api.get(`/session-trackers?userId=${user.id}`, token).catch(() => ({ data: [] })),
@@ -149,7 +149,7 @@ export const useStatusCheck = () => {
         sessionTrackersRes,
         ptFormsRes,
       ] = await Promise.all([
-        api.get(`/orders?userId=${user.id}`, token).catch(() => ({ data: [] })),
+        api.get(`/orders/user/${user.id}`, token).catch(() => ({ data: [] })),
         api.get(`/diet-plans?userId=${user.id}`, token).catch(() => ({ data: [] })),
         api.get(`/workouts?userId=${user.id}`, token).catch(() => ({ data: [] })),
         api.get(`/session-trackers?userId=${user.id}`, token).catch(() => ({ data: [] })),

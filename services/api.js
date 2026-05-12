@@ -404,7 +404,7 @@ export const createOrderApi = async (orderData) => {
 };
 
 export const getUserOrders = async (userId) => {
-  const res = await fetch(`${BASE_URL}/orders?userId=${userId}`);
+  const res = await fetch(`${BASE_URL}/orders/user/${userId}`);
   return res.json();
 };
 
