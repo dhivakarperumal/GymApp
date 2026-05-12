@@ -12,11 +12,8 @@ export const useNotifications = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // Skip notification listeners in Expo Go on Android (SDK 53+)
-    // Remote notifications are not supported in Expo Go for Android
     if (isExpoGo() && Platform.OS === 'android') {
-      console.log('Expo Go detected on Android - notification listeners skipped (SDK 53+ limitation)');
-      return;
+      console.log('Expo Go detected on Android - remote push not supported, but local notification listeners are active.');
     }
 
     try {

@@ -24,20 +24,66 @@ const getNotificationsModule = () => {
   return NotificationsModule;
 };
 
-// Configure notification handling
-export const configureNotifications = () => {
+const requestNotificationPermissionsAsync = async (): Promise<boolean> => {
+  const Notifications = getNotificationsModule();
+  if (!Notifications) {
+    console.warn('Notifications module not available');
+    return false;
+  }
+
   try {
-    // Skip in Expo Go on Android
-    if (isExpoGo() && Platform.OS === 'android') {
-      console.log('Skipping notification configuration in Expo Go on Android');
-      return;
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
     }
 
+    if (finalStatus !== 'granted') {
+      console.log('Notification permissions not granted');
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.warn('Error requesting notification permissions:', error);
+    return false;
+  }
+};
+
+const setupNotificationChannelAsync = async () => {
+  const Notifications = getNotificationsModule();
+  if (!Notifications) {
+    return;
+  }
+
+  if (Platform.OS === 'android') {
+    try {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+        sound: 'default',
+      });
+    } catch (error) {
+      console.warn('Error creating notification channel:', error);
+    }
+  }
+};
+
+// Configure notification handling
+export const configureNotifications = async () => {
+  try {
     const Notifications = getNotificationsModule();
     if (!Notifications) {
       console.warn('Notifications module not available');
       return;
     }
+
+    await setupNotificationChannelAsync();
+    await requestNotificationPermissionsAsync();
 
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
@@ -59,43 +105,26 @@ export const registerForPushNotificationsAsync = async (): Promise<string | unde
   let token;
 
   try {
-    // Skip push notifications in Expo Go on Android
-    if (isExpoGo() && Platform.OS === 'android') {
-      console.log('Expo Go detected on Android - Push notifications not supported. Using local notifications only.');
-      return undefined;
-    }
-
     const Notifications = getNotificationsModule();
     if (!Notifications) {
       console.warn('Notifications module not available');
       return undefined;
     }
 
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
-        sound: 'default',
-      });
+    await setupNotificationChannelAsync();
+    const permissionGranted = await requestNotificationPermissionsAsync();
+    if (!permissionGranted) {
+      return undefined;
+    }
+
+    // Skip push token retrieval in Expo Go on Android
+    if (isExpoGo() && Platform.OS === 'android') {
+      console.log('Expo Go detected on Android - Push notifications not supported. Using local notifications only.');
+      return undefined;
     }
 
     if (!Device.isDevice) {
       console.log('Must use a physical device for push notifications');
-      return undefined;
-    }
-
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-
-    if (finalStatus !== 'granted') {
-      console.log('Failed to get push token for push notification!');
       return undefined;
     }
 
