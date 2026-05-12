@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../context/AuthContext";
@@ -40,6 +40,7 @@ export default function SessionTrackerScreen() {
   const { user } = useAuth();
   const [member, setMember] = useState(null);
   const [formData, setFormData] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchTrackerData = useCallback(async () => {
@@ -78,6 +79,12 @@ export default function SessionTrackerScreen() {
   useEffect(() => {
     fetchTrackerData();
   }, [fetchTrackerData]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchTrackerData();
+    setRefreshing(false);
+  };
 
   const saveSessionData = async (updatedData) => {
     if (!member?.id) {
@@ -154,7 +161,12 @@ export default function SessionTrackerScreen() {
           <Text style={{ color: "#6b7280", marginTop: 16 }}>Loading session tracker...</Text>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+        <ScrollView
+        contentContainerStyle={{ paddingBottom: 120 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e11d1d" />
+        }
+      >
           <SessionTrackerPage
             formData={formData}
             onPrevious={() => router.back()}

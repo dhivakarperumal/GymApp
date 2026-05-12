@@ -1,36 +1,38 @@
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Modal,
+    RefreshControl,
     ScrollView,
     Text,
     TouchableOpacity,
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import BackButton from "./BackButton";
 
 export default function Notifications() {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [selectedMessage, setSelectedMessage] = useState(null);
     const [userEmail, setUserEmail] = useState("");
     const [totalMessages, setTotalMessages] = useState(0);
+    const { user } = useAuth();
 
     useEffect(() => {
+        if (!user) return;
         loadUserAndMessages();
-    }, []);
+    }, [user]);
 
     const loadUserAndMessages = async () => {
         try {
-            const storedUser = await AsyncStorage.getItem("user");
-            if (!storedUser) return;
+            if (!user) return;
 
-            const parsed = JSON.parse(storedUser);
-            const userData = Array.isArray(parsed) ? parsed[0] : parsed;
+            const userData = user;
             const email = userData.email || userData.user_email || userData.userEmail || "";
             const userId = userData.id || userData.userId || userData.user_id || null;
             const memberId = userData.memberId || userData.member_id || null;
@@ -77,6 +79,12 @@ export default function Notifications() {
         }
     };
 
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await loadUserAndMessages();
+        setRefreshing(false);
+    };
+
     if (loading) {
         return (
             <View className="flex-1 justify-center items-center bg-black">
@@ -121,7 +129,9 @@ export default function Notifications() {
                         </Text>
                     </View>
                 ) : (
-                    <ScrollView>
+                    <ScrollView refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e11d1d" />
+                    }>
                         {messages.map((msg) => (
                             <TouchableOpacity
                                 key={msg.id}

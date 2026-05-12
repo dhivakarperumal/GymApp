@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -111,10 +112,17 @@ export default function PTFormUser() {
   const [formData, setFormData] = useState({});
   const [member, setMember] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [hasEnquiry, setHasEnquiry] = useState(false);
 
   useEffect(() => {
     fetchUserFormData();
+  }, [fetchUserFormData]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchUserFormData();
+    setRefreshing(false);
   }, [fetchUserFormData]);
 
   const fetchUserFormData = useCallback(async () => {
@@ -358,6 +366,9 @@ export default function PTFormUser() {
       {/* CONTENT */}
       <ScrollView
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e11d1d" />
+        }
         contentContainerStyle={{ paddingBottom: 120 }}
       >
         {!member?.id && (

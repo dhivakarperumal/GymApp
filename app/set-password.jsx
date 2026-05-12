@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
+    RefreshControl,
     ScrollView,
     Text,
     TextInput,
@@ -23,6 +24,7 @@ export default function SetPassword() {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
@@ -63,6 +65,14 @@ export default function SetPassword() {
     }
   };
 
+  const onRefresh = () => {
+    setRefreshing(true);
+    setOldPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setTimeout(() => setRefreshing(false), 300);
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
       <View style={{
@@ -88,7 +98,13 @@ export default function SetPassword() {
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e11d1d" />
+        }
+        contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+      >
         <View style={{ backgroundColor: "#111", borderRadius: 24, padding: 24, gap: 18 }}>
           <Text style={{ color: "#fff", fontSize: 18, fontWeight: "800" }}>Change Password</Text>
 

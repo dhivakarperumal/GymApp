@@ -2,14 +2,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import { useEffect, useState } from "react";
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -26,6 +27,7 @@ export default function Address() {
 
   const [addresses, setAddresses] = useState([]);
   const [editAddress, setEditAddress] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -66,6 +68,12 @@ export default function Address() {
   useEffect(() => {
     if (userId) fetchAddresses();
   }, [userId]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchAddresses();
+    setRefreshing(false);
+  };
 
   /* VALIDATION */
 
@@ -258,6 +266,9 @@ export default function Address() {
         <ScrollView
           className="flex-1 px-5"
           keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e11d1d" />
+          }
           contentContainerStyle={{ paddingBottom: 40, flexGrow: 1, paddingTop: 20 }}
         >
 

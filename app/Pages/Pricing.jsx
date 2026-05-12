@@ -144,13 +144,19 @@ export default function Pricing() {
               <View className="mb-6 flex-col">
 
                 {/* Final Price + Duration */}
-                <View className="flex-row items-end gap-2">
-                  <Text className="text-primary text-5xl font-extrabold">
-                    ₹{Number(plan?.final_price ?? plan?.price ?? 0).toLocaleString()}
-                  </Text>
+                {/* DURATION SECTION */}
+                <View className="mb-6 flex-col">
 
-                  <Text className="text-gray-400 text-base mb-1">
-                    / {plan?.duration || plan?.duration_months || "month"}
+                  {/* Highlighted Duration */}
+                  <View className="self-start bg-primary px-6 py-3 rounded-2xl">
+                    <Text className="text-white text-3xl font-extrabold tracking-wide">
+                      {plan?.duration || plan?.duration_months || "1 Month"}
+                    </Text>
+                  </View>
+
+                  {/* Small Label */}
+                  <Text className="text-gray-400 text-sm mt-3 tracking-wider uppercase">
+                    Membership Duration
                   </Text>
                 </View>
 
