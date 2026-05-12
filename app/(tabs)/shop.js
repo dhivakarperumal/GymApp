@@ -6,6 +6,7 @@ import {
     KeyboardAvoidingView,
     Modal,
     Platform,
+    RefreshControl,
     ScrollView,
     Text,
     TextInput,
@@ -21,6 +22,7 @@ export default function Shop() {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [filterVisible, setFilterVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -36,24 +38,30 @@ export default function Shop() {
     maxPrice !== "" ||
     minRating !== "";
 
+  const fetchProducts = async () => {
+    try {
+      const data = await getAllProducts();
+
+      // ✅ If API returns { products: [...] }
+      const productList = data.products || data;
+
+      setProducts(productList);
+    } catch (error) {
+      console.log("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await getAllProducts();
-
-        // ✅ If API returns { products: [...] }
-        const productList = data.products || data;
-
-        setProducts(productList);
-      } catch (error) {
-        console.log("Error fetching products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProducts();
   }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchProducts();
+  };
 
   // ✅ Search Filter
   const filteredProducts = useMemo(() => {
@@ -94,6 +102,13 @@ export default function Shop() {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#e11d1d"
+          />
+        }
       >
         {/* TABS */}
         <View className="flex-row bg-darkcard rounded-xl p-1 mb-5">
