@@ -1,272 +1,108 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-    sendAdminNewOrderNotification,
-    sendAdminUserUpdatedNotification,
-    sendDietPlanAddedNotification,
-    sendOrderStatusNotification,
-    sendSessionCompletedNotification,
-    sendSessionTrackerUpdateNotification,
-    sendUserAssignedNotification,
-    sendUserUpdatedPTFormNotification,
-    sendWorkoutAddedNotification
-} from './notificationService';
+import * as notificationService from './notificationService';
 
-const STORAGE_KEY = '@status_cache';
+const STATUS_CACHE_KEY = '@status_cache';
 
-// Cache structure
-export interface StatusCache {
-  orders: Record<string, any>;
-  dietPlans: Record<string, any>;
-  workouts: Record<string, any>;
-  sessionTrackers: Record<string, any>;
-  ptForms: Record<string, any>;
-  trainerAssignments: Record<string, any>;
-  userUpdates: Record<string, any>;
+export interface CachedStatus {
+  itemId: string | number;
+  type: 'order' | 'diet_plan' | 'workout' | 'session_tracker' | 'pt_form';
+  status: string;
 }
 
-// Load cached statuses
-export const loadStatusCache = async (): Promise<StatusCache> => {
+export const getCachedStatuses = async (): Promise<CachedStatus[]> => {
   try {
-    const cached = await AsyncStorage.getItem(STORAGE_KEY);
-    return cached ? JSON.parse(cached) : {
-      orders: {},
-      dietPlans: {},
-      workouts: {},
-      sessionTrackers: {},
-      ptForms: {},
-      trainerAssignments: {},
-      userUpdates: {},
-    };
+    const cached = await AsyncStorage.getItem(STATUS_CACHE_KEY);
+    return cached ? JSON.parse(cached) : [];
   } catch (error) {
-    console.warn('Error loading status cache:', error);
-    return {
-      orders: {},
-      dietPlans: {},
-      workouts: {},
-      sessionTrackers: {},
-      ptForms: {},
-      trainerAssignments: {},
-      userUpdates: {},
-    };
+    console.error('Error reading cached statuses:', error);
+    return [];
   }
 };
 
-// Save status cache
-export const saveStatusCache = async (cache: StatusCache) => {
+export const saveCachedStatuses = async (statuses: CachedStatus[]) => {
   try {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
+    await AsyncStorage.setItem(STATUS_CACHE_KEY, JSON.stringify(statuses));
   } catch (error) {
-    console.warn('Error saving status cache:', error);
+    console.error('Error saving cached statuses:', error);
   }
 };
 
-// ============================================
-// MEMBER/USER NOTIFICATIONS
-// ============================================
+export const checkStatusChanges = async (newStatuses: CachedStatus[]) => {
+  try {
+    const cachedStatuses = await getCachedStatuses();
+    const cachedMap = new Map(cachedStatuses.map((s) => [`${s.type}-${s.itemId}`, s]));
+    const updatedStatuses: CachedStatus[] = [];
 
-// Check for order status changes
-export const checkOrderStatusChanges = async (
-  currentOrders: any[]
-) => {
-  const cache = await loadStatusCache();
-  let hasChanges = false;
+    for (const newStatus of newStatuses) {
+      const key = `${newStatus.type}-${newStatus.itemId}`;
+      const cached = cachedMap.get(key);
 
-  currentOrders.forEach(order => {
-    const id = (order.order_id || order.id || order.orderId || order.id)?.toString();
-    if (!id) return;
+      if (!cached || cached.status !== newStatus.status) {
+        console.log(`Status change detected: ${key} => ${newStatus.status}`);
 
-    const oldOrder = cache.orders[id];
+        switch (newStatus.type) {
+          case 'order':
+            notificationService.sendOrderNotification(newStatus.itemId, newStatus.status);
+            break;
+          case 'diet_plan':
+            notificationService.sendDietPlanNotification(newStatus.itemId, newStatus.status);
+            break;
+          case 'workout':
+            notificationService.sendWorkoutNotification(newStatus.itemId, newStatus.status);
+            break;
+          case 'session_tracker':
+            notificationService.sendSessionTrackerNotification(newStatus.itemId, newStatus.status);
+            break;
+          case 'pt_form':
+            notificationService.sendPTFormNotification(newStatus.itemId, newStatus.status);
+            break;
+        }
+      }
 
-    if (oldOrder && oldOrder.status !== order.status) {
-      // Status changed
-      sendOrderStatusNotification(id, order.status);
-      hasChanges = true;
+      updatedStatuses.push(newStatus);
     }
 
-    cache.orders[id] = {
-      status: order.status,
-      lastUpdated: new Date().toISOString(),
-    };
-  });
-
-  await saveStatusCache(cache);
-
-  return hasChanges;
+    await saveCachedStatuses(updatedStatuses);
+    return updatedStatuses;
+  } catch (error) {
+    console.error('Error checking status changes:', error);
+    return newStatuses;
+  }
 };
 
-// Check for new diet plans
-export const checkNewDietPlans = async (
-  currentDietPlans: any[]
-) => {
-  const cache = await loadStatusCache();
-  let hasNewPlans = false;
+export const createCachedStatus = (
+  item: any,
+  type: 'order' | 'diet_plan' | 'workout' | 'session_tracker' | 'pt_form'
+): CachedStatus => {
+  const id =
+    item.order_id ||
+    item.orderId ||
+    item.id ||
+    item.dietPlanId ||
+    item.workoutId ||
+    item.sessionId ||
+    item.formId ||
+    item.bookingId ||
+    item.appointmentId ||
+    item.vehicleBookingId ||
+    item._id ||
+    'unknown';
 
-  currentDietPlans.forEach(dietPlan => {
-    const id = dietPlan.id.toString();
-    const oldPlan = cache.dietPlans[id];
+  const status =
+    item.status ||
+    item.orderStatus ||
+    item.paymentStatus ||
+    item.sessionStatus ||
+    item.formStatus ||
+    item.dietStatus ||
+    item.workoutStatus ||
+    'Unknown';
 
-    if (!oldPlan) {
-      // New diet plan added
-      sendDietPlanAddedNotification(
-        id,
-        dietPlan.trainerName || 'Your Trainer',
-        dietPlan.message
-      );
-      hasNewPlans = true;
-    }
-
-    cache.dietPlans[id] = {
-      createdAt: new Date().toISOString(),
-      trainerName: dietPlan.trainerName,
-    };
-  });
-
-  if (hasNewPlans) {
-    await saveStatusCache(cache);
-  }
-
-  return hasNewPlans;
-};
-
-// Check for new workouts
-export const checkNewWorkouts = async (
-  currentWorkouts: any[]
-) => {
-  const cache = await loadStatusCache();
-  let hasNewWorkouts = false;
-
-  currentWorkouts.forEach(workout => {
-    const id = workout.id.toString();
-    const oldWorkout = cache.workouts[id];
-
-    if (!oldWorkout) {
-      // New workout added
-      sendWorkoutAddedNotification(
-        id,
-        workout.trainerName || 'Your Trainer',
-        workout.message
-      );
-      hasNewWorkouts = true;
-    }
-
-    cache.workouts[id] = {
-      createdAt: new Date().toISOString(),
-      trainerName: workout.trainerName,
-    };
-  });
-
-  if (hasNewWorkouts) {
-    await saveStatusCache(cache);
-  }
-
-  return hasNewWorkouts;
-};
-
-// Check for session tracker updates
-export const checkSessionTrackerUpdates = async (
-  currentSessions: any[]
-) => {
-  const cache = await loadStatusCache();
-  let hasUpdates = false;
-
-  currentSessions.forEach(session => {
-    const id = session.id.toString();
-    const oldSession = cache.sessionTrackers[id];
-
-    if (oldSession && oldSession.status !== session.status) {
-      // Status changed
-      sendSessionTrackerUpdateNotification(
-        id,
-        session.status,
-        session.trainerName || 'Your Trainer',
-        session.message
-      );
-      hasUpdates = true;
-    }
-
-    cache.sessionTrackers[id] = {
-      status: session.status,
-      lastUpdated: new Date().toISOString(),
-    };
-  });
-
-  if (hasUpdates) {
-    await saveStatusCache(cache);
-  }
-
-  return hasUpdates;
-};
-
-// Check for PT form status updates
-export const checkPTFormStatusUpdates = async (
-  currentForms: any[]
-) => {
-  const cache = await loadStatusCache();
-  let hasUpdates = false;
-
-  currentForms.forEach(form => {
-    const id = form.id.toString();
-    const oldForm = cache.ptForms[id];
-
-    if (oldForm && oldForm.status !== form.status) {
-      // Status changed
-      sendSessionTrackerUpdateNotification(
-        id,
-        form.status,
-        form.trainerName || 'Your Trainer'
-      );
-      hasUpdates = true;
-    }
-
-    cache.ptForms[id] = {
-      status: form.status,
-      lastUpdated: new Date().toISOString(),
-    };
-  });
-
-  if (hasUpdates) {
-    await saveStatusCache(cache);
-  }
-
-  return hasUpdates;
-};
-
-// ============================================
-// TRAINER NOTIFICATIONS
-// ============================================
-
-// Check for new user assignments
-export const checkNewUserAssignments = async (
-  currentAssignments: any[]
-) => {
-  const cache = await loadStatusCache();
-  let hasNewAssignments = false;
-
-  currentAssignments.forEach(assignment => {
-    const id = assignment.userId.toString();
-    const oldAssignment = cache.trainerAssignments[id];
-
-    if (!oldAssignment) {
-      // New user assigned
-      sendUserAssignedNotification(
-        id,
-        assignment.userName || 'New User',
-        assignment.message
-      );
-      hasNewAssignments = true;
-    }
-
-    cache.trainerAssignments[id] = {
-      assignedAt: new Date().toISOString(),
-      userName: assignment.userName,
-    };
-  });
-
-  if (hasNewAssignments) {
-    await saveStatusCache(cache);
-  }
-
-  return hasNewAssignments;
+  return {
+    itemId: id,
+    type,
+    status: status?.toString?.() || 'Unknown',
+  };
 };
 
 // Check for user PT form updates

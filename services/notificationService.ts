@@ -1,36 +1,21 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-// Use dap.qtechx.com API exclusively
-const BASE_URL = "https://dap.qtechx.com/api";
-
-// Check if running in Expo Go
-const isExpoGo = (): boolean => {
-  return Constants.appOwnership === 'expo';
-};
-
-// Safe lazy loader for expo-notifications
-let NotificationsModule: any = null;
-const getNotificationsModule = () => {
-  if (!NotificationsModule) {
-    try {
-      NotificationsModule = require('expo-notifications');
-    } catch (error) {
-      console.warn('Failed to load expo-notifications module:', error);
-      return null;
-    }
-  }
-  return NotificationsModule;
+export const configureNotifications = () => {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
 };
 
 const requestNotificationPermissionsAsync = async (): Promise<boolean> => {
-  const Notifications = getNotificationsModule();
-  if (!Notifications) {
-    console.warn('Notifications module not available');
-    return false;
-  }
-
   try {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
@@ -53,11 +38,6 @@ const requestNotificationPermissionsAsync = async (): Promise<boolean> => {
 };
 
 const setupNotificationChannelAsync = async () => {
-  const Notifications = getNotificationsModule();
-  if (!Notifications) {
-    return;
-  }
-
   if (Platform.OS === 'android') {
     try {
       await Notifications.setNotificationChannelAsync('default', {
@@ -73,53 +53,12 @@ const setupNotificationChannelAsync = async () => {
   }
 };
 
-// Configure notification handling
-export const configureNotifications = async () => {
-  try {
-    const Notifications = getNotificationsModule();
-    if (!Notifications) {
-      console.warn('Notifications module not available');
-      return;
-    }
-
-    await setupNotificationChannelAsync();
-    await requestNotificationPermissionsAsync();
-
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-        shouldShowBanner: true,
-        shouldShowList: true,
-      }),
-    });
-  } catch (error) {
-    console.warn('Error configuring notifications:', error);
-    // Continue even if notification configuration fails
-  }
-};
-
-// Get push token
 export const registerForPushNotificationsAsync = async (): Promise<string | undefined> => {
-  let token;
-
   try {
-    const Notifications = getNotificationsModule();
-    if (!Notifications) {
-      console.warn('Notifications module not available');
-      return undefined;
-    }
-
     await setupNotificationChannelAsync();
+
     const permissionGranted = await requestNotificationPermissionsAsync();
     if (!permissionGranted) {
-      return undefined;
-    }
-
-    // Skip push token retrieval in Expo Go on Android
-    if (isExpoGo() && Platform.OS === 'android') {
-      console.log('Expo Go detected on Android - Push notifications not supported. Using local notifications only.');
       return undefined;
     }
 
@@ -128,82 +67,118 @@ export const registerForPushNotificationsAsync = async (): Promise<string | unde
       return undefined;
     }
 
-    const projectId = Constants.expoConfig?.extra?.eas?.projectId ||
-                     Constants.easConfig?.projectId ||
-                     Constants.expoConfig?.extra?.projectId;
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ||
+      Constants.easConfig?.projectId ||
+      Constants.expoConfig?.extra?.projectId;
 
     if (!projectId) {
       console.warn('No Expo projectId found. Local notifications still work, but Expo push token registration is disabled.');
       return undefined;
     }
 
-    token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-    console.log('✅ Push token obtained:', token);
+    const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+    console.log('Push token:', token);
     return token;
   } catch (error) {
     console.warn('Error getting push token:', error);
-    // Return undefined on error, app will continue to work with local notifications only
     return undefined;
   }
 };
 
-// Send push token to server (multiple endpoints to try)
-export const sendPushTokenToServer = async (userId: number, pushToken: string) => {
-  const endpoints = [
-    { url: `${BASE_URL}/users/push-tokens`, name: 'push-tokens' },
-    { url: `${BASE_URL}/trainers/${userId}/push-token`, name: 'trainer-push-token' },
-  ];
-
-  for (const endpoint of endpoints) {
-    try {
-      console.log(`📤 Attempting to send push token to ${endpoint.name}:`, endpoint.url);
-      const res = await fetch(endpoint.url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          pushToken,
-          platform: Platform.OS,
-          app: 'dap-fitness-studio',
-          timestamp: new Date().toISOString(),
-        }),
-      });
-
-      if (res.ok) {
-        console.log(`✅ Push token sent successfully to ${endpoint.name}`);
-        return true;
-      }
-    } catch (error) {
-      console.warn(`❌ Failed to send push token to ${endpoint.name}:`, error);
-    }
-  }
-  
-  console.warn('⚠️ Failed to send push token to all endpoints');
-  return false;
+export const sendLocalNotification = (
+  title: string,
+  body: string,
+  data?: Record<string, string>
+) => {
+  Notifications.scheduleNotificationAsync({
+    content: {
+      title,
+      body,
+      data: data || {},
+      sound: 'default',
+      badge: 1,
+    },
+    trigger: null,
+  }).catch((error: any) => {
+    console.warn('Error scheduling notification:', error);
+  });
 };
 
-// Register device for push notifications
-export const registerDeviceForPushNotifications = async (userId: number) => {
-  try {
-    console.log('📱 Starting device registration for push notifications...');
-    const token = await registerForPushNotificationsAsync();
-    if (!token) {
-      console.log('⚠️ No push token available (possibly Expo Go) - local notifications will still work');
-      return undefined;
-    }
+export const sendOrderNotification = (
+  orderId: string | number,
+  status: string,
+  message?: string
+) => {
+  const title = 'Order Status Updated';
+  const body = message || `Your order #${orderId} status is ${status}`;
 
-    const success = await sendPushTokenToServer(userId, token);
-    return success ? token : undefined;
-  } catch (error) {
-    console.warn('❌ Error registering device for push notifications:', error);
-    // Continue without remote push notifications
-    return undefined;
-  }
+  sendLocalNotification(title, body, {
+    orderId: orderId.toString(),
+    status,
+    type: 'order',
+  });
 };
 
-// ============================================
-// SERVER-SIDE PUSH NOTIFICATION TRIGGER
-// ============================================
+export const sendDietPlanNotification = (
+  dietPlanId: string | number,
+  status: string,
+  message?: string
+) => {
+  const title = 'Diet Plan Updated';
+  const body = message || `Your diet plan #${dietPlanId} is now ${status}`;
+
+  sendLocalNotification(title, body, {
+    dietPlanId: dietPlanId.toString(),
+    status,
+    type: 'diet_plan',
+  });
+};
+
+export const sendWorkoutNotification = (
+  workoutId: string | number,
+  status: string,
+  message?: string
+) => {
+  const title = 'Workout Updated';
+  const body = message || `Your workout #${workoutId} is now ${status}`;
+
+  sendLocalNotification(title, body, {
+    workoutId: workoutId.toString(),
+    status,
+    type: 'workout',
+  });
+};
+
+export const sendSessionTrackerNotification = (
+  sessionId: string | number,
+  status: string,
+  message?: string
+) => {
+  const title = 'Session Tracker Updated';
+  const body = message || `Your session tracker #${sessionId} is now ${status}`;
+
+  sendLocalNotification(title, body, {
+    sessionId: sessionId.toString(),
+    status,
+    type: 'session_tracker',
+  });
+};
+
+export const sendPTFormNotification = (
+  formId: string | number,
+  status: string,
+  message?: string
+) => {
+  const title = 'PT Form Updated';
+  const body = message || `Your PT form #${formId} is now ${status}`;
+
+  sendLocalNotification(title, body, {
+    formId: formId.toString(),
+    status,
+    type: 'pt_form',
+  });
+};
 
 // Trigger push notification from backend server
 export const triggerServerPushNotification = async (

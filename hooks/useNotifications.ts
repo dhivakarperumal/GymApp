@@ -1,86 +1,64 @@
-import Constants from 'expo-constants';
+import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
-import { Platform } from 'react-native';
-
-// Check if running in Expo Go
-const isExpoGo = (): boolean => {
-  return Constants.appOwnership === 'expo';
-};
+import { useEffect, useRef } from 'react';
 
 export const useNotifications = () => {
   const router = useRouter();
+  const notificationListener = useRef<any>(null);
+  const responseListener = useRef<any>(null);
 
   useEffect(() => {
-    if (isExpoGo() && Platform.OS === 'android') {
-      console.log('Expo Go detected on Android - remote push not supported, but local notification listeners are active.');
-    }
+    notificationListener.current = Notifications.addNotificationReceivedListener((notification: any) => {
+      console.log('Notification received:', notification);
+    });
 
-    try {
-      // Dynamically import expo-notifications only when needed
-      const Notifications = require('expo-notifications');
+    responseListener.current = Notifications.addNotificationResponseReceivedListener((response: any) => {
+      const { notification } = response;
+      const data = notification.request.content.data;
 
-      // Handle notification when app is open (foreground)
-      const subscription = Notifications.addNotificationReceivedListener((notification: any) => {
-        console.log('Notification received (app in foreground):', notification);
-        // The notification will be displayed automatically due to our handler configuration
-      });
+      console.log('Notification response:', data);
 
-      // Handle notification tap (when user taps on the notification)
-      const responseSubscription = Notifications.addNotificationResponseReceivedListener((response: any) => {
-        const data = response.notification.request.content.data;
-        console.log('Notification tapped:', data);
+      switch (data?.type) {
+        case 'order_status':
+          router.push('/(tabs)/shop');
+          break;
+        case 'diet_plan_added':
+        case 'diet_plan_status':
+          router.push('/(tabs)/diet');
+          break;
+        case 'workout_added':
+        case 'workout_status':
+          router.push('/(tabs)/workouts');
+          break;
+        case 'new_message':
+          router.push('/(trainers)/messages');
+          break;
+        case 'session_tracker_update':
+        case 'session_completed':
+        case 'pt_form_status':
+          router.push('/(tabs)/more');
+          break;
+        case 'user_assigned':
+          router.push('/(trainers)/dashboard');
+          break;
+        case 'user_updated_pt_form':
+        case 'user_session_tracker_update':
+          router.push('/(trainers)/session-tracking');
+          break;
+        case 'admin_new_order':
+        case 'admin_user_updated':
+        case 'admin_trainer_assignment':
+        case 'admin_new_user':
+          router.push('/(admin)/index');
+          break;
+        default:
+          console.log('Unknown notification type:', data?.type);
+      }
+    });
 
-        // Navigate based on notification type
-        switch (data.type) {
-          case 'order_status':
-            router.push('/(tabs)/shop');
-            break;
-          case 'diet_plan_added':
-          case 'diet_plan_status':
-            router.push('/(tabs)/diet');
-            break;
-          case 'workout_added':
-          case 'workout_status':
-            router.push('/(tabs)/workouts');
-            break;
-          case 'new_message':
-            router.push('/(trainers)/messages');
-            break;
-          case 'session_tracker_update':
-          case 'session_completed':
-          case 'pt_form_status':
-            router.push('/(tabs)/more');
-            break;
-          case 'user_assigned':
-            router.push('/(trainers)/dashboard');
-            break;
-          case 'user_updated_pt_form':
-          case 'user_session_tracker_update':
-            router.push('/(trainers)/session-tracking');
-            break;
-          case 'admin_new_order':
-            router.push('/(admin)/index');
-            break;
-          case 'admin_user_updated':
-          case 'admin_trainer_assignment':
-            router.push('/(admin)/index');
-            break;
-          case 'admin_new_user':
-            router.push('/(admin)/index');
-            break;
-          default:
-            console.log('Unknown notification type:', data.type);
-        }
-      });
-
-      return () => {
-        subscription.remove();
-        responseSubscription.remove();
-      };
-    } catch (error) {
-      console.warn('Error setting up notification listeners:', error);
-      // Continue without notification listeners on error
-    }
+    return () => {
+      notificationListener.current?.remove?.();
+      responseListener.current?.remove?.();
+    };
   }, [router]);
 };
