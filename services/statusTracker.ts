@@ -287,6 +287,66 @@ export const createCachedStatus = (
   };
 };
 
+// Check for trainer assignment changes
+export const checkTrainerAssignmentChanges = async (
+  currentAssignments: any[]
+) => {
+  const cache = await loadStatusCache();
+  let hasChanges = false;
+
+  currentAssignments.forEach(assignment => {
+    const id = assignment.id?.toString() || `${assignment.userId}-${assignment.planId}`;
+    const oldAssignment = cache.trainerAssignments[id];
+
+    if (!oldAssignment) {
+      // New assignment
+      notificationService.sendAssignmentNotification(
+        assignment.username || assignment.memberName,
+        assignment.trainerName,
+        assignment.planName
+      );
+      hasChanges = true;
+    } else {
+      // Check for changes
+      let changeType = null;
+
+      if (oldAssignment.trainerId !== assignment.trainerId) {
+        changeType = 'trainer_change';
+      } else if (oldAssignment.planId !== assignment.planId || oldAssignment.planName !== assignment.planName) {
+        changeType = 'plan_change';
+      } else if (oldAssignment.status !== assignment.status) {
+        changeType = 'status_change';
+      }
+
+      if (changeType) {
+        notificationService.sendAssignmentUpdateNotification(
+          assignment.username || assignment.memberName,
+          assignment.trainerName,
+          changeType
+        );
+        hasChanges = true;
+      }
+    }
+
+    cache.trainerAssignments[id] = {
+      userId: assignment.userId,
+      trainerId: assignment.trainerId,
+      planId: assignment.planId,
+      planName: assignment.planName,
+      status: assignment.status,
+      memberName: assignment.username || assignment.memberName,
+      trainerName: assignment.trainerName,
+      updatedAt: assignment.updatedAt || new Date().toISOString(),
+    };
+  });
+
+  if (hasChanges) {
+    await saveStatusCache(cache);
+  }
+
+  return hasChanges;
+};
+
 // Check for user PT form updates
 export const checkUserPTFormUpdates = async (
   currentUpdates: any[]

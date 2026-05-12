@@ -289,3 +289,55 @@ export const sendMessageNotification = (
   });
 };
 
+export const sendAssignmentNotification = (
+  memberName?: string,
+  trainerName?: string,
+  planName?: string
+) => {
+  const title = 'New Assignment';
+  let body = '';
+
+  if (trainerName && memberName && planName) {
+    body = `Your trainer ${trainerName} assigned you to the "${planName}" plan.`;
+  } else if (trainerName && memberName) {
+    body = `You have been assigned to trainer ${trainerName}.`;
+  } else if (memberName && planName) {
+    body = `${memberName} has been assigned the "${planName}" plan.`;
+  } else {
+    body = 'You have been assigned a new training plan.';
+  }
+
+  sendLocalNotification(title, body, {
+    type: 'assignment_new',
+  });
+};
+
+export const sendAssignmentUpdateNotification = (
+  memberName?: string,
+  trainerName?: string,
+  changeType?: string
+) => {
+  const title = 'Assignment Updated';
+  let body = '';
+
+  if (changeType === 'trainer_change') {
+    body = trainerName && memberName
+      ? `${memberName} has been reassigned to trainer ${trainerName}.`
+      : 'Your trainer assignment has been updated.';
+  } else if (changeType === 'plan_change') {
+    body = memberName
+      ? `${memberName}'s training plan has been updated.`
+      : 'Your training plan has been updated.';
+  } else if (changeType === 'status_change') {
+    body = memberName
+      ? `${memberName}'s assignment status has changed.`
+      : 'Your assignment status has been updated.';
+  } else {
+    body = 'Your assignment has been updated.';
+  }
+
+  sendLocalNotification(title, body, {
+    type: 'assignment_updated',
+  });
+};
+

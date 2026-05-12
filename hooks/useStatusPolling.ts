@@ -19,12 +19,14 @@ export const useStatusPolling = () => {
         workoutsRes,
         sessionTrackersRes,
         ptFormsRes,
+        assignmentsRes,
       ] = await Promise.all([
         api.get(`/orders/user/${user.id}`, token).catch(() => ({ data: [] })),
         api.get(`/diet-plans?userId=${user.id}`, token).catch(() => ({ data: [] })),
         api.get(`/workouts?userId=${user.id}`, token).catch(() => ({ data: [] })),
         api.get(`/session-trackers?userId=${user.id}`, token).catch(() => ({ data: [] })),
         api.get(`/pt-forms?userId=${user.id}`, token).catch(() => ({ data: [] })),
+        api.get(`/assignments?trainerUserId=${user.id}`, token).catch(() => ({ data: [] })),
       ]);
 
       const orders = Array.isArray(ordersRes.data)
@@ -42,6 +44,9 @@ export const useStatusPolling = () => {
       const ptForms = Array.isArray(ptFormsRes.data)
         ? ptFormsRes.data
         : ptFormsRes.data?.ptForms || ptFormsRes.data?.data || [];
+      const assignments = Array.isArray(assignmentsRes.data)
+        ? assignmentsRes.data
+        : assignmentsRes.data?.assignments || assignmentsRes.data?.data || [];
 
       const allStatuses: statusTracker.CachedStatus[] = [];
 
@@ -52,6 +57,7 @@ export const useStatusPolling = () => {
       ptForms.forEach((item: any) => allStatuses.push(statusTracker.createCachedStatus(item, 'pt_form')));
 
       await statusTracker.checkStatusChanges(allStatuses);
+      await statusTracker.checkTrainerAssignmentChanges(assignments);
     } catch (error) {
       console.error('Error checking for status updates:', error);
     }
