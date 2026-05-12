@@ -17,13 +17,20 @@ function RootContent() {
   // Configure and register notifications
   useEffect(() => {
     if (!loading) {
-      // Configure notification handler
-      configureNotifications();
+      try {
+        // Configure notification handler
+        configureNotifications();
 
-      // Register for push notifications when user logs in
-      if (user?.id) {
-        console.log('Registering device for push notifications with user ID:', user.id);
-        registerDeviceForPushNotifications(user.id);
+        // Register for push notifications when user logs in
+        if (user?.id) {
+          console.log('Registering device for push notifications with user ID:', user.id);
+          registerDeviceForPushNotifications(user.id).catch(error => {
+            console.warn('Failed to register device for push notifications:', error);
+          });
+        }
+      } catch (error) {
+        console.warn('Error in notification setup:', error);
+        // Continue even if notification setup fails
       }
     }
   }, [user?.id, loading]);

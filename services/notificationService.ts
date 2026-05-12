@@ -12,67 +12,78 @@ const isExpoGo = (): boolean => {
 
 // Configure notification handling
 export const configureNotifications = () => {
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: true,
-      shouldShowBanner: true,
-      shouldShowList: true,
-    }),
-  });
+  try {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+  } catch (error) {
+    console.warn('Error configuring notifications (may occur in Expo Go on Android):', error);
+    // Continue even if notification configuration fails
+  }
 };
 
 // Get push token
 export const registerForPushNotificationsAsync = async (): Promise<string | undefined> => {
   let token;
 
-  // Skip push notifications in Expo Go on Android
-  if (isExpoGo() && Platform.OS === 'android') {
-    console.log('Expo Go detected on Android - Push notifications not supported. Using local notifications only.');
+  try {
+    // Skip push notifications in Expo Go on Android
+    if (isExpoGo() && Platform.OS === 'android') {
+      console.log('Expo Go detected on Android - Push notifications not supported. Using local notifications only.');
+      return undefined;
+    }
+
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+        sound: 'default',
+      });
+    }
+
+    if (!Device.isDevice) {
+      console.log('Must use a physical device for push notifications');
+      return undefined;
+    }
+
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+
+    if (finalStatus !== 'granted') {
+      console.log('Failed to get push token for push notification!');
+      return undefined;
+    }
+
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId ||
+                     Constants.easConfig?.projectId ||
+                     Constants.expoConfig?.extra?.projectId;
+
+    if (!projectId) {
+      console.warn('No Expo projectId found. Local notifications still work, but Expo push token registration is disabled.');
+      return undefined;
+    }
+
+    token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+    console.log('Push token:', token);
+    return token;
+  } catch (error) {
+    console.warn('Error getting push token:', error);
+    // Return undefined on error, app will continue to work with local notifications only
     return undefined;
   }
-
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
-      sound: 'default',
-    });
-  }
-
-  if (!Device.isDevice) {
-    console.log('Must use a physical device for push notifications');
-    return undefined;
-  }
-
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-
-  if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-
-  if (finalStatus !== 'granted') {
-    console.log('Failed to get push token for push notification!');
-    return undefined;
-  }
-
-  const projectId = Constants.expoConfig?.extra?.eas?.projectId ||
-                   Constants.easConfig?.projectId ||
-                   Constants.expoConfig?.extra?.projectId;
-
-  if (!projectId) {
-    console.warn('No Expo projectId found. Local notifications still work, but Expo push token registration is disabled.');
-    return undefined;
-  }
-
-  token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-  console.log('Push token:', token);
-  return token;
 };
 
 // Send push token to server
@@ -101,14 +112,20 @@ export const sendPushTokenToServer = async (userId: number, pushToken: string) =
 
 // Register device for push notifications
 export const registerDeviceForPushNotifications = async (userId: number) => {
-  const token = await registerForPushNotificationsAsync();
-  if (!token) {
-    console.log('No push token available (possibly Expo Go) - local notifications will still work');
+  try {
+    const token = await registerForPushNotificationsAsync();
+    if (!token) {
+      console.log('No push token available (possibly Expo Go) - local notifications will still work');
+      return undefined;
+    }
+
+    await sendPushTokenToServer(userId, token);
+    return token;
+  } catch (error) {
+    console.warn('Error registering device for push notifications:', error);
+    // Continue without remote push notifications
     return undefined;
   }
-
-  await sendPushTokenToServer(userId, token);
-  return token;
 };
 
 // Send local notification
