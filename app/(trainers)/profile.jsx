@@ -86,17 +86,17 @@ export default function Profile() {
           style: "destructive",
           onPress: async () => {
             try {
-              if (!profile?.id) {
+              if (!user?.id) {
                 Toast.show({
                   type: "error",
                   text1: "Error",
-                  text2: "Profile information not found",
+                  text2: "User information not found",
                 });
                 return;
               }
 
-              // Update trainer status to inactive
-              await updateUserApi(profile.id, {
+              // Update user status to inactive
+              await updateUserApi(user.id, {
                 status: "inactive",
               });
 
