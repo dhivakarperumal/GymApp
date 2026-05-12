@@ -2,7 +2,9 @@ import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 
-const BASE_URL = "https://dap.qtechx.com/api";
+// Use the same API URL as the rest of the app
+const BASE_URL = "https://mygym.qtechx.com/api";
+const DAP_BASE_URL = "https://dap.qtechx.com/api";
 
 // Check if running in Expo Go
 const isExpoGo = (): boolean => {
@@ -108,7 +110,7 @@ export const registerForPushNotificationsAsync = async (): Promise<string | unde
     }
 
     token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-    console.log('Push token:', token);
+    console.log('✅ Push token obtained:', token);
     return token;
   } catch (error) {
     console.warn('Error getting push token:', error);
@@ -117,46 +119,108 @@ export const registerForPushNotificationsAsync = async (): Promise<string | unde
   }
 };
 
-// Send push token to server
+// Send push token to server (multiple endpoints to try)
 export const sendPushTokenToServer = async (userId: number, pushToken: string) => {
-  try {
-    const res = await fetch(`${BASE_URL}/users/push-tokens`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId,
-        pushToken,
-        platform: Platform.OS,
-        app: 'dap-fitness-studio',
-      }),
-    });
+  const endpoints = [
+    { url: `${BASE_URL}/users/push-tokens`, name: 'mygym' },
+    { url: `${DAP_BASE_URL}/users/push-tokens`, name: 'dap' },
+    { url: `${BASE_URL}/trainers/${userId}/push-token`, name: 'trainer-mygym' },
+  ];
 
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
+  for (const endpoint of endpoints) {
+    try {
+      console.log(`📤 Attempting to send push token to ${endpoint.name}:`, endpoint.url);
+      const res = await fetch(endpoint.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          pushToken,
+          platform: Platform.OS,
+          app: 'dap-fitness-studio',
+          timestamp: new Date().toISOString(),
+        }),
+      });
+
+      if (res.ok) {
+        console.log(`✅ Push token sent successfully to ${endpoint.name}`);
+        return true;
+      }
+    } catch (error) {
+      console.warn(`❌ Failed to send push token to ${endpoint.name}:`, error);
     }
-
-    console.log('Push token sent to server');
-  } catch (error) {
-    console.warn('Failed to send push token to server:', error);
   }
+  
+  console.warn('⚠️ Failed to send push token to all endpoints');
+  return false;
 };
 
 // Register device for push notifications
 export const registerDeviceForPushNotifications = async (userId: number) => {
   try {
+    console.log('📱 Starting device registration for push notifications...');
     const token = await registerForPushNotificationsAsync();
     if (!token) {
-      console.log('No push token available (possibly Expo Go) - local notifications will still work');
+      console.log('⚠️ No push token available (possibly Expo Go) - local notifications will still work');
       return undefined;
     }
 
-    await sendPushTokenToServer(userId, token);
-    return token;
+    const success = await sendPushTokenToServer(userId, token);
+    return success ? token : undefined;
   } catch (error) {
-    console.warn('Error registering device for push notifications:', error);
+    console.warn('❌ Error registering device for push notifications:', error);
     // Continue without remote push notifications
     return undefined;
   }
+};
+
+// ============================================
+// SERVER-SIDE PUSH NOTIFICATION TRIGGER
+// ============================================
+
+// Trigger push notification from backend server
+export const triggerServerPushNotification = async (
+  trainerId: number,
+  title: string,
+  body: string,
+  notificationData: Record<string, string>
+) => {
+  const endpoints = [
+    { url: `${BASE_URL}/trainers/${trainerId}/send-notification`, name: 'mygym' },
+    { url: `${BASE_URL}/notifications/send`, name: 'mygym-generic' },
+    { url: `${DAP_BASE_URL}/trainers/${trainerId}/send-notification`, name: 'dap' },
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      console.log(`📤 Triggering push notification via ${endpoint.name}:`, endpoint.url);
+      const res = await fetch(endpoint.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          trainerId,
+          title,
+          body,
+          data: notificationData,
+          timestamp: new Date().toISOString(),
+        }),
+      });
+
+      const responseData = await res.json().catch(() => ({}));
+      
+      if (res.ok) {
+        console.log(`✅ Push notification triggered successfully via ${endpoint.name}`);
+        return true;
+      } else {
+        console.warn(`⚠️ Endpoint ${endpoint.name} responded with status ${res.status}:`, responseData);
+      }
+    } catch (error) {
+      console.warn(`❌ Failed to trigger notification via ${endpoint.name}:`, error);
+    }
+  }
+  
+  console.warn('⚠️ Failed to trigger push notification from all endpoints');
+  return false;
 };
 
 // Send local notification

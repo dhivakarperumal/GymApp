@@ -1,16 +1,20 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { sendLocalNotification, triggerServerPushNotification } from "../../services/notificationService";
 
 export default function TrainerHeader() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [newMembers, setNewMembers] = useState([]);
+  const previousMembersRef = useRef([]);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -26,14 +30,62 @@ export default function TrainerHeader() {
           return diff <= 24;
         });
 
+        // Check for newly added members and send notifications
+        const previousMemberIds = previousMembersRef.current.map(m => m.id);
+        const newlyAddedMembers = last24HoursMembers.filter(
+          m => !previousMemberIds.includes(m.id)
+        );
+
+        // Send push notification for each newly added member
+        if (newlyAddedMembers.length > 0) {
+          console.log(`🔔 Found ${newlyAddedMembers.length} new members assigned`);
+          
+          for (const member of newlyAddedMembers) {
+            const memberName = member.username || member.user_name || 'New Member';
+            const notificationData = {
+              userId: member.id.toString(),
+              userName: memberName,
+              type: 'user_assigned',
+            };
+
+            // Try to send push notification via server
+            if (user?.id) {
+              console.log(`📤 Sending push notification for ${memberName} to trainer ${user.id}`);
+              const success = await triggerServerPushNotification(
+                user.id,
+                'New Member Assigned',
+                `${memberName} has been assigned to you`,
+                notificationData
+              );
+
+              // Fallback to local notification if server fails
+              if (!success) {
+                console.log(`⚠️ Server notification failed, sending local notification instead`);
+                sendLocalNotification(
+                  'New Member Assigned',
+                  `${memberName} has been assigned to you`,
+                  notificationData
+                );
+              }
+            }
+          }
+        }
+
         setNewMembers(last24HoursMembers);
+        previousMembersRef.current = last24HoursMembers;
       } catch (err) {
-        console.log("Notification error", err);
+        console.error("Error fetching members:", err);
       }
     };
 
+    // Fetch members immediately on mount
     fetchMembers();
-  }, []);
+
+    // Poll for new members every 30 seconds
+    const intervalId = setInterval(fetchMembers, 30000);
+
+    return () => clearInterval(intervalId);
+  }, [user?.id]);
 
   return (
     <View style={{ zIndex: 100 }}>

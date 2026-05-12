@@ -23,13 +23,18 @@ function RootContent() {
 
         // Register for push notifications when user logs in
         if (user?.id) {
-          console.log('Registering device for push notifications with user ID:', user.id);
-          registerDeviceForPushNotifications(user.id).catch(error => {
-            console.warn('Failed to register device for push notifications:', error);
-          });
+          console.log('🔔 [PUSH NOTIFICATIONS] Registering device for user ID:', user.id);
+          console.log('📱 [PUSH NOTIFICATIONS] Platform:', require('react-native').Platform.OS);
+          registerDeviceForPushNotifications(user.id)
+            .then(token => {
+              console.log('✅ [PUSH NOTIFICATIONS] Device registered successfully, token:', token ? 'received' : 'none');
+            })
+            .catch(error => {
+              console.warn('❌ [PUSH NOTIFICATIONS] Failed to register device:', error);
+            });
         }
       } catch (error) {
-        console.warn('Error in notification setup:', error);
+        console.warn('❌ [PUSH NOTIFICATIONS] Error in notification setup:', error);
         // Continue even if notification setup fails
       }
     }
