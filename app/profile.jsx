@@ -3,14 +3,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    Alert,
-    Modal,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Modal,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -263,15 +263,43 @@ export default function Profile() {
   const handleDeleteAccount = () => {
     Alert.alert(
       "Delete Account",
-      "Are you sure you want to delete your account? This action is permanent and cannot be undone.",
+      "Are you sure you want to delete your account? This action will deactivate your account and you can no longer login.",
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            // Perform deletion logic here if API exists
-            await handleLogout();
+            try {
+              // Update user status to inactive
+              const updatedUser = {
+                ...user,
+                status: "inactive",
+              };
+
+              await updateUserApi(user.id, {
+                status: "inactive",
+              });
+
+              // Update AsyncStorage
+              await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+
+              Toast.show({
+                type: "success",
+                text1: "Account Deactivated",
+                text2: "Your account has been deactivated successfully",
+              });
+
+              // Logout after deactivation
+              await handleLogout();
+            } catch (error) {
+              console.log("Delete Account Error:", error);
+              Toast.show({
+                type: "error",
+                text1: "Deactivation Failed",
+                text2: error?.response?.data?.message || "Could not deactivate account",
+              });
+            }
           },
         },
       ]
