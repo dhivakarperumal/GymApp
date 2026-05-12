@@ -5,28 +5,28 @@ import dayjs from "dayjs";
 import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
 import {
-  ChevronRight,
-  FileText,
-  History,
-  Info,
-  Mail,
-  Phone,
-  Search,
-  Trash2,
-  User,
-  X
+    ChevronRight,
+    FileText,
+    History,
+    Info,
+    Mail,
+    Phone,
+    Search,
+    Trash2,
+    User,
+    X
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Modal,
-  Platform,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Modal,
+    Platform,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -35,12 +35,12 @@ import * as XLSX from "xlsx";
 
 import { useAuth } from "../../context/AuthContext";
 import api, {
-  createFollowup,
-  createFollowupInteraction,
-  getFollowupInteractions,
-  getFollowups,
-  getPlans,
-  updateFollowup
+    createFollowup,
+    createFollowupInteraction,
+    getFollowupInteractions,
+    getFollowups,
+    getPlans,
+    updateFollowup
 } from "../../services/api";
 
 export default function FollowupEnquiry() {
@@ -120,7 +120,13 @@ export default function FollowupEnquiry() {
       Toast.show({ type: "error", text1: "Failed to load follow-ups" });
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchEnquiries();
   };
 
   const fetchPlans = async () => {

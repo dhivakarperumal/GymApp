@@ -16,6 +16,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  RefreshControl
 } from "react-native";
 import * as XLSX from "xlsx";
 import { useAuth } from "../../context/AuthContext";
@@ -41,6 +42,7 @@ export default function Workouts() {
 
   // -- STATE --
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [workouts, setWorkouts] = useState([]);
   const [members, setMembers] = useState([]);
@@ -210,7 +212,13 @@ export default function Workouts() {
       console.log("Dashboard Error:", err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
   };
 
   // -- HANDLERS --
@@ -481,6 +489,13 @@ export default function Workouts() {
             keyExtractor={(item) => String(item.id)}
             contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#e11d1d"
+              />
+            }
             renderItem={({ item }) => <WorkoutCard item={item} />}
             ListEmptyComponent={
               <View className="flex-1 items-center justify-center py-32">

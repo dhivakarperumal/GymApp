@@ -16,6 +16,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  RefreshControl
 } from "react-native";
 import * as XLSX from "xlsx";
 import { useAuth } from "../../context/AuthContext";
@@ -168,6 +169,7 @@ export default function DietPlans() {
 
   // -- UI STATE --
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [dietPlans, setDietPlans] = useState([]);
   const [members, setMembers] = useState([]);
@@ -207,7 +209,13 @@ export default function DietPlans() {
       console.log("Diet Dashboard Error:", err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
   };
 
   // -- CALCULATION --
@@ -782,6 +790,13 @@ export default function DietPlans() {
             keyExtractor={(item) => String(item.id)}
             contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#e11d1d"
+              />
+            }
             renderItem={({ item }) => <DietCard item={item} />}
             ListEmptyComponent={
               <View className="flex-1 items-center justify-center py-32">
