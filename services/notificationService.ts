@@ -250,3 +250,42 @@ export const sendPTFormNotification = (
   });
 };
 
+export const sendDirectPTFormNotification = (
+  memberName?: string,
+  trainerName?: string
+) => {
+  const title = 'PT Form Saved';
+  const body = trainerName && memberName
+    ? `Your trainer ${trainerName} saved a PT form for ${memberName}.`
+    : trainerName
+    ? `Your trainer ${trainerName} saved a PT form.`
+    : 'PT Form has been saved successfully.';
+
+  sendLocalNotification(title, body, {
+    type: 'pt_form_saved',
+  });
+};
+
+export const sendMessageNotification = (
+  recipientCount: number,
+  senderName?: string,
+  subject?: string
+) => {
+  const title = 'Message Sent';
+  let body = '';
+
+  if (senderName) {
+    body = `Your message from ${senderName} was sent to ${recipientCount} recipient${recipientCount !== 1 ? 's' : ''}.`;
+    if (subject) {
+      body += ` Subject: ${subject}`;
+    }
+  } else {
+    body = `Your message was successfully sent to ${recipientCount} recipient${recipientCount !== 1 ? 's' : ''}.`;
+  }
+
+  sendLocalNotification(title, body, {
+    type: 'message_sent',
+    recipientCount: recipientCount.toString(),
+  });
+};
+

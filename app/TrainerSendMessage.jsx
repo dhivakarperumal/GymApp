@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
+    ActivityIndicator,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import Toast from "react-native-toast-message";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-import Header from "./Header";
+import * as notificationService from "../services/notificationService";
 import BackButton from "./BackButton";
-import Toast from "react-native-toast-message";
+import Header from "./Header";
 
 export default function TrainerSendMessage() {
   const { user } = useAuth();
@@ -125,6 +125,13 @@ export default function TrainerSendMessage() {
         message,
         recipients,
       });
+
+      // Send notification
+      notificationService.sendMessageNotification(
+        selectedMembers.length,
+        user?.name || user?.username,
+        subject || `Message from Trainer ${user?.username}`
+      );
 
       Toast.show({ type: "success", text1: "Message Sent" });
 

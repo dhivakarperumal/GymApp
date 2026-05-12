@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View, RefreshControl } from 'react-native';
+import { Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../context/AuthContext.js';
 import api from '../../../services/api';
@@ -254,6 +254,12 @@ const PTForm = ({ route, navigation }) => {
       const response = await api.post('/pt-forms', payload);
 
       console.log('✅ PT Form submitted successfully:', response.data);
+
+      // Send notification
+      notificationService.sendDirectPTFormNotification(
+        formData.name || formData.member_name,
+        user?.name || user?.username
+      );
 
       Alert.alert(
         'Success',

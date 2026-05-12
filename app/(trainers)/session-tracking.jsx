@@ -3,15 +3,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Dimensions,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Dimensions,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -174,6 +174,13 @@ export default function SessionTrackingScreen() {
         },
         completed: true,
       });
+
+      // Send notification
+      notificationService.sendDirectPTFormNotification(
+        selectedMember?.name,
+        user?.name || user?.username
+      );
+
       Toast.show({ type: "success", text1: "Session tracker saved" });
       setFormData(prev => ({ ...prev, sessions: sessionData.sessions }));
     } catch (err) {

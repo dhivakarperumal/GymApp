@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { ScrollView, View, Text, TextInput, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import api from "../../../services/api";
-import { useAuth } from '../../../context/AuthContext.js'
-import Toast from "react-native-toast-message";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import dayjs from 'dayjs';
+import { useEffect, useState } from "react";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import Toast from "react-native-toast-message";
+import { useAuth } from '../../../context/AuthContext.js';
+import api from "../../../services/api";
 
 const SessionTracker = ({
   onNext,
@@ -95,6 +95,12 @@ const SessionTracker = ({
         };
 
         await api.post(`/pt-forms`, payload);
+
+        // Send notification
+        notificationService.sendDirectPTFormNotification(
+          initialFormData.name || initialFormData.member_name
+        );
+
         Toast.show({ type: "success", text1: "Sessions approved successfully!" });
 
         onSaved({ ...initialFormData, sessions: localFormData.sessions });

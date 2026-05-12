@@ -1,12 +1,12 @@
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -193,6 +193,10 @@ export default function PTFormUser() {
         formData: updatedData,
       });
       setFormData(updatedData);
+
+      // Send notification
+      notificationService.sendDirectPTFormNotification(member?.name);
+
       Toast.show({
         type: "success",
         text1: "PT Form Saved",
