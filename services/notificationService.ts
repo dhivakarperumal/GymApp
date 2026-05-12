@@ -120,13 +120,48 @@ export const sendOrderNotification = (
   });
 };
 
+export type DietPlanNotificationDetails = {
+  trainerName?: string;
+  title?: string;
+  duration?: string | number;
+  calories?: string | number;
+};
+
+export type WorkoutNotificationDetails = {
+  trainerName?: string;
+  durationWeeks?: string | number;
+  workoutDays?: string | number;
+  level?: string;
+};
+
+export type PTFormNotificationDetails = {
+  trainerName?: string;
+  formType?: string;
+};
+
 export const sendDietPlanNotification = (
   dietPlanId: string | number,
   status: string,
+  details?: DietPlanNotificationDetails,
+  isNew = false,
   message?: string
 ) => {
-  const title = 'Diet Plan Updated';
-  const body = message || `Your diet plan #${dietPlanId} is now ${status}`;
+  const title = 'Diet Plan Update';
+  const action = isNew ? 'assigned' : 'updated';
+  let body = message || '';
+
+  if (!body) {
+    if (details?.trainerName && details?.title && details?.duration) {
+      body = `Your trainer ${details.trainerName} ${action} a diet plan "${details.title}" for ${details.duration} days.`;
+      if (details.calories) {
+        body += ` ${details.calories} calories per day.`;
+      }
+    } else if (details?.trainerName && details?.title) {
+      body = `Your trainer ${details.trainerName} ${action} your diet plan "${details.title}".`;
+    } else {
+      body = `Your diet plan #${dietPlanId} is now ${status}`;
+    }
+  }
 
   sendLocalNotification(title, body, {
     dietPlanId: dietPlanId.toString(),
@@ -138,10 +173,32 @@ export const sendDietPlanNotification = (
 export const sendWorkoutNotification = (
   workoutId: string | number,
   status: string,
+  details?: WorkoutNotificationDetails,
+  isNew = false,
   message?: string
 ) => {
-  const title = 'Workout Updated';
-  const body = message || `Your workout #${workoutId} is now ${status}`;
+  const title = 'Workout Update';
+  const action = isNew ? 'assigned' : 'updated';
+  let body = message || '';
+
+  if (!body) {
+    if (details?.trainerName) {
+      const parts: string[] = [];
+      if (details.workoutDays) {
+        parts.push(`for ${details.workoutDays} day${details.workoutDays === 1 ? '' : 's'}`);
+      } else if (details.durationWeeks) {
+        parts.push(`for ${details.durationWeeks} week${details.durationWeeks === 1 ? '' : 's'}`);
+      }
+      if (details.level) {
+        parts.push(`at ${details.level} level`);
+      }
+
+      const durationText = parts.length ? ` ${parts.join(' ')}.` : '.';
+      body = `Your trainer ${details.trainerName} ${action} a workout${durationText}`;
+    } else {
+      body = `Your workout #${workoutId} is now ${status}`;
+    }
+  }
 
   sendLocalNotification(title, body, {
     workoutId: workoutId.toString(),
@@ -168,10 +225,23 @@ export const sendSessionTrackerNotification = (
 export const sendPTFormNotification = (
   formId: string | number,
   status: string,
+  details?: PTFormNotificationDetails,
+  isNew = false,
   message?: string
 ) => {
-  const title = 'PT Form Updated';
-  const body = message || `Your PT form #${formId} is now ${status}`;
+  const title = 'PT Form Update';
+  let body = message || '';
+
+  if (!body) {
+    if (details?.trainerName && details?.formType) {
+      const verb = isNew ? 'created' : 'updated';
+      body = `Your trainer ${details.trainerName} ${verb} your ${details.formType} form.`;
+    } else if (details?.trainerName) {
+      body = `Your trainer ${details.trainerName} ${isNew ? 'created' : 'updated'} your PT form.`;
+    } else {
+      body = `Your PT form #${formId} is now ${status}`;
+    }
+  }
 
   sendLocalNotification(title, body, {
     formId: formId.toString(),
