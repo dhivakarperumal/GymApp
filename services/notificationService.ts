@@ -2,9 +2,8 @@ import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 
-// Use the same API URL as the rest of the app
-const BASE_URL = "https://mygym.qtechx.com/api";
-const DAP_BASE_URL = "https://dap.qtechx.com/api";
+// Use dap.qtechx.com API exclusively
+const BASE_URL = "https://dap.qtechx.com/api";
 
 // Check if running in Expo Go
 const isExpoGo = (): boolean => {
@@ -122,9 +121,8 @@ export const registerForPushNotificationsAsync = async (): Promise<string | unde
 // Send push token to server (multiple endpoints to try)
 export const sendPushTokenToServer = async (userId: number, pushToken: string) => {
   const endpoints = [
-    { url: `${BASE_URL}/users/push-tokens`, name: 'mygym' },
-    { url: `${DAP_BASE_URL}/users/push-tokens`, name: 'dap' },
-    { url: `${BASE_URL}/trainers/${userId}/push-token`, name: 'trainer-mygym' },
+    { url: `${BASE_URL}/users/push-tokens`, name: 'push-tokens' },
+    { url: `${BASE_URL}/trainers/${userId}/push-token`, name: 'trainer-push-token' },
   ];
 
   for (const endpoint of endpoints) {
@@ -186,9 +184,8 @@ export const triggerServerPushNotification = async (
   notificationData: Record<string, string>
 ) => {
   const endpoints = [
-    { url: `${BASE_URL}/trainers/${trainerId}/send-notification`, name: 'mygym' },
-    { url: `${BASE_URL}/notifications/send`, name: 'mygym-generic' },
-    { url: `${DAP_BASE_URL}/trainers/${trainerId}/send-notification`, name: 'dap' },
+    { url: `${BASE_URL}/trainers/${trainerId}/send-notification`, name: 'send-notification' },
+    { url: `${BASE_URL}/notifications/send`, name: 'generic-send' },
   ];
 
   for (const endpoint of endpoints) {
