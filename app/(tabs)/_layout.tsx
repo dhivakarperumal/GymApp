@@ -186,12 +186,6 @@ export default function TabLayout() {
                     <Text style={{ color: "white" }}>My Profile</Text>
                   </TouchableOpacity>
 
-                  {user?.role === "admin" && (
-                    <TouchableOpacity onPress={() => { setMenuVisible(false); router.push("/(admin)"); }} style={{ paddingVertical: 10 }}>
-                      <Text style={{ color: "#ef4444", fontWeight: "600" }}>Admin Panel</Text>
-                    </TouchableOpacity>
-                  )}
-
                   {user?.role === "trainer" && (
                     <TouchableOpacity onPress={() => { setMenuVisible(false); router.push("/(trainers)/dashboard"); }} style={{ paddingVertical: 10 }}>
                       <Text style={{ color: "#fbbf24", fontWeight: "600" }}>Trainer Panel</Text>

@@ -55,7 +55,7 @@ export const useNotifications = () => {
         case 'admin_user_updated':
         case 'admin_trainer_assignment':
         case 'admin_new_user':
-          router.push('/(admin)');
+          router.push('/(tabs)');
           break;
         default:
           console.log('Unknown notification type:', data?.type);

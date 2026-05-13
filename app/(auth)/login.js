@@ -3,18 +3,18 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+    ActivityIndicator,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -43,7 +43,7 @@ const LoginScreen = () => {
   const redirectByRole = (role) => {
     const normalizedRole = String(role || "").toLowerCase();
     if (normalizedRole === "admin") {
-      router.replace("/(admin)");
+      router.replace("/(tabs)");
     } else if (normalizedRole === "trainer") {
       router.replace("/(trainers)/dashboard");
     } else {

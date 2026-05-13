@@ -1,18 +1,17 @@
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  Modal,
-  Pressable,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import {
+    Image,
+    Modal,
+    Pressable,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { useAuth } from "../context/AuthContext";
 import { getCart } from "../services/api";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
 
 export default function Header() {
   const router = useRouter();
@@ -139,21 +138,6 @@ export default function Header() {
             >
               <Text className="text-white">My Profile</Text>
             </TouchableOpacity>
-
-            {/* ADMIN */}
-            {user?.role === "admin" && (
-              <TouchableOpacity
-                onPress={() => {
-                  setMenuVisible(false);
-                  router.push("/(admin)");
-                }}
-                className="py-2"
-              >
-                <Text className="text-red-500 font-semibold">
-                  Admin Panel
-                </Text>
-              </TouchableOpacity>
-            )}
 
             {/* TRAINER */}
             {user?.role === "trainer" && (
