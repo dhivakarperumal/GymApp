@@ -71,7 +71,7 @@ const LoginScreen = () => {
     const payload = { identifier: id, password: pass };
     console.log("login payload", payload);
 
-    setLoading(true);
+    setIsSubmitting(true);
 
     try {
       const res = await api.post("/auth/login", payload);
