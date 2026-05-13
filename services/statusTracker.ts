@@ -324,6 +324,8 @@ export const checkTrainerAssignmentChanges = async (
   currentAssignments: any[]
 ) => {
   const assignments = normalizeArray(currentAssignments);
+  console.log(`👥 TRAINER ASSIGNMENTS DETECTED (${assignments.length}):`, assignments.map(a => ({ id: a.id, member: a.username, plan: a.planName })));
+  
   if (assignments.length === 0) return false;
 
   const cache = await loadStatusCache();
@@ -343,6 +345,7 @@ export const checkTrainerAssignmentChanges = async (
       const planName = assignment.planName || 'Plan';
 
       if (!oldAssignment) {
+        console.log(`🆕 NEW ASSIGNMENT: ${memberName} assigned to trainer`);
         notificationService.sendAssignmentNotification(memberName, trainerName, planName);
         hasChanges = true;
       } else {
@@ -357,6 +360,7 @@ export const checkTrainerAssignmentChanges = async (
         }
 
         if (changeType) {
+          console.log(`🔄 ASSIGNMENT UPDATED: ${memberName} - ${changeType}`);
           notificationService.sendAssignmentUpdateNotification(memberName, trainerName, changeType);
           hasChanges = true;
         }

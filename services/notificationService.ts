@@ -394,21 +394,19 @@ export const sendAssignmentNotification = (
   trainerName?: string,
   planName?: string
 ) => {
-  const title = 'New Assignment';
+  const title = 'New Member Assigned';
   let body = '';
 
-  if (trainerName && memberName && planName) {
-    body = `Your trainer ${trainerName} assigned you to the "${planName}" plan.`;
-  } else if (trainerName && memberName) {
-    body = `You have been assigned to trainer ${trainerName}.`;
-  } else if (memberName && planName) {
-    body = `${memberName} has been assigned the "${planName}" plan.`;
+  if (memberName && planName) {
+    body = `${memberName} has been assigned to you for the "${planName}" plan.`;
+  } else if (memberName) {
+    body = `${memberName} has been assigned to you as a new member.`;
   } else {
-    body = 'You have been assigned a new training plan.';
+    body = 'A new member has been assigned to you.';
   }
 
   sendLocalNotification(title, body, {
-    type: 'assignment_new',
+    type: 'trainer_new_assignment',
   });
 };
 
@@ -417,27 +415,27 @@ export const sendAssignmentUpdateNotification = (
   trainerName?: string,
   changeType?: string
 ) => {
-  const title = 'Assignment Updated';
+  const title = 'Member Assignment Updated';
   let body = '';
 
   if (changeType === 'trainer_change') {
-    body = trainerName && memberName
-      ? `${memberName} has been reassigned to trainer ${trainerName}.`
-      : 'Your trainer assignment has been updated.';
+    body = memberName
+      ? memberName + ' has been reassigned to you.'
+      : 'A member has been reassigned to you.';
   } else if (changeType === 'plan_change') {
     body = memberName
-      ? `${memberName}'s training plan has been updated.`
-      : 'Your training plan has been updated.';
+      ? memberName + "'s training plan has been updated."
+      : "A member's training plan has been updated.";
   } else if (changeType === 'status_change') {
     body = memberName
-      ? `${memberName}'s assignment status has changed.`
-      : 'Your assignment status has been updated.';
+      ? memberName + "'s assignment status has changed."
+      : "A member's assignment status has changed.";
   } else {
-    body = 'Your assignment has been updated.';
+    body = 'A member assignment has been updated.';
   }
 
   sendLocalNotification(title, body, {
-    type: 'assignment_updated',
+    type: 'trainer_assignment_updated',
   });
 };
 

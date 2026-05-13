@@ -43,7 +43,8 @@ export const useNotifications = () => {
         case 'pt_form':
           router.push('/(tabs)/more');
           break;
-        case 'user_assigned':
+        case 'trainer_new_assignment':
+        case 'trainer_assignment_updated':
           router.push('/(trainers)/dashboard');
           break;
         case 'user_updated_pt_form':
