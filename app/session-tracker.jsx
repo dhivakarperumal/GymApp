@@ -5,7 +5,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-import * as notificationService from "../services/notificationService";
 import BackButton from "./BackButton";
 import SessionTrackerPage from "./pt-form-user/SessionTrackerPage";
 
@@ -105,31 +104,12 @@ export default function SessionTrackerScreen() {
       });
       setFormData(updatedData);
 
-      const trainerId =
-        member?.trainer_user_id ||
-        member?.trainerUserId ||
-        member?.trainer_id ||
-        member?.trainerId ||
-        member?.assigned_trainer_id ||
-        member?.assignedTrainerId ||
-        member?.trainer?.id ||
-        null;
-
       const hasCompletedSession = Array.isArray(updatedData.sessions)
         ? updatedData.sessions.some((session) => String(session.status).toLowerCase() === 'completed')
         : false;
 
-      if (trainerId && hasCompletedSession) {
-        await notificationService.triggerServerPushNotification(
-          trainerId,
-          'Session Tracker Updated',
-          `${member?.name || user?.username || 'A member'} completed their session tracker.`,
-          {
-            type: 'user_session_tracker_update',
-            userId: String(user.id),
-            memberName: member?.name || '',
-          }
-        );
+      if (hasCompletedSession) {
+        // Session completion status will be handled by polling notifications.
       }
 
       Toast.show({

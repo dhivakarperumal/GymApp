@@ -234,10 +234,11 @@ export const createCachedStatus = (
     item.order_id ||
     item.orderId ||
     item.id ||
+    item.form_id ||
+    item.formId ||
     item.dietPlanId ||
     item.workoutId ||
     item.sessionId ||
-    item.formId ||
     item.bookingId ||
     item.appointmentId ||
     item.vehicleBookingId ||
@@ -250,6 +251,9 @@ export const createCachedStatus = (
     item.paymentStatus ||
     item.sessionStatus ||
     item.formStatus ||
+    item.form_status ||
+    item.pt_form_status ||
+    item.ptFormStatus ||
     item.dietStatus ||
     item.workoutStatus ||
     'Unknown';
@@ -292,7 +296,7 @@ export const createCachedStatus = (
   const formType = item.form_type || item.formType || item.type || undefined;
 
   // Extract message-specific fields
-  const subject = item.subject || item.messageSubject || undefined;
+const subject = item.subject || item.messageSubject || item.subjectLine || undefined;
   const messageContent = item.message || item.messageContent || item.body || undefined;
   const senderName = item.senderName || item.from || item.senderUserName || trainerName;
 

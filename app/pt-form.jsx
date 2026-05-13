@@ -12,7 +12,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-import * as notificationService from "../services/notificationService";
 import BackButton from "./BackButton";
 import EnquiryFormPage from "./pt-form-user/EnquiryFormPage";
 import FitnessScreeningPage from "./pt-form-user/FitnessScreeningPage";
@@ -177,38 +176,6 @@ export default function PTFormUser() {
     }
   }, [user, hasEnquiry]);
 
-  const getAssignedTrainerId = (memberData) => {
-    return (
-      memberData?.trainer_user_id ||
-      memberData?.trainerUserId ||
-      memberData?.trainer_id ||
-      memberData?.trainerId ||
-      memberData?.assigned_trainer_id ||
-      memberData?.assignedTrainerId ||
-      memberData?.trainer?.id ||
-      null
-    );
-  };
-
-  const notifyTrainerForUserUpdate = async (type, title, body, trainerId) => {
-    if (!trainerId) {
-      console.warn('No assigned trainer ID available for notification', { type, title, body });
-      return false;
-    }
-
-    const success = await notificationService.triggerServerPushNotification(trainerId, title, body, {
-      type,
-      userId: String(user.id),
-      memberName: member?.name || member?.username || '',
-    });
-
-    if (!success) {
-      notificationService.sendLocalNotification(title, body, {
-        type,
-      });
-    }
-    return success;
-  };
 
   const savePtForm = async (updatedData) => {
     if (!member?.id) {
@@ -271,13 +238,6 @@ export default function PTFormUser() {
   const handleHealthHistory2Submit = async (data) => {
     const updatedData = { ...formData, ...data };
     await savePtForm(updatedData);
-    const trainerId = getAssignedTrainerId(member);
-    await notifyTrainerForUserUpdate(
-      'user_updated_pt_form',
-      'Health Details Completed',
-      `User ${member?.name || user.username} completed the health benefits form.`,
-      trainerId
-    );
     setActiveTab("fitness");
   };
 
@@ -296,19 +256,7 @@ export default function PTFormUser() {
   const handleSessionSaved = async (updated) => {
     try {
       await savePtForm(updated);
-      setFormData(updated);      const trainerId = getAssignedTrainerId(member);
-      const hasCompletedSession = Array.isArray(updated.sessions)
-        ? updated.sessions.some((session) => String(session.status).toLowerCase() === 'completed')
-        : false;
-
-      if (hasCompletedSession) {
-        await notifyTrainerForUserUpdate(
-          'user_session_tracker_update',
-          'Session Tracker Completed',
-          `User ${member?.name || user.username} has completed a session tracker entry.`,
-          trainerId
-        );
-      }
+      setFormData(updated);
       Toast.show({
         type: "success",
         text1: "Sessions Updated",

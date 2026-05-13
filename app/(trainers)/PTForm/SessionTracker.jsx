@@ -6,7 +6,6 @@ import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import Toast from "react-native-toast-message";
 import { useAuth } from '../../../context/AuthContext.js';
 import api from "../../../services/api";
-import * as notificationService from "../../../services/notificationService";
 
 const SessionTracker = ({
   onNext,
@@ -103,19 +102,6 @@ const SessionTracker = ({
           initialFormData?.trainer_user_id ||
           initialFormData?.trainerUserId ||
           null;
-
-        if (trainerId) {
-          await notificationService.triggerServerPushNotification(
-            trainerId,
-            'Session Tracker Approved',
-            `${initialFormData.name || initialFormData.member_name} approved session tracker details.`,
-            {
-              type: 'user_session_tracker_update',
-              userId: String(initialFormData.u_id || initialFormData.user_id || ''),
-              memberName: initialFormData.name || initialFormData.member_name || '',
-            }
-          );
-        }
 
         Toast.show({ type: "success", text1: "Sessions approved successfully!" });
 

@@ -57,7 +57,7 @@ export const useStatusPolling = () => {
       const ptForms = normalizeArray(
         Array.isArray(ptFormsRes.data)
           ? ptFormsRes.data
-          : ptFormsRes.data?.ptForms || ptFormsRes.data?.data
+          : ptFormsRes.data?.ptForms || ptFormsRes.data?.pt_forms || ptFormsRes.data?.data
       );
       const assignments = normalizeArray(
         Array.isArray(assignmentsRes.data)
