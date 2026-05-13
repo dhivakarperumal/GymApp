@@ -209,7 +209,7 @@ export const sendOrderNotification = (
   sendLocalNotification(title, body, {
     orderId: orderId.toString(),
     status,
-    type: 'order',
+    type: 'order_status',
   });
 };
 
@@ -259,7 +259,7 @@ export const sendDietPlanNotification = (
   sendLocalNotification(title, body, {
     dietPlanId: dietPlanId.toString(),
     status,
-    type: 'diet_plan',
+    type: isNew ? 'diet_plan_added' : 'diet_plan_status',
   });
 };
 
@@ -296,7 +296,7 @@ export const sendWorkoutNotification = (
   sendLocalNotification(title, body, {
     workoutId: workoutId.toString(),
     status,
-    type: 'workout',
+    type: isNew ? 'workout_added' : 'workout_status',
   });
 };
 
@@ -307,11 +307,13 @@ export const sendSessionTrackerNotification = (
 ) => {
   const title = 'Session Tracker Updated';
   const body = message || `Your session tracker #${sessionId} is now ${status}`;
+  const normalizedStatus = String(status || '').toLowerCase();
+  const type = normalizedStatus === 'completed' ? 'session_completed' : 'session_tracker_update';
 
   sendLocalNotification(title, body, {
     sessionId: sessionId.toString(),
     status,
-    type: 'session_tracker',
+    type,
   });
 };
 
@@ -339,7 +341,7 @@ export const sendPTFormNotification = (
   sendLocalNotification(title, body, {
     formId: formId.toString(),
     status,
-    type: 'pt_form',
+    type: 'pt_form_status',
   });
 };
 

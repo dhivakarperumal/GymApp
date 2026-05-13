@@ -20,14 +20,17 @@ export const useNotifications = () => {
 
       switch (data?.type) {
         case 'order_status':
+        case 'order':
           router.push('/(tabs)/shop');
           break;
         case 'diet_plan_added':
         case 'diet_plan_status':
+        case 'diet_plan':
           router.push('/(tabs)/diet');
           break;
         case 'workout_added':
         case 'workout_status':
+        case 'workout':
           router.push('/(tabs)/workouts');
           break;
         case 'new_message':
@@ -35,7 +38,9 @@ export const useNotifications = () => {
           break;
         case 'session_tracker_update':
         case 'session_completed':
+        case 'session_tracker':
         case 'pt_form_status':
+        case 'pt_form':
           router.push('/(tabs)/more');
           break;
         case 'user_assigned':
