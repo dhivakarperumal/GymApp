@@ -20,6 +20,7 @@ export const useStatusPolling = () => {
         sessionTrackersRes,
         ptFormsRes,
         assignmentsRes,
+        messagesRes,
       ] = await Promise.all([
         api.get(`/orders/user/${user.id}`, token).catch(() => ({ data: [] })),
         api.get(`/diet-plans?userId=${user.id}`, token).catch(() => ({ data: [] })),
@@ -27,6 +28,7 @@ export const useStatusPolling = () => {
         api.get(`/session-trackers?userId=${user.id}`, token).catch(() => ({ data: [] })),
         api.get(`/pt-forms?userId=${user.id}`, token).catch(() => ({ data: [] })),
         api.get(`/assignments?trainerUserId=${user.id}`, token).catch(() => ({ data: [] })),
+        api.get(`/send-message/history`, token).catch(() => ({ data: [] })),
       ]);
 
       const normalizeArray = (value: any) =>
@@ -62,6 +64,11 @@ export const useStatusPolling = () => {
           ? assignmentsRes.data
           : assignmentsRes.data?.assignments || assignmentsRes.data?.data
       );
+      const messages = normalizeArray(
+        Array.isArray(messagesRes.data)
+          ? messagesRes.data
+          : messagesRes.data?.messages || messagesRes.data?.data
+      );
 
       const allStatuses: statusTracker.CachedStatus[] = [];
 
@@ -70,6 +77,7 @@ export const useStatusPolling = () => {
       workouts.forEach((item: any) => allStatuses.push(statusTracker.createCachedStatus(item, 'workout')));
       sessionTrackers.forEach((item: any) => allStatuses.push(statusTracker.createCachedStatus(item, 'session_tracker')));
       ptForms.forEach((item: any) => allStatuses.push(statusTracker.createCachedStatus(item, 'pt_form')));
+      messages.forEach((item: any) => allStatuses.push(statusTracker.createCachedStatus(item, 'message')));
 
       await statusTracker.checkStatusChanges(allStatuses);
       await statusTracker.checkTrainerAssignmentChanges(assignments);

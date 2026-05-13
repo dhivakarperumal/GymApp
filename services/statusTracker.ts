@@ -5,7 +5,7 @@ const STATUS_CACHE_KEY = '@status_cache';
 
 export interface CachedStatus {
   itemId: string | number;
-  type: 'order' | 'diet_plan' | 'workout' | 'session_tracker' | 'pt_form';
+  type: 'order' | 'diet_plan' | 'workout' | 'session_tracker' | 'pt_form' | 'message';
   status: string;
   updatedAt?: string;
   details?: Record<string, any>;
@@ -190,6 +190,14 @@ export const checkStatusChanges = async (newStatuses: CachedStatus[]) => {
               isNew
             );
             break;
+          case 'message':
+            notificationService.sendMessageNotification(
+              newStatus.itemId,
+              newStatus.status,
+              newStatus.details,
+              isNew
+            );
+            break;
         }
       }
 
@@ -206,7 +214,7 @@ export const checkStatusChanges = async (newStatuses: CachedStatus[]) => {
 
 export const createCachedStatus = (
   item: any,
-  type: 'order' | 'diet_plan' | 'workout' | 'session_tracker' | 'pt_form'
+  type: 'order' | 'diet_plan' | 'workout' | 'session_tracker' | 'pt_form' | 'message'
 ): CachedStatus => {
   item = item && typeof item === 'object' ? item : {};
 

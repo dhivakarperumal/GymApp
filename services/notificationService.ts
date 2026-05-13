@@ -363,32 +363,23 @@ export const sendDirectPTFormNotification = (
 };
 
 export const sendMessageNotification = (
-  recipientCount: number,
-  senderName?: string,
-  subject?: string
+  messageId?: string | number,
+  status?: string,
+  details?: Record<string, any>,
+  isNew?: boolean
 ) => {
-  const title = 'New Message';
-  let body = '';
-
-  if (senderName) {
-    body = `You have a new message from trainer ${senderName}.`;
-    if (subject) {
-      body += ` Subject: ${subject}.`;
-    }
-  } else {
-    body = `You have a new message.`;
-    if (subject) {
-      body += ` Subject: ${subject}.`;
-    }
-  }
-
-  if (recipientCount > 1) {
-    body += ` This message was sent to ${recipientCount} recipients.`;
+  const title = isNew ? 'New Message' : 'Message Updated';
+  const senderName = details?.senderName || details?.from || 'Trainer';
+  const subject = details?.subject || details?.message || 'New message';
+  
+  let body = `You have a new message from ${senderName}.`;
+  if (subject) {
+    body = `${senderName} sent: ${subject}`;
   }
 
   sendLocalNotification(title, body, {
     type: 'new_message',
-    recipientCount: recipientCount.toString(),
+    messageId: messageId?.toString() || '',
     senderName: senderName || '',
   });
 };
