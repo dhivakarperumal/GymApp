@@ -1,20 +1,20 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+    ActivityIndicator,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -23,7 +23,7 @@ import api from "../../services/api";
 
 const LoginScreen = () => {
   const router = useRouter();
-  const { login: contextLogin } = useAuth();
+  const { login: contextLogin, user, loading } = useAuth();
   const insets = useSafeAreaInsets();
 
   const [identifier, setIdentifier] = useState("");
@@ -50,6 +50,12 @@ const LoginScreen = () => {
       router.replace("/(tabs)");
     }
   };
+
+  useEffect(() => {
+    if (!loading && user) {
+      redirectByRole(user.role);
+    }
+  }, [loading, user]);
 
   const handleLogin = async () => {
     if (loading) return;

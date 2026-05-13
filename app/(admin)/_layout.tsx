@@ -1,8 +1,8 @@
+import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Tabs, useRouter } from "expo-router";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
-import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 
 function AdminHeader() {
@@ -76,7 +76,7 @@ function AdminHeader() {
               <Text style={{ fontSize: 14 }}>Back Home</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={async () => { setShowMenu(false); await logout(); }} style={{ paddingVertical: 8 }}>
+            <TouchableOpacity onPress={async () => { setShowMenu(false); await logout(); router.replace("/login"); }} style={{ paddingVertical: 8 }}>
               <Text style={{ fontSize: 14, color: "#ef4444", fontWeight: "bold" }}>Logout</Text>
             </TouchableOpacity>
           </View>
