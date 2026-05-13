@@ -6,6 +6,7 @@ import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import Toast from "react-native-toast-message";
 import { useAuth } from '../../../context/AuthContext.js';
 import api from "../../../services/api";
+import * as notificationService from "../../../services/notificationService";
 
 const SessionTracker = ({
   onNext,
