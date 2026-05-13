@@ -121,6 +121,7 @@ export const sendLocalNotification = (
   body: string,
   data?: Record<string, string>
 ) => {
+  console.log('DEBUG sendLocalNotification', { title, body, data });
   Notifications.scheduleNotificationAsync({
     content: {
       title,
@@ -158,7 +159,8 @@ export const sendPushTokenToServer = async (
       console.log(`Push token sent to server: ${endpoint}`);
       return true;
     } catch (error) {
-      console.warn(`Push token registration failed at ${endpoint}:`, error.message || error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.warn(`Push token registration failed at ${endpoint}:`, errorMessage);
     }
   }
 
@@ -191,7 +193,8 @@ export const triggerServerPushNotification = async (
       console.log(`Server push notification triggered: ${endpoint}`);
       return true;
     } catch (error) {
-      console.warn(`Push notification trigger failed at ${endpoint}:`, error.message || error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.warn(`Push notification trigger failed at ${endpoint}:`, errorMessage);
     }
   }
 
@@ -338,6 +341,7 @@ export const sendPTFormNotification = (
     }
   }
 
+  console.log('DEBUG sendPTFormNotification', { formId, status, details, isNew, body });
   sendLocalNotification(title, body, {
     formId: formId.toString(),
     status,

@@ -74,6 +74,7 @@ const sendUserUpdatedPTFormNotification = (
   formType: string,
   message?: string
 ) => {
+  console.log('DEBUG sendUserUpdatedPTFormNotification', { userId, userName, formType, message });
   notificationService.sendLocalNotification(
     'PT Form Update',
     message || `${userName}'s ${formType} form was updated.`,
@@ -229,6 +230,25 @@ export const createCachedStatus = (
   type: 'order' | 'diet_plan' | 'workout' | 'session_tracker' | 'pt_form' | 'message'
 ): CachedStatus => {
   item = item && typeof item === 'object' ? item : {};
+  if (type === 'pt_form') {
+    console.log('DEBUG createCachedStatus(pt_form)', {
+      rawItem: item,
+      idCandidates: {
+        order_id: item.order_id,
+        orderId: item.orderId,
+        id: item.id,
+        form_id: item.form_id,
+        formId: item.formId,
+      },
+      statusCandidates: {
+        status: item.status,
+        formStatus: item.formStatus,
+        form_status: item.form_status,
+        ptFormStatus: item.ptFormStatus,
+        pt_form_status: item.pt_form_status,
+      },
+    });
+  }
 
   const id =
     item.order_id ||

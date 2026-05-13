@@ -10,9 +10,13 @@ export const useStatusPolling = () => {
   const pollingInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const checkForUpdates = async () => {
-    if (!user?.id || !token) return;
+    if (!user?.id || !token) {
+      console.log('DEBUG useStatusPolling: skipping because no user or token', { userId: user?.id, hasToken: !!token });
+      return;
+    }
 
     try {
+      console.log('DEBUG useStatusPolling: polling for updates', { userId: user.id });
       const [
         ordersRes,
         dietPlansRes,
@@ -59,6 +63,12 @@ export const useStatusPolling = () => {
           ? ptFormsRes.data
           : ptFormsRes.data?.ptForms || ptFormsRes.data?.pt_forms || ptFormsRes.data?.data
       );
+      if (!ptForms.length) {
+        console.log('DEBUG useStatusPolling: ptForms response shape', {
+          raw: ptFormsRes.data,
+          normalizedLength: ptForms.length,
+        });
+      }
       const assignments = normalizeArray(
         Array.isArray(assignmentsRes.data)
           ? assignmentsRes.data
@@ -88,6 +98,17 @@ export const useStatusPolling = () => {
       ptForms.forEach((item: any) => allStatuses.push(statusTracker.createCachedStatus(item, 'pt_form')));
       messages.forEach((item: any) => allStatuses.push(statusTracker.createCachedStatus(item, 'message')));
 
+      console.log('DEBUG useStatusPolling: built status items', {
+        orders: orders.length,
+        dietPlans: dietPlans.length,
+        workouts: workouts.length,
+        sessionTrackers: sessionTrackers.length,
+        ptForms: ptForms.length,
+        messages: messages.length,
+      });
+      if (ptForms.length > 0) {
+        console.log('DEBUG useStatusPolling: first ptForm item', ptForms[0]);
+      }
       await statusTracker.checkStatusChanges(allStatuses);
       await statusTracker.checkTrainerAssignmentChanges(assignments);
     } catch (error) {
