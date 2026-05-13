@@ -19,6 +19,7 @@ import FlexibilityAndMeasurementsPage from "./pt-form-user/FlexibilityAndMeasure
 import HealthHistory2Page from "./pt-form-user/HealthHistory2Page";
 import HealthHistoryPage from "./pt-form-user/HealthHistoryPage";
 import SessionTrackerPage from "./pt-form-user/SessionTrackerPage";
+import * as notificationService from "../services/notificationService";
 const tabs = [
   { key: "enquiry", label: "Enquiry Form" },
   { key: "health1", label: "Health History" },

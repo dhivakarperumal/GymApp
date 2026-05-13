@@ -143,6 +143,16 @@ const sendAdminUserUpdatedNotification = (
 
 export const checkStatusChanges = async (newStatuses: CachedStatus[]) => {
   try {
+    const ptForms = newStatuses.filter(s => s.type === 'pt_form');
+    const messages = newStatuses.filter(s => s.type === 'message');
+    
+    if (ptForms.length > 0) {
+      console.log(`📋 PT FORMS DETECTED (${ptForms.length}):`, ptForms.map(p => ({ id: p.itemId, status: p.status })));
+    }
+    if (messages.length > 0) {
+      console.log(`💬 MESSAGES DETECTED (${messages.length}):`, messages.map(m => ({ id: m.itemId, status: m.status })));
+    }
+
     const cachedStatuses = await getCachedStatuses();
     const cachedMap = new Map(cachedStatuses.map((s) => [`${s.type}-${s.itemId}`, s]));
     const updatedStatuses: CachedStatus[] = [];
@@ -183,6 +193,7 @@ export const checkStatusChanges = async (newStatuses: CachedStatus[]) => {
             notificationService.sendSessionTrackerNotification(newStatus.itemId, newStatus.status);
             break;
           case 'pt_form':
+            console.log('🏋️ PT FORM NOTIFICATION:', { itemId: newStatus.itemId, status: newStatus.status, details: newStatus.details, isNew });
             notificationService.sendPTFormNotification(
               newStatus.itemId,
               newStatus.status,
@@ -279,6 +290,11 @@ export const createCachedStatus = (
 
   const formType = item.form_type || item.formType || item.type || undefined;
 
+  // Extract message-specific fields
+  const subject = item.subject || item.messageSubject || undefined;
+  const messageContent = item.message || item.messageContent || item.body || undefined;
+  const senderName = item.senderName || item.from || item.senderUserName || trainerName;
+
   const details: Record<string, any> = {
     trainerName,
     title,
@@ -289,6 +305,9 @@ export const createCachedStatus = (
     level: item.level || item.fitnessLevel || item.difficulty,
     formType,
     updatedBy: item.updatedBy || item.updated_by,
+    subject,
+    message: messageContent,
+    senderName,
   };
 
   return {

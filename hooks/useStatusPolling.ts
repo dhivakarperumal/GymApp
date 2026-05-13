@@ -70,6 +70,15 @@ export const useStatusPolling = () => {
           : messagesRes.data?.messages || messagesRes.data?.data
       );
 
+      console.log('📊 POLLING RESULTS:', {
+        orders: orders.length,
+        dietPlans: dietPlans.length,
+        workouts: workouts.length,
+        sessionTrackers: sessionTrackers.length,
+        ptForms: ptForms.length,
+        messages: messages.length,
+      });
+
       const allStatuses: statusTracker.CachedStatus[] = [];
 
       orders.forEach((item: any) => allStatuses.push(statusTracker.createCachedStatus(item, 'order')));

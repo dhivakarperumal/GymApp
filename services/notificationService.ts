@@ -368,13 +368,18 @@ export const sendMessageNotification = (
   details?: Record<string, any>,
   isNew?: boolean
 ) => {
-  const title = isNew ? 'New Message' : 'Message Updated';
+  const title = 'New Message';
   const senderName = details?.senderName || details?.from || 'Trainer';
-  const subject = details?.subject || details?.message || 'New message';
+  const subject = details?.subject || '';
+  const message = details?.message || '';
   
-  let body = `You have a new message from ${senderName}.`;
-  if (subject) {
-    body = `${senderName} sent: ${subject}`;
+  let body = `${senderName} sent`;
+  if (subject && message) {
+    body = `${senderName} sent "${subject}" "${message}"`;
+  } else if (subject) {
+    body = `${senderName} sent "${subject}"`;
+  } else if (message) {
+    body = `${senderName} sent "${message}"`;
   }
 
   sendLocalNotification(title, body, {
