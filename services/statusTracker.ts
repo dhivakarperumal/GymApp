@@ -119,6 +119,9 @@ const sendAdminNewOrderNotification = (
   );
 };
 
+const normalizeArray = (value: any): any[] =>
+  Array.isArray(value) ? value.filter((item) => item && typeof item === 'object') : [];
+
 const sendAdminUserUpdatedNotification = (
   userId: string | number,
   userName: string,
@@ -293,10 +296,13 @@ export const createCachedStatus = (
 export const checkTrainerAssignmentChanges = async (
   currentAssignments: any[]
 ) => {
+  const assignments = normalizeArray(currentAssignments);
+  if (assignments.length === 0) return false;
+
   const cache = await loadStatusCache();
   let hasChanges = false;
 
-  currentAssignments.forEach(assignment => {
+  assignments.forEach(assignment => {
     const id = assignment.id?.toString() || `${assignment.userId}-${assignment.planId}`;
     const oldAssignment = cache.trainerAssignments[id];
 
@@ -353,10 +359,13 @@ export const checkTrainerAssignmentChanges = async (
 export const checkUserPTFormUpdates = async (
   currentUpdates: any[]
 ) => {
+  const updates = normalizeArray(currentUpdates);
+  if (updates.length === 0) return false;
+
   const cache = await loadStatusCache();
   let hasUpdates = false;
 
-  currentUpdates.forEach(update => {
+  updates.forEach(update => {
     const id = `${update.userId}-${update.formType}`;
     const oldUpdate = cache.userUpdates[id];
 
@@ -389,10 +398,13 @@ export const checkUserPTFormUpdates = async (
 export const checkUserSessionCompletion = async (
   currentSessions: any[]
 ) => {
+  const sessions = normalizeArray(currentSessions);
+  if (sessions.length === 0) return false;
+
   const cache = await loadStatusCache();
   let hasCompletions = false;
 
-  currentSessions.forEach(session => {
+  sessions.forEach(session => {
     const id = session.id.toString();
     const oldSession = cache.sessionTrackers[id];
 
