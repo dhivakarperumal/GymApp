@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as notificationService from './notificationService';
 
 const STATUS_CACHE_KEY = '@status_cache';
+const STATUS_TRACKER_CACHE_KEY = '@status_tracker_cache';
 
 export interface CachedStatus {
   itemId: string | number;
@@ -51,7 +52,7 @@ export const saveCachedStatuses = async (statuses: CachedStatus[]) => {
 
 export const loadStatusCache = async (): Promise<StatusCache> => {
   try {
-    const cached = await AsyncStorage.getItem(STATUS_CACHE_KEY);
+    const cached = await AsyncStorage.getItem(STATUS_TRACKER_CACHE_KEY);
     return cached ? JSON.parse(cached) : DEFAULT_STATUS_CACHE;
   } catch (error) {
     console.error('Error loading status cache:', error);
@@ -61,7 +62,7 @@ export const loadStatusCache = async (): Promise<StatusCache> => {
 
 export const saveStatusCache = async (cache: StatusCache) => {
   try {
-    await AsyncStorage.setItem(STATUS_CACHE_KEY, JSON.stringify(cache));
+    await AsyncStorage.setItem(STATUS_TRACKER_CACHE_KEY, JSON.stringify(cache));
   } catch (error) {
     console.error('Error saving status cache:', error);
   }
@@ -326,9 +327,14 @@ export const checkTrainerAssignmentChanges = async (
   const assignments = normalizeArray(currentAssignments);
   console.log(`👥 TRAINER ASSIGNMENTS DETECTED (${assignments.length}):`, assignments.map(a => ({ id: a.id, member: a.username, plan: a.planName })));
   
-  if (assignments.length === 0) return false;
+  if (assignments.length === 0) {
+    console.log('⚠️ No assignments found in polling result');
+    return false;
+  }
 
   const cache = await loadStatusCache();
+  console.log(`📦 LOADED CACHE with ${Object.keys(cache.trainerAssignments).length} cached assignments`);
+  
   let hasChanges = false;
 
   for (const assignment of assignments) {
@@ -344,8 +350,10 @@ export const checkTrainerAssignmentChanges = async (
       const trainerName = assignment.trainerName || 'Trainer';
       const planName = assignment.planName || 'Plan';
 
+      console.log(`🔍 Checking assignment ${id}:`, { memberName, oldAssignment: !!oldAssignment });
+
       if (!oldAssignment) {
-        console.log(`🆕 NEW ASSIGNMENT: ${memberName} assigned to trainer`);
+        console.log(`🆕 NEW ASSIGNMENT DETECTED: ${memberName} assigned to trainer for plan "${planName}"`);
         notificationService.sendAssignmentNotification(memberName, trainerName, planName);
         hasChanges = true;
       } else {
@@ -382,6 +390,7 @@ export const checkTrainerAssignmentChanges = async (
   }
 
   if (hasChanges) {
+    console.log(`💾 SAVING ASSIGNMENT CACHE with ${Object.keys(cache.trainerAssignments).length} assignments`);
     await saveStatusCache(cache);
   }
 
