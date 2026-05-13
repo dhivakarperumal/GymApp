@@ -1,17 +1,898 @@
-﻿import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
-import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import dayjs from "dayjs";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Dimensions,
+  Image,
+  ScrollView,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
+  RefreshControl,
+} from "react-native";
+import { useAuth } from "../../context/AuthContext";
+import {
+  getAllProducts,
+  getAllReviews,
+  getDietPlans,
+  getTrainerWorkouts,
+  getUserAssignment,
+  getUserMemberships,
+} from "../../services/api";
+import ProductCard from "../ProductCard";
 
-export default function HomeRedirect() {
+const { width } = Dimensions.get("window");
+
+export default function Home() {
+  const [reviews, setReviews] = useState([]);
+  const { user } = useAuth();
   const router = useRouter();
+  const { planDetails } = useLocalSearchParams();
+  const [assignment, setAssignment] = useState(null);
+  const scrollRef = useRef(null);
+  const scrollX = useRef(0);
+
+  const [dietTitle, setDietTitle] = useState("");
+  const [todayDay, setTodayDay] = useState("");
+
+  const [todayDiet, setTodayDiet] = useState({});
+  const [todayWorkout, setTodayWorkout] = useState([]);
+  const [todayWorkoutDay, setTodayWorkoutDay] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+
+    await fetchReviews();
+    await fetchProducts();
+
+    if (user?.id) {
+      await initializeUserData();
+    }
+
+    setRefreshing(false);
+  };
+
+  const [products, setProducts] = useState([]);
+  const productScrollRef = useRef(null);
+  const productScrollX = useRef(0);
+
+  const [userPlan, setUserPlan] = useState(null);
+
+  const formatDate = (date) => dayjs(date).format("DD-MM-YYYY");
+
+  const getDayIndex = (dayKey, allKeys = []) => {
+    const digits = String(dayKey).match(/\d+/g);
+    const rawNumber = digits ? Number(digits.join("")) : NaN;
+    if (Number.isNaN(rawNumber)) return 0;
+    const hasZeroKey = allKeys.some((key) => String(key).trim() === "0");
+    return hasZeroKey ? rawNumber : Math.max(0, rawNumber - 1);
+  };
+
+  const fetchUserPlan = useCallback(async () => {
+    try {
+      if (!user?.id) return;
+
+      const res = await getUserMemberships(user.id);
+      const memberships = res.memberships || res;
+
+      if (!Array.isArray(memberships)) return;
+
+      console.log("Membership API Response:", memberships);
+
+      if (!Array.isArray(memberships)) return;
+
+      // filter only current user's plans
+      const myPlans = memberships.filter(
+        (p) => Number(p.userId || p.user_id) === Number(user.id),
+      );
+
+      if (myPlans.length === 0) {
+        setUserPlan(null);
+        return;
+      }
+
+      // find active plan
+      const activePlan = myPlans.find(
+        (plan) => new Date(plan.endDate) > new Date(),
+      );
+
+      setUserPlan(activePlan || myPlans[0]);
+    } catch (error) {
+      console.log("Plan Fetch Error:", error);
+    }
+  }, [user]);
+
+  // Parse planDetails if present
+  const purchasedPlan = planDetails ? JSON.parse(planDetails) : null;
 
   useEffect(() => {
-    router.replace("/workouts");
-  }, [router]);
+    fetchReviews();
+    fetchProducts();
+
+    if (user?.id) {
+      initializeUserData();
+    }
+  }, [user, initializeUserData]);
+
+  const fetchTodayDiet = useCallback(async () => {
+    try {
+      const identifier = user?.user_id || user?.id;
+      const params = {};
+      if (identifier) params.memberId = identifier;
+      if (user?.email) params.email = user.email;
+      if (user?.mobile) params.mobile = user.mobile;
+
+      const data = await getDietPlans(params);
+
+      if (!Array.isArray(data)) {
+        setTodayDiet({});
+        setTodayDay("");
+        setDietTitle("");
+        return;
+      }
+
+      const userEmail = user?.email?.toLowerCase() || "";
+      const userMobile = user?.mobile || "";
+      const userId = String(user?.id || "");
+      const userUuid = user?.user_id || "";
+
+      const userPlans = data.filter(
+        (item) =>
+          (item.member_email && item.member_email.toLowerCase() === userEmail) ||
+          (item.member_mobile && item.member_mobile === userMobile) ||
+          (String(item.user_id) === userId) ||
+          (item.user_id_uuid === userUuid)
+      );
+
+      if (!userPlans.length) {
+        setTodayDiet({});
+        setTodayDay("");
+        setDietTitle("");
+        return;
+      }
+
+      const latestPlan = userPlans.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      )[0];
+
+      let days = latestPlan.days;
+      if (typeof days === "string") {
+        try {
+          days = JSON.parse(days);
+        } catch (err) {
+          console.log("Diet days parse error:", err);
+        }
+      }
+
+      if (!days || typeof days !== "object") {
+        setTodayDiet({});
+        setTodayDay("");
+        setDietTitle(latestPlan.title || "");
+        return;
+      }
+
+      const baseDate = dayjs(latestPlan.created_at);
+      const today = dayjs();
+
+      let foundMeals = {};
+      let foundDate = "";
+
+      Object.entries(days).forEach(([day, meals]) => {
+        const index = getDayIndex(day, Object.keys(days));
+        const date = baseDate.add(index, "day");
+
+        if (date.isSame(today, "day")) {
+          foundMeals = meals;
+          foundDate = formatDate(date);
+        }
+      });
+
+      setTodayDiet(foundMeals);
+      setTodayDay(foundDate);
+      setDietTitle(latestPlan.title || "");
+    } catch (err) {
+      console.log("Today diet error:", err);
+      setTodayDiet({});
+      setTodayDay("");
+      setDietTitle("");
+    }
+  }, [user]);
+
+  const fetchTodayWorkout = useCallback(async () => {
+    try {
+      const identifier = user?.user_id || user?.id;
+      const params = {};
+      if (identifier) params.memberId = identifier;
+      if (user?.email) params.email = user.email;
+      if (user?.mobile) params.mobile = user.mobile;
+
+      const data = await getTrainerWorkouts(params);
+
+      if (!Array.isArray(data)) {
+        setTodayWorkout([]);
+        return;
+      }
+
+      const userEmail = user?.email?.toLowerCase() || "";
+      const userMobile = user?.mobile || "";
+      const userId = String(user?.id || "");
+      const userUuid = user?.user_id || "";
+
+      const myWorkout = data.find(
+        (item) =>
+          (item.member_email || item.memberEmail || "").toLowerCase() === userEmail ||
+          (item.member_mobile || item.memberMobile) === userMobile ||
+          String(item.user_id || item.userId) === userId ||
+          (item.user_id_uuid || item.userIdUuid) === userUuid
+      );
+
+      if (!myWorkout || !myWorkout.days || !myWorkout.created_at) {
+        setTodayWorkout([]);
+        return;
+      }
+
+      const baseDate = dayjs(myWorkout.created_at);
+      const today = dayjs();
+
+      let foundWorkout = null;
+      let foundDayKey = "";
+
+      let closestWorkout = null;
+      let closestDayKey = "";
+
+      Object.entries(myWorkout.days).forEach(([day, exercises]) => {
+        const index = Number(day.replace("Day", "")) - 1;
+        const workoutDate = baseDate.add(index, "day");
+
+        // ✅ Exact today match
+        if (workoutDate.isSame(today, "day")) {
+          foundWorkout = exercises;
+          foundDayKey = day;
+        }
+
+        // ✅ Keep latest past workout (fallback)
+        if (workoutDate.isBefore(today) || workoutDate.isSame(today, "day")) {
+          closestWorkout = exercises;
+          closestDayKey = day;
+        }
+      });
+
+      if (foundWorkout) {
+        const index = Number(foundDayKey.replace("Day", "")) - 1;
+        const date = baseDate.add(index, "day");
+
+        setTodayWorkout(foundWorkout);
+        setTodayWorkoutDay(formatDate(date));
+      } else if (closestWorkout) {
+        const index = Number(closestDayKey.replace("Day", "")) - 1;
+        const date = baseDate.add(index, "day");
+
+        setTodayWorkout(closestWorkout);
+        setTodayWorkoutDay(formatDate(date));
+      } else {
+        setTodayWorkout([]);
+        setTodayWorkoutDay("");
+      }
+    } catch (err) {
+      console.log("Workout fetch error:", err);
+      setTodayWorkout([]);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (scrollRef.current && reviews.length > 0) {
+        scrollX.current += width - 40;
+
+        if (scrollX.current >= reviews.length * (width - 40)) {
+          scrollX.current = 0;
+        }
+
+        scrollRef.current.scrollTo({
+          x: scrollX.current,
+          animated: true,
+        });
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [reviews]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (productScrollRef.current && products.length > 0) {
+        const cardWidth = 201; // card width + margin
+
+        productScrollX.current += cardWidth;
+
+        if (productScrollX.current >= products.length * cardWidth) {
+          productScrollX.current = 0;
+        }
+
+        productScrollRef.current.scrollTo({
+          x: productScrollX.current,
+          animated: true,
+        });
+      }
+    }, 7000);
+
+    return () => clearInterval(interval);
+  }, [products]);
+
+  const fetchReviews = async () => {
+    try {
+      const data = await getAllReviews();
+
+      if (Array.isArray(data)) {
+        // show only active reviews
+        const approved = data.filter((item) => item.status === 1);
+        setReviews(approved);
+      }
+    } catch (err) {
+      console.log("Reviews fetch error:", err.message);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const data = await getAllProducts();
+
+      const productList = data.products || data;
+
+      if (Array.isArray(productList)) {
+        setProducts(productList.slice(0, 10)); // limit for swiper
+      }
+    } catch (err) {
+      console.log("Products fetch error:", err);
+    }
+  };
+
+  const fetchAssignment = useCallback(async () => {
+    try {
+      const data = await getUserAssignment();
+
+      if (Array.isArray(data) && user) {
+        const userAssignment = data.find(
+          (item) => item.userEmail === user.email,
+        );
+
+        if (userAssignment) {
+          setAssignment(userAssignment);
+        }
+      }
+    } catch (err) {
+      console.log("Assignment fetch error:", err);
+    }
+  }, [user]);
+
+  const initializeUserData = useCallback(async () => {
+    try {
+      await fetchUserPlan(); // load plan first
+      await fetchAssignment();
+      await fetchTodayDiet();
+      await fetchTodayWorkout();
+    } catch (err) {
+      console.log("Initialization error:", err);
+    }
+  }, [fetchUserPlan, fetchAssignment, fetchTodayDiet, fetchTodayWorkout]);
+
+  const hasPlan = Boolean(
+    userPlan ||
+    purchasedPlan ||
+    todayWorkout.length > 0 ||
+    Object.keys(todayDiet).length > 0,
+  );
+
+  const showWorkoutCard = hasPlan && todayWorkout && todayWorkout.length > 0;
+  const showWorkoutEmpty = hasPlan && todayWorkout && todayWorkout.length === 0;
+
+  const showDietCard =
+    hasPlan && todayDiet && Object.keys(todayDiet).length > 0;
+  const showDietEmpty =
+    hasPlan && todayDiet && Object.keys(todayDiet).length === 0;
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#000" }}>
-      <ActivityIndicator size="large" color="#e11d1d" />
+    <View className="flex-1 bg-card pt-12 px-5">
+      <StatusBar barStyle="light-content" />
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#ff3c00"
+          />
+        }
+      >
+        {/* PREMIUM PLAN HERO CARD */}
+        <View className="relative rounded-3xl overflow-hidden mb-6">
+          <Image
+            source={{
+              uri: "https://images.unsplash.com/photo-1594737625785-a6cbdabd333c",
+            }}
+            className="w-full h-80"
+          />
+
+          {/* Gradient Overlay */}
+          <View className="absolute inset-0 bg-black/60 p-6 justify-between">
+            {userPlan ? (
+              <>
+                {/* Badge */}
+                <View className="bg-primary self-start px-4 py-1 rounded-full">
+                  <Text className="text-white text-xs font-bold">
+                    YOUR ACTIVE PLAN
+                  </Text>
+                </View>
+
+                {/* Plan Info */}
+                <View>
+                  <Text className="text-white text-3xl font-extrabold mb-2">
+                    {userPlan.planName}
+                  </Text>
+
+                  <View className="flex-row items-center mb-3">
+                    <Text className="text-primary text-2xl font-bold mr-3">
+                      ₹{Number(userPlan.pricePaid || 0).toLocaleString()}
+                    </Text>
+
+                    <View className="bg-white/10 px-3 py-1 rounded-full">
+                      <Text className="text-gray-200 text-xs">
+                        {userPlan.duration}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Dates */}
+                  <View className="flex-row justify-between mt-3">
+                    <View>
+                      <Text className="text-gray-400 text-[11px] uppercase">
+                        Start Date
+                      </Text>
+
+                      <Text className="text-white text-sm font-semibold">
+                        {userPlan.startDate
+                          ? new Date(userPlan.startDate).toLocaleDateString()
+                          : "N/A"}
+                      </Text>
+                    </View>
+
+                    <View>
+                      <Text className="text-gray-400 text-[11px] uppercase">
+                        End Date
+                      </Text>
+
+                      <Text className="text-white text-sm font-semibold">
+                        {userPlan.endDate
+                          ? new Date(userPlan.endDate).toLocaleDateString()
+                          : "N/A"}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </>
+            ) : (
+              <>
+                {/* Motivation Text */}
+                <View>
+                  <Text className="text-red-600 text-3xl font-bold mb-2">
+                    Transform Your Body
+                  </Text>
+
+                  <Text className="text-white text-base">
+                    You currently have no active membership plan. Purchase a plan
+                    to unlock personalized workouts, diet programs, and trainer
+                    support.
+                  </Text>
+
+
+                </View>
+
+                {/* CTA */}
+                <TouchableOpacity
+                  onPress={() => router.push("/Pages/Pricing")}
+                  className="bg-primary py-4 rounded-2xl items-center mt-6"
+                >
+                  <Text className="text-white font-bold text-lg">
+                    Explore Plans
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
+
+        {showWorkoutCard && (
+          <View
+            className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
+            style={{
+              shadowColor: "#ff3c00",
+              shadowOpacity: 0.25,
+              shadowRadius: 20,
+              elevation: 10,
+            }}
+          >
+            <View className="flex-row justify-between items-center mb-4">
+              <View>
+                <Text className="text-white text-lg font-bold">
+                  {"TODAY'S WORKOUT"}
+                </Text>
+
+                <Text className="text-gray-400 text-sm mt-1">
+                  {todayWorkoutDay} Plan
+                </Text>
+              </View>
+
+              <TouchableOpacity onPress={() => router.push("/workouts")}>
+                <Text className="text-primary text-sm font-semibold">
+                  VIEW FULL
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {todayWorkout.map((ex, index) => (
+              <View
+                key={index}
+                className="bg-black rounded-xl p-4 mb-3 border border-[#2a2a2a]"
+              >
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center">
+                    <Ionicons
+                      name="barbell-outline"
+                      size={18}
+                      color="#ff3c00"
+                    />
+                    <Text className="text-white ml-2">{ex.name}</Text>
+                  </View>
+
+                  <Text className="text-gray-400 text-xs">{ex.time}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {showWorkoutEmpty && (
+          <View
+            className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
+            style={{
+              shadowColor: "#ff3c00",
+              shadowOpacity: 0.25,
+              shadowRadius: 20,
+              elevation: 10,
+            }}
+          >
+            <View className="flex-row items-center mb-3">
+              <Ionicons
+                name="information-circle-outline"
+                size={20}
+                color="#ff3c00"
+              />
+              <Text className="text-white text-lg font-bold ml-2">
+                {"TODAY'S WORKOUT"}
+              </Text>
+            </View>
+
+            <Text className="text-gray-400 text-sm">
+              No assigned exercise for today.
+            </Text>
+
+            <Text className="text-gray-500 text-xs mt-2">
+              Your trainer has not scheduled a workout for today. Check back
+              later or contact your trainer for the next session.
+            </Text>
+          </View>
+        )}
+
+        {showDietCard && (
+          <View
+            className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
+            style={{
+              shadowColor: "#ff3c00",
+              shadowOpacity: 0.25,
+              shadowRadius: 20,
+              elevation: 10,
+            }}
+          >
+            <View className="flex-row justify-between items-center mb-4">
+              <View>
+                <Text className="text-white text-lg font-bold">
+                  {"TODAY'S DIET"}
+                </Text>
+
+                {dietTitle ? (
+                  <Text className="text-gray-500 text-xs mt-1">
+                    {dietTitle}
+                  </Text>
+                ) : null}
+
+                {todayDay && (
+                  <Text className="text-gray-400 text-sm mt-1">
+                    {todayDay} Meals
+                  </Text>
+                )}
+              </View>
+
+              <TouchableOpacity onPress={() => router.push("/diet")}>
+                <Text className="text-primary text-sm font-semibold">
+                  VIEW FULL
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {Object.entries(todayDiet).map(([meal, value]) => {
+              const mealItems = Array.isArray(value?.items) ? value.items : [];
+              const totalCalories = mealItems.reduce(
+                (sum, item) => sum + (parseInt(item.calories, 10) || 0),
+                0
+              );
+
+              return (
+                <View
+                  key={meal}
+                  className="bg-[#1c1c1c] rounded-2xl border border-[#262626] mb-4"
+                >
+                  {/* HEADER */}
+                  <View className="flex-row justify-between items-center bg-black/40 px-5 py-4 border-b border-[#262626]">
+                    <Text className="text-white font-semibold text-lg">{meal}</Text>
+
+                    <Text className="text-red-500 text-sm">
+                      {value?.time || "No time"}
+                    </Text>
+                  </View>
+
+                  {/* ITEMS */}
+                  <View className="px-5 py-4 space-y-3">
+                    {mealItems.length > 0 ? (
+                      mealItems.map((item, idx) => (
+                        <View
+                          key={idx}
+                          className="flex-row justify-between items-start pb-3 border-b border-white/5 last:border-0"
+                        >
+                          <View className="flex-1">
+                            <Text className="text-white text-sm font-medium">
+                              {item.food || "Food item"}
+                            </Text>
+
+                            <Text className="text-white/40 text-[12px] mt-1">
+                              Qty:{" "}
+                              <Text className="text-white/60">
+                                {item.quantity || "-"}
+                              </Text>
+                            </Text>
+                          </View>
+
+                          <Text className="text-xs font-semibold text-emerald-400">
+                            {item.calories || "0"} kcal
+                          </Text>
+                        </View>
+                      ))
+                    ) : (
+                      <Text className="text-white/60 text-sm">No food items</Text>
+                    )}
+
+                    {/* TOTAL */}
+                    {mealItems.length > 0 && (
+                      <View className="mt-3 pt-3 border-t border-red-500/20 flex-row justify-between">
+                        <Text className="text-[10px] text-white/30 uppercase font-semibold">
+                          Total
+                        </Text>
+
+                        <Text className="text-xs font-bold text-red-500">
+                          {totalCalories} kcal
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        )}
+
+        {showDietEmpty && (
+          <View
+            className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
+            style={{
+              shadowColor: "#ff3c00",
+              shadowOpacity: 0.25,
+              shadowRadius: 20,
+              elevation: 10,
+            }}
+          >
+            <View className="flex-row items-center mb-3">
+              <Ionicons name="restaurant-outline" size={20} color="#ff3c00" />
+              <Text className="text-white text-lg font-bold ml-2">
+                {"TODAY'S DIET"}
+              </Text>
+            </View>
+
+            <Text className="text-gray-400 text-sm">
+              No assigned diet for today.
+            </Text>
+
+            <Text className="text-gray-500 text-xs mt-2">
+              Your trainer has not scheduled a meal plan for today. Please check
+              again later or contact your trainer for guidance.
+            </Text>
+          </View>
+        )}
+
+        {/* 🛒 PRODUCTS */}
+        <View className="mb-6">
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-white text-lg font-bold">
+              SUPPLEMENTS & GEAR
+            </Text>
+
+            <TouchableOpacity onPress={() => router.push("shop")}>
+              <Text className="text-primary text-sm font-semibold">
+                VIEW ALL
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            ref={productScrollRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={101}
+            decelerationRate="fast"
+            snapToAlignment="start"
+          >
+            {products.map((item) => (
+              <View key={item.id} style={{ width: 190, marginRight: 11 }}>
+                <ProductCard item={item} />
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* 🔥 Reviews Section */}
+        <View className="mt-6 mb-10">
+          <Text className="text-white text-lg font-bold mb-4">
+            MEMBER REVIEWS
+          </Text>
+
+          {reviews.length === 0 && (
+            <Text className="text-gray-400">No reviews available</Text>
+          )}
+
+          <ScrollView
+            ref={scrollRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          >
+            {reviews.map((review, index) => (
+              <View
+                key={review.id || index}
+                className="h-44 bg-[#141414] rounded-3xl p-5 mr-4 border border-[#262626]"
+                style={{
+                  width: width - 40,
+                  shadowColor: "#ff3c00",
+                  shadowOpacity: 0.25,
+                  shadowRadius: 15,
+                  elevation: 8,
+                }}
+              >
+                {/* User Info */}
+                <View className="flex-row items-center mb-4">
+                  <Image
+                    source={{ uri: review.image }}
+                    className="w-12 h-12 rounded-full mr-3"
+                  />
+                  <View>
+                    <Text className="text-white font-bold">{review.name}</Text>
+
+                    {/* Rating Stars */}
+                    <View className="flex-row mt-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Ionicons
+                          key={star}
+                          name={star <= review.rating ? "star" : "star-outline"}
+                          size={14}
+                          color="#ff3c00"
+                          style={{ marginRight: 2 }}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                </View>
+
+                {/* Message */}
+                <Text
+                  numberOfLines={3}
+                  ellipsizeMode="tail"
+                  className="text-gray-300 text-sm leading-5"
+                >
+                  {`"${review.message}"`}
+                </Text>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* 👨‍🏫 Trainer Section */}
+        {assignment && (
+          <View
+            className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
+            style={{
+              shadowColor: "#ff3c00",
+              shadowOpacity: 0.25,
+              shadowRadius: 20,
+              elevation: 10,
+            }}
+          >
+            <View className="flex-row items-center mb-4">
+              {/* Trainer Image */}
+              {/* <Image
+                source={{
+                  uri:
+                    assignment.trainerImage ||
+                    "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b",
+                }}
+                className="w-16 h-16 rounded-full mr-4 border-2 border-primary"
+              /> */}
+
+              {/* Trainer Info */}
+              <View>
+                <Text className="text-gray-400 text-xs">YOUR TRAINER</Text>
+
+                <Text className="text-white text-lg font-bold">
+                  {assignment.trainerName}
+                </Text>
+
+                <Text className="text-gray-400 text-sm mt-1">
+                  {assignment.planName}
+                </Text>
+              </View>
+            </View>
+
+            {/* Plan Info */}
+            <View className="flex-row justify-between mb-4">
+              <View>
+                <Text className="text-gray-500 text-xs">PLAN</Text>
+                <Text className="text-white font-semibold">
+                  {assignment.planName}
+                </Text>
+              </View>
+
+              <View>
+                <Text className="text-gray-500 text-xs">DURATION</Text>
+                <Text className="text-white font-semibold">
+                  {assignment.planDuration} Months
+                </Text>
+              </View>
+            </View>
+
+            {/* Buttons */}
+            <View className="flex-row">
+              <TouchableOpacity
+                onPress={() => router.push("/workouts")}
+                className="flex-1 bg-primary py-3 rounded-xl mr-2 items-center flex-row justify-center"
+              >
+                <Ionicons name="barbell" size={16} color="white" />
+                <Text className="text-white text-sm font-bold ml-2">
+                  VIEW WORKOUT
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => router.push("/diet")}
+                className="flex-1 bg-[#262626] py-3 rounded-xl items-center flex-row justify-center"
+              >
+                <Ionicons name="restaurant" size={16} color="white" />
+                <Text className="text-white text-sm font-bold ml-2">
+                  VIEW DIET
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      </ScrollView>
     </View>
   );
 }

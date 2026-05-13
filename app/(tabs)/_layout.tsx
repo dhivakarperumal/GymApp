@@ -84,7 +84,7 @@ export default function TabLayout() {
 
         headerLeft: () => (
           <TouchableOpacity 
-            onPress={() => router.push("/workouts")}
+            onPress={() => router.push("/")}
             style={{ marginLeft: 16 }}
           >
             <Image
@@ -220,6 +220,7 @@ export default function TabLayout() {
         ),
       }}
     >
+      <Tabs.Screen name="index" options={{ title: "Home", tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} /> }} />
       <Tabs.Screen name="workouts" options={{ title: "Workouts", tabBarIcon: ({ color, size }) => <Ionicons name="barbell" size={size} color={color} /> }} />
       <Tabs.Screen name="diet" options={{ title: "Diet", tabBarIcon: ({ color, size }) => <Ionicons name="nutrition" size={size} color={color} /> }} />
       <Tabs.Screen name="shop" options={{ title: "Shop", tabBarIcon: ({ color, size }) => <Ionicons name="cart" size={size} color={color} /> }} />
