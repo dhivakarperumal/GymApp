@@ -29,24 +29,39 @@ export const useStatusPolling = () => {
         api.get(`/assignments?trainerUserId=${user.id}`, token).catch(() => ({ data: [] })),
       ]);
 
-      const orders = Array.isArray(ordersRes.data)
-        ? ordersRes.data
-        : ordersRes.data?.orders || ordersRes.data?.data || [];
-      const dietPlans = Array.isArray(dietPlansRes.data)
-        ? dietPlansRes.data
-        : dietPlansRes.data?.dietPlans || dietPlansRes.data?.data || [];
-      const workouts = Array.isArray(workoutsRes.data)
-        ? workoutsRes.data
-        : workoutsRes.data?.workouts || workoutsRes.data?.data || [];
-      const sessionTrackers = Array.isArray(sessionTrackersRes.data)
-        ? sessionTrackersRes.data
-        : sessionTrackersRes.data?.sessionTrackers || sessionTrackersRes.data?.data || [];
-      const ptForms = Array.isArray(ptFormsRes.data)
-        ? ptFormsRes.data
-        : ptFormsRes.data?.ptForms || ptFormsRes.data?.data || [];
-      const assignments = Array.isArray(assignmentsRes.data)
-        ? assignmentsRes.data
-        : assignmentsRes.data?.assignments || assignmentsRes.data?.data || [];
+      const normalizeArray = (value: any) =>
+        Array.isArray(value) ? value.filter((item) => item && typeof item === 'object') : [];
+
+      const orders = normalizeArray(
+        Array.isArray(ordersRes.data)
+          ? ordersRes.data
+          : ordersRes.data?.orders || ordersRes.data?.data
+      );
+      const dietPlans = normalizeArray(
+        Array.isArray(dietPlansRes.data)
+          ? dietPlansRes.data
+          : dietPlansRes.data?.dietPlans || dietPlansRes.data?.data
+      );
+      const workouts = normalizeArray(
+        Array.isArray(workoutsRes.data)
+          ? workoutsRes.data
+          : workoutsRes.data?.workouts || workoutsRes.data?.data
+      );
+      const sessionTrackers = normalizeArray(
+        Array.isArray(sessionTrackersRes.data)
+          ? sessionTrackersRes.data
+          : sessionTrackersRes.data?.sessionTrackers || sessionTrackersRes.data?.data
+      );
+      const ptForms = normalizeArray(
+        Array.isArray(ptFormsRes.data)
+          ? ptFormsRes.data
+          : ptFormsRes.data?.ptForms || ptFormsRes.data?.data
+      );
+      const assignments = normalizeArray(
+        Array.isArray(assignmentsRes.data)
+          ? assignmentsRes.data
+          : assignmentsRes.data?.assignments || assignmentsRes.data?.data
+      );
 
       const allStatuses: statusTracker.CachedStatus[] = [];
 

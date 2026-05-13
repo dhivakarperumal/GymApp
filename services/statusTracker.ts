@@ -205,6 +205,8 @@ export const createCachedStatus = (
   item: any,
   type: 'order' | 'diet_plan' | 'workout' | 'session_tracker' | 'pt_form'
 ): CachedStatus => {
+  item = item && typeof item === 'object' ? item : {};
+
   const id =
     item.order_id ||
     item.orderId ||
@@ -256,7 +258,7 @@ export const createCachedStatus = (
   const calories =
     item.calories || item.dailyCalories || item.caloriesPerDay || item.kcal || undefined;
 
-  const workoutDays = item.days
+  const workoutDays = item.days != null
     ? typeof item.days === 'object'
       ? Object.keys(item.days).length
       : item.days
