@@ -3,18 +3,18 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  ActivityIndicator,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -28,7 +28,7 @@ const LoginScreen = () => {
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -58,7 +58,7 @@ const LoginScreen = () => {
   }, [loading, user]);
 
   const handleLogin = async () => {
-    if (loading) return;
+    if (isSubmitting) return;
 
     const id = identifier.trim();
     const pass = password.trim();
@@ -118,7 +118,7 @@ const LoginScreen = () => {
         text1: errorMessage,
       });
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -226,11 +226,11 @@ const LoginScreen = () => {
                 {/* LOGIN BUTTON */}
                 <TouchableOpacity
                   onPress={handleLogin}
-                  disabled={loading}
+                  disabled={loading || isSubmitting}
                   activeOpacity={0.85}
                   className="bg-primary py-4 rounded-full items-center"
                 >
-                  {loading ? (
+                  {(loading || isSubmitting) ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
                     <Text className="text-white text-lg font-bold">Login</Text>
