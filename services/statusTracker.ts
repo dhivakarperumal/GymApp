@@ -302,51 +302,53 @@ export const checkTrainerAssignmentChanges = async (
   const cache = await loadStatusCache();
   let hasChanges = false;
 
-  assignments.forEach(assignment => {
-    const id = assignment.id?.toString() || `${assignment.userId}-${assignment.planId}`;
-    const oldAssignment = cache.trainerAssignments[id];
-
-    if (!oldAssignment) {
-      // New assignment
-      notificationService.sendAssignmentNotification(
-        assignment.username || assignment.memberName,
-        assignment.trainerName,
-        assignment.planName
-      );
-      hasChanges = true;
-    } else {
-      // Check for changes
-      let changeType = null;
-
-      if (oldAssignment.trainerId !== assignment.trainerId) {
-        changeType = 'trainer_change';
-      } else if (oldAssignment.planId !== assignment.planId || oldAssignment.planName !== assignment.planName) {
-        changeType = 'plan_change';
-      } else if (oldAssignment.status !== assignment.status) {
-        changeType = 'status_change';
-      }
-
-      if (changeType) {
-        notificationService.sendAssignmentUpdateNotification(
-          assignment.username || assignment.memberName,
-          assignment.trainerName,
-          changeType
-        );
-        hasChanges = true;
-      }
+  for (const assignment of assignments) {
+    if (!assignment || typeof assignment !== 'object') {
+      console.warn('Skipping invalid trainer assignment item:', assignment);
+      continue;
     }
 
-    cache.trainerAssignments[id] = {
-      userId: assignment.userId,
-      trainerId: assignment.trainerId,
-      planId: assignment.planId,
-      planName: assignment.planName,
-      status: assignment.status,
-      memberName: assignment.username || assignment.memberName,
-      trainerName: assignment.trainerName,
-      updatedAt: assignment.updatedAt || new Date().toISOString(),
-    };
-  });
+    try {
+      const id = assignment.id != null ? String(assignment.id) : `${assignment.userId ?? 'unknown'}-${assignment.planId ?? 'unknown'}`;
+      const oldAssignment = cache.trainerAssignments[id];
+      const memberName = assignment.username || assignment.memberName || 'Member';
+      const trainerName = assignment.trainerName || 'Trainer';
+      const planName = assignment.planName || 'Plan';
+
+      if (!oldAssignment) {
+        notificationService.sendAssignmentNotification(memberName, trainerName, planName);
+        hasChanges = true;
+      } else {
+        let changeType: string | null = null;
+
+        if (oldAssignment.trainerId !== assignment.trainerId) {
+          changeType = 'trainer_change';
+        } else if (oldAssignment.planId !== assignment.planId || oldAssignment.planName !== assignment.planName) {
+          changeType = 'plan_change';
+        } else if (oldAssignment.status !== assignment.status) {
+          changeType = 'status_change';
+        }
+
+        if (changeType) {
+          notificationService.sendAssignmentUpdateNotification(memberName, trainerName, changeType);
+          hasChanges = true;
+        }
+      }
+
+      cache.trainerAssignments[id] = {
+        userId: assignment.userId,
+        trainerId: assignment.trainerId,
+        planId: assignment.planId,
+        planName: planName,
+        status: assignment.status,
+        memberName,
+        trainerName,
+        updatedAt: assignment.updatedAt || new Date().toISOString(),
+      };
+    } catch (error) {
+      console.warn('Error processing trainer assignment item:', assignment, error);
+    }
+  }
 
   if (hasChanges) {
     await saveStatusCache(cache);
