@@ -11,7 +11,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-import * as notificationService from "../services/notificationService";
 import BackButton from "./BackButton";
 import Header from "./Header";
 
@@ -125,13 +124,6 @@ export default function TrainerSendMessage() {
         message,
         recipients,
       });
-
-      // Send notification
-      notificationService.sendMessageNotification(
-        selectedMembers.length,
-        user?.name || user?.username,
-        subject || `Message from Trainer ${user?.username}`
-      );
 
       Toast.show({ type: "success", text1: "Message Sent" });
 

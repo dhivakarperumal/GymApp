@@ -6,7 +6,6 @@ import { Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../context/AuthContext.js';
 import api from '../../../services/api';
-import * as notificationService from '../../../services/notificationService';
 import FitnessScreening from './FitnessScreening';
 import FlexibilityAndMeasurements from './FlexibilityAndMeasurements';
 import HealthHistory2 from './HealthHistory2';
@@ -255,12 +254,6 @@ const PTForm = ({ route, navigation }) => {
       const response = await api.post('/pt-forms', payload);
 
       console.log('✅ PT Form submitted successfully:', response.data);
-
-      // Send notification
-      notificationService.sendDirectPTFormNotification(
-        formData.name || formData.member_name,
-        user?.name || user?.username
-      );
 
       Alert.alert(
         'Success',

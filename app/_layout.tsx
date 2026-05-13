@@ -10,14 +10,26 @@ import * as notificationService from "../services/notificationService";
 import "./global.css";
 
 function NotificationWrapper({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   useNotifications();
 
   useEffect(() => {
     notificationService.configureNotifications();
-    notificationService.registerForPushNotificationsAsync().catch((error) => {
+
+    const registerDevice = async () => {
+      const pushToken = await notificationService.registerForPushNotificationsAsync();
+      if (pushToken && user?.id) {
+        const registered = await notificationService.sendPushTokenToServer(user.id, pushToken);
+        if (!registered) {
+          console.warn('Failed to register push token on server');
+        }
+      }
+    };
+
+    registerDevice().catch((error) => {
       console.error('Failed to register for push notifications:', error);
     });
-  }, []);
+  }, [user?.id]);
 
   return <>{children}</>;
 }

@@ -17,7 +17,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
-import * as notificationService from "../../services/notificationService";
 
 export default function MessagesScreen() {
   const router = useRouter();
@@ -137,14 +136,6 @@ export default function MessagesScreen() {
         message: message.trim(),
         recipients,
       });
-
-      // Send notification
-      const recipientCount = selectedMembers.length;
-      notificationService.sendMessageNotification(
-        recipientCount,
-        user?.name || user?.username,
-        subject.trim()
-      );
 
       Toast.show({ type: "success", text1: "Message Sent Successfully" });
       setMessage("");

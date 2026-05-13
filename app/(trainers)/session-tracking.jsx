@@ -175,12 +175,6 @@ export default function SessionTrackingScreen() {
         completed: true,
       });
 
-      // Send notification
-      notificationService.sendDirectPTFormNotification(
-        selectedMember?.name,
-        user?.name || user?.username
-      );
-
       Toast.show({ type: "success", text1: "Session tracker saved" });
       setFormData(prev => ({ ...prev, sessions: sessionData.sessions }));
     } catch (err) {

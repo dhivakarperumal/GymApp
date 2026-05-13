@@ -86,6 +86,36 @@ export const registerForPushNotificationsAsync = async (): Promise<string | unde
   }
 };
 
+const BASE_URL = 'https://dap.qtechx.com/api';
+
+const postJson = async (url: string, payload: any) => {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const text = await res.text();
+  let data: any = text;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    // keep raw body if JSON parse fails
+  }
+
+  if (!res.ok) {
+    const error = new Error(
+      typeof data === 'string' ? data : data?.message || 'Request failed'
+    );
+    Object.assign(error, { response: { data, status: res.status } });
+    throw error;
+  }
+
+  return data;
+};
+
 export const sendLocalNotification = (
   title: string,
   body: string,
@@ -103,6 +133,69 @@ export const sendLocalNotification = (
   }).catch((error: any) => {
     console.warn('Error scheduling notification:', error);
   });
+};
+
+export const sendPushTokenToServer = async (
+  userId: string | number,
+  pushToken: string
+): Promise<boolean> => {
+  const payload = {
+    userId: String(userId),
+    pushToken,
+    platform: Platform.OS,
+    app: Constants.expoConfig?.slug || 'GymApp',
+  };
+
+  const endpoints = [
+    `${BASE_URL}/users/push-tokens`,
+    `${BASE_URL}/push-tokens`,
+    `${BASE_URL}/auth/push-tokens`,
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      await postJson(endpoint, payload);
+      console.log(`Push token sent to server: ${endpoint}`);
+      return true;
+    } catch (error) {
+      console.warn(`Push token registration failed at ${endpoint}:`, error.message || error);
+    }
+  }
+
+  return false;
+};
+
+export const triggerServerPushNotification = async (
+  recipientId: string | number,
+  title: string,
+  body: string,
+  data?: Record<string, any>
+): Promise<boolean> => {
+  const payload = {
+    userId: String(recipientId),
+    title,
+    body,
+    data: data || {},
+  };
+
+  const endpoints = [
+    `${BASE_URL}/trainers/${recipientId}/send-notification`,
+    `${BASE_URL}/users/${recipientId}/send-notification`,
+    `${BASE_URL}/notifications/send`,
+    `${BASE_URL}/test/send-notification`,
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      await postJson(endpoint, payload);
+      console.log(`Server push notification triggered: ${endpoint}`);
+      return true;
+    } catch (error) {
+      console.warn(`Push notification trigger failed at ${endpoint}:`, error.message || error);
+    }
+  }
+
+  return false;
 };
 
 export const sendOrderNotification = (
@@ -292,7 +385,7 @@ export const sendMessageNotification = (
   }
 
   sendLocalNotification(title, body, {
-    type: 'message_sent',
+    type: 'new_message',
     recipientCount: recipientCount.toString(),
     senderName: senderName || '',
   });
