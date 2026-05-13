@@ -97,10 +97,25 @@ const SessionTracker = ({
 
         await api.post(`/pt-forms`, payload);
 
-        // Send notification
-        notificationService.sendDirectPTFormNotification(
-          initialFormData.name || initialFormData.member_name
-        );
+        const trainerId =
+          initialFormData?.trainer_id ||
+          initialFormData?.trainerId ||
+          initialFormData?.trainer_user_id ||
+          initialFormData?.trainerUserId ||
+          null;
+
+        if (trainerId) {
+          await notificationService.triggerServerPushNotification(
+            trainerId,
+            'Session Tracker Approved',
+            `${initialFormData.name || initialFormData.member_name} approved session tracker details.`,
+            {
+              type: 'user_session_tracker_update',
+              userId: String(initialFormData.u_id || initialFormData.user_id || ''),
+              memberName: initialFormData.name || initialFormData.member_name || '',
+            }
+          );
+        }
 
         Toast.show({ type: "success", text1: "Sessions approved successfully!" });
 

@@ -105,8 +105,32 @@ export default function SessionTrackerScreen() {
       });
       setFormData(updatedData);
 
-      // Send notification
-      notificationService.sendDirectPTFormNotification(member?.name);
+      const trainerId =
+        member?.trainer_user_id ||
+        member?.trainerUserId ||
+        member?.trainer_id ||
+        member?.trainerId ||
+        member?.assigned_trainer_id ||
+        member?.assignedTrainerId ||
+        member?.trainer?.id ||
+        null;
+
+      const hasCompletedSession = Array.isArray(updatedData.sessions)
+        ? updatedData.sessions.some((session) => String(session.status).toLowerCase() === 'completed')
+        : false;
+
+      if (trainerId && hasCompletedSession) {
+        await notificationService.triggerServerPushNotification(
+          trainerId,
+          'Session Tracker Updated',
+          `${member?.name || user?.username || 'A member'} completed their session tracker.`,
+          {
+            type: 'user_session_tracker_update',
+            userId: String(user.id),
+            memberName: member?.name || '',
+          }
+        );
+      }
 
       Toast.show({
         type: "success",

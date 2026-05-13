@@ -12,6 +12,7 @@ import HealthHistory2 from './HealthHistory2';
 import HealthHistoy from './HealthHistoy';
 import PTFormEnquiry from './PTFormEnquiry';
 import SessionTracker from './SessionTracker';
+import * as notificationService from "../../../services/notificationService";
 
 const PTForm = ({ route, navigation }) => {
   const router = useRouter();
@@ -254,6 +255,21 @@ const PTForm = ({ route, navigation }) => {
       const response = await api.post('/pt-forms', payload);
 
       console.log('✅ PT Form submitted successfully:', response.data);
+
+      const memberUserId = formData.u_id || formData.user_id || response.data?.user_id || null;
+      if (memberUserId) {
+        await notificationService.triggerServerPushNotification(
+          memberUserId,
+          'PT Form Completed',
+          `${user?.username || user?.name || 'Your trainer'} completed your PT form.`,
+          {
+            type: 'pt_form_status',
+            formId: String(formData.member_id || formData.u_id || ''),
+            status: 'completed',
+            trainerName: user?.username || user?.name || '',
+          }
+        );
+      }
 
       Alert.alert(
         'Success',
