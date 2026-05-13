@@ -252,17 +252,18 @@ export const sendPTFormNotification = (
 
 export const sendDirectPTFormNotification = (
   memberName?: string,
-  trainerName?: string
+  trainerName?: string,
+  isUpdate = true
 ) => {
-  const title = 'PT Form Saved';
-  const body = trainerName && memberName
-    ? `Your trainer ${trainerName} saved a PT form for ${memberName}.`
-    : trainerName
-    ? `Your trainer ${trainerName} saved a PT form.`
-    : 'PT Form has been saved successfully.';
+  const title = isUpdate ? 'PT Form Updated' : 'PT Form Completed';
+  const body = trainerName
+    ? `Your trainer ${trainerName} ${isUpdate ? 'updated' : 'completed'} your PT form.`
+    : 'Your PT form has been updated.';
 
   sendLocalNotification(title, body, {
     type: 'pt_form_saved',
+    trainerName: trainerName || '',
+    memberName: memberName || '',
   });
 };
 
@@ -271,21 +272,29 @@ export const sendMessageNotification = (
   senderName?: string,
   subject?: string
 ) => {
-  const title = 'Message Sent';
+  const title = 'New Message';
   let body = '';
 
   if (senderName) {
-    body = `Your message from ${senderName} was sent to ${recipientCount} recipient${recipientCount !== 1 ? 's' : ''}.`;
+    body = `You have a new message from trainer ${senderName}.`;
     if (subject) {
-      body += ` Subject: ${subject}`;
+      body += ` Subject: ${subject}.`;
     }
   } else {
-    body = `Your message was successfully sent to ${recipientCount} recipient${recipientCount !== 1 ? 's' : ''}.`;
+    body = `You have a new message.`;
+    if (subject) {
+      body += ` Subject: ${subject}.`;
+    }
+  }
+
+  if (recipientCount > 1) {
+    body += ` This message was sent to ${recipientCount} recipients.`;
   }
 
   sendLocalNotification(title, body, {
     type: 'message_sent',
     recipientCount: recipientCount.toString(),
+    senderName: senderName || '',
   });
 };
 
