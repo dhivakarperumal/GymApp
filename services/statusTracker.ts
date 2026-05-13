@@ -250,12 +250,37 @@ export const createCachedStatus = (
     });
   }
 
+  const rawFormData = item.form_data;
+  let parsedFormData: any = rawFormData;
+  if (typeof rawFormData === 'string') {
+    try {
+      parsedFormData = JSON.parse(rawFormData);
+    } catch {
+      parsedFormData = rawFormData;
+    }
+  }
+
+  const nestedStatus =
+    parsedFormData?.status ||
+    parsedFormData?.formStatus ||
+    parsedFormData?.form_status ||
+    parsedFormData?.pt_form_status ||
+    (parsedFormData?.completed ? 'Completed' : undefined);
+
   const id =
     item.order_id ||
     item.orderId ||
     item.id ||
     item.form_id ||
     item.formId ||
+    item.member_id ||
+    item.memberId ||
+    item.u_id ||
+    item.user_id ||
+    parsedFormData?.member_id ||
+    parsedFormData?.memberId ||
+    parsedFormData?.u_id ||
+    parsedFormData?.user_id ||
     item.dietPlanId ||
     item.workoutId ||
     item.sessionId ||
@@ -267,6 +292,7 @@ export const createCachedStatus = (
 
   const status =
     item.status ||
+    nestedStatus ||
     item.orderStatus ||
     item.paymentStatus ||
     item.sessionStatus ||

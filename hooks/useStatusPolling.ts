@@ -9,6 +9,40 @@ export const useStatusPolling = () => {
   const { user, token } = useAuth();
   const pollingInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const fetchPtFormsForTrainer = async (assignments: any[]) => {
+    const memberIds = Array.from(
+      new Set(
+        assignments
+          .map((assignment) => assignment.gymMemberId || assignment.memberId || assignment.userId || assignment.user_id)
+          .filter(Boolean)
+      )
+    );
+
+    if (memberIds.length === 0) {
+      console.log('DEBUG useStatusPolling: no member IDs available for trainer PT form fallback');
+      return [];
+    }
+
+    console.log('DEBUG useStatusPolling: fetching trainer PT forms for member IDs', memberIds);
+
+    const fetchedPtForms = await Promise.all(
+      memberIds.map(async (memberId) => {
+        try {
+          const res = await api.get(`/pt-forms/${memberId}`, token);
+          return res.data;
+        } catch (err) {
+          console.warn('DEBUG useStatusPolling: trainer PT form fetch failed', {
+            memberId,
+            error: err?.message || err,
+          });
+          return null;
+        }
+      })
+    );
+
+    return fetchedPtForms.filter((item) => item && typeof item === 'object');
+  };
+
   const checkForUpdates = async () => {
     if (!user?.id || !token) {
       console.log('DEBUG useStatusPolling: skipping because no user or token', { userId: user?.id, hasToken: !!token });
@@ -58,17 +92,11 @@ export const useStatusPolling = () => {
           ? sessionTrackersRes.data
           : sessionTrackersRes.data?.sessionTrackers || sessionTrackersRes.data?.data
       );
-      const ptForms = normalizeArray(
+      let ptForms = normalizeArray(
         Array.isArray(ptFormsRes.data)
           ? ptFormsRes.data
           : ptFormsRes.data?.ptForms || ptFormsRes.data?.pt_forms || ptFormsRes.data?.data
       );
-      if (!ptForms.length) {
-        console.log('DEBUG useStatusPolling: ptForms response shape', {
-          raw: ptFormsRes.data,
-          normalizedLength: ptForms.length,
-        });
-      }
       const assignments = normalizeArray(
         Array.isArray(assignmentsRes.data)
           ? assignmentsRes.data
@@ -79,6 +107,43 @@ export const useStatusPolling = () => {
           ? messagesRes.data
           : messagesRes.data?.messages || messagesRes.data?.data
       );
+
+      if (!ptForms.length) {
+        console.log('DEBUG useStatusPolling: ptForms response shape', {
+          raw: ptFormsRes.data,
+          normalizedLength: ptForms.length,
+        });
+      }
+
+      if (user.role === 'trainer' && assignments.length > 0) {
+        const trainerPtForms = await fetchPtFormsForTrainer(assignments);
+        if (trainerPtForms.length > 0) {
+          console.log('DEBUG useStatusPolling: trainer PT forms fallback returned', { count: trainerPtForms.length });
+          ptForms = ptForms.concat(trainerPtForms);
+        }
+      }
+
+      if (!ptForms.length && user.role !== 'trainer') {
+        const fallbackKeys = ['memberId', 'u_id'];
+        for (const key of fallbackKeys) {
+          const fallbackRes = await api.get(`/pt-forms?${key}=${user.id}`, token).catch(() => ({ data: [] }));
+          let fallbackItems = normalizeArray(
+            Array.isArray(fallbackRes.data)
+              ? fallbackRes.data
+              : fallbackRes.data?.ptForms || fallbackRes.data?.pt_forms || fallbackRes.data?.data
+          );
+
+          if (!fallbackItems.length && fallbackRes.data && typeof fallbackRes.data === 'object' && !Array.isArray(fallbackRes.data)) {
+            fallbackItems = [fallbackRes.data];
+          }
+
+          if (fallbackItems.length) {
+            console.log('DEBUG useStatusPolling: ptForms fallback succeeded for key', key, { count: fallbackItems.length });
+            ptForms = fallbackItems;
+            break;
+          }
+        }
+      }
 
       console.log('📊 POLLING RESULTS:', {
         orders: orders.length,
