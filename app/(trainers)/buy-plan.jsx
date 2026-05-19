@@ -373,8 +373,10 @@ export default function AssignPlan() {
             </View>
           </View>
 
-          <Text style={styles.label}>Address</Text>
-          <TextInput style={[styles.input, { height: 80, textAlignVertical: 'top' }]} value={form.address} onChangeText={t => setForm({ ...form, address: t })} multiline placeholder="Enter member address" placeholderTextColor="#666" />
+          <View style={styles.fieldGroup}>
+            <Text style={styles.label}>Address</Text>
+            <TextInput style={[styles.input, { height: 80, textAlignVertical: 'top' }]} value={form.address} onChangeText={t => setForm({ ...form, address: t })} multiline placeholder="Enter member address" placeholderTextColor="#666" />
+          </View>
 
           <View style={styles.row}>
             <View style={styles.flexThird}>
@@ -612,7 +614,7 @@ const styles = StyleSheet.create({
   scrollContent: { padding: 20, paddingBottom: 100 },
   
   sectionTitle: { color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 16, letterSpacing: 0.5 },
-  label: { color: "#888", fontSize: 11, textTransform: "uppercase", marginBottom: 6, fontWeight: "700" },
+  label: { color: "#888", fontSize: 11, textTransform: "uppercase", marginBottom: 10, fontWeight: "700" },
   
   row: { flexDirection: "row", gap: 12, marginBottom: 16 },
   flexHalf: { flex: 1 },
