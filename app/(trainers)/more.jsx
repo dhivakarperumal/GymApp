@@ -76,6 +76,42 @@ const menuItems = [
     borderAccent: "#e11d1d30",
   },
   {
+    id: "payments",
+    title: "Payments",
+    subtitle: "View and manage payment records",
+    icon: "cash",
+    route: "/(trainers)/payments",
+    iconBg: "#8b5cf6",
+    glowBg: "#8b5cf618",
+    arrowBg: "#8b5cf620",
+    arrowColor: "#a78bfa",
+    borderAccent: "#8b5cf630",
+  },
+  {
+    id: "buyplan",
+    title: "Buy New Plan",
+    subtitle: "Assign a gym plan to a member",
+    icon: "cart",
+    route: "/(trainers)/buy-plan",
+    iconBg: "#f97316",
+    glowBg: "#f9731618",
+    arrowBg: "#f9731620",
+    arrowColor: "#fdba74",
+    borderAccent: "#f9731630",
+  },
+  {
+    id: "messages",
+    title: "Messages",
+    subtitle: "Communicate with members",
+    icon: "chatbubbles",
+    route: "/(trainers)/messages",
+    iconBg: "#ec4899",
+    glowBg: "#ec489918",
+    arrowBg: "#ec489920",
+    arrowColor: "#f472b6",
+    borderAccent: "#ec489930",
+  },
+  {
     id: "logout",
     title: "Logout",
     subtitle: "Sign out of your account",
@@ -149,53 +185,45 @@ export default function MoreOptions() {
 
 
         {/* CARDS */}
-        {menuItems.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            activeOpacity={0.8}
-            onPress={() => {
-              if (item.id === "delete") {
-                handleDeleteAccount();
-              } else if (item.id === "logout") {
-                handleLogout();
-              } else {
-                router.push(item.route);
-              }
-            }}
-            style={[
-              styles.card,
-              {
-                shadowColor: item.iconBg,
-                borderColor: item.borderAccent,
-              },
-            ]}
-          >
-            {/* Glow blob top-right */}
-            <View
-              style={[styles.glowBlob, { backgroundColor: item.glowBg }]}
-            />
+        <View style={styles.cardContainer}>
+          {menuItems.map((item, index) => (
+            <TouchableOpacity
+              key={item.id}
+              activeOpacity={0.8}
+              onPress={() => {
+                if (item.id === "delete") {
+                  handleDeleteAccount();
+                } else if (item.id === "logout") {
+                  handleLogout();
+                } else {
+                  router.push(item.route);
+                }
+              }}
+              style={[
+                styles.itemRow,
+                index !== menuItems.length - 1 && styles.itemBorder
+              ]}
+            >
+              {/* Icon Box */}
+              <View style={[styles.iconBox, { backgroundColor: item.iconBg }]}>
+                <Ionicons name={item.icon} size={22} color="#fff" />
+              </View>
 
-            {/* Icon Box */}
-            <View style={[styles.iconBox, { backgroundColor: item.iconBg }]}>
-              <Ionicons name={item.icon} size={26} color="#fff" />
-            </View>
+              {/* Text */}
+              <View style={styles.textBlock}>
+                <Text style={styles.cardTitle}>{item.title}</Text>
+                <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
+              </View>
 
-            {/* Text */}
-            <View style={styles.textBlock}>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
-            </View>
-
-            {/* Arrow */}
-            <View style={[styles.arrowBox, { backgroundColor: item.arrowBg }]}>
+              {/* Arrow */}
               <Ionicons
                 name="chevron-forward"
-                size={15}
-                color={item.arrowColor}
+                size={20}
+                color="rgba(255,255,255,0.3)"
               />
-            </View>
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          ))}
+        </View>
 
         {/* FOOTER */}
         <View style={styles.footer}>
@@ -222,67 +250,36 @@ const styles = StyleSheet.create({
     paddingBottom: 110,
   },
 
-  /* ── Header ── */
-  header: {
-    paddingTop: 10,
-    paddingBottom: 18,
-  },
-  headerEyebrow: {
-    color: "#e11d1d",
-    fontSize: 10,
-    fontWeight: "700",
-    letterSpacing: 3,
-    marginBottom: 6,
-  },
-  headerTitle: {
-    color: "#ffffff",
-    fontSize: 30,
-    fontWeight: "800",
-    letterSpacing: 0.3,
-  },
-  headerSubtitle: {
-    color: "#4b5563",
-    fontSize: 13,
-    marginTop: 6,
-    letterSpacing: 0.2,
-  },
-
-  /* ── Card ── */
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
+  /* ── Card Container ── */
+  cardContainer: {
     backgroundColor: "#111111",
     borderRadius: 22,
-    padding: 18,
-    marginBottom: 14,
     borderWidth: 1,
-    position: "relative",
+    borderColor: "#222",
     overflow: "hidden",
     shadowOpacity: 0.4,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 8 },
     elevation: 10,
   },
-  glowBlob: {
-    position: "absolute",
-    top: -20,
-    right: -20,
-    width: 90,
-    height: 90,
-    borderRadius: 50,
+  itemRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+  },
+  itemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#1a1a1a",
   },
 
   /* ── Icon ── */
   iconBox: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 16,
-    shadowOpacity: 0.6,
-    shadowRadius: 12,
-    elevation: 8,
   },
 
   /* ── Text ── */
@@ -294,22 +291,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     letterSpacing: 0.2,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   cardSubtitle: {
     color: "#6b7280",
     fontSize: 12,
     letterSpacing: 0.1,
-  },
-
-  /* ── Arrow ── */
-  arrowBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: 8,
   },
 
   /* ── Footer ── */
