@@ -371,7 +371,33 @@ export default function TrainersLayout() {
       <Tabs.Screen name="profile"          options={{ href: null, headerShown: false }} />
       <Tabs.Screen name="follow-up-enquiry" options={{ href: null, headerShown: false }} />
       <Tabs.Screen name="pricing"          options={{ href: null, headerShown: false }} />
-      <Tabs.Screen name="messages"         options={{ href: null, headerShown: false }} />
+      
+      <Tabs.Screen 
+        name="messages"         
+        options={{ 
+          href: null, 
+          headerShown: false,
+          tabBarStyle: { display: "none" }
+        }} 
+      />
+
+      <Tabs.Screen 
+        name="buy-plan"         
+        options={{ 
+          href: null, 
+          headerShown: false,
+          tabBarStyle: { display: "none" }
+        }} 
+      />
+
+      <Tabs.Screen 
+        name="payments"         
+        options={{ 
+          href: null, 
+          headerShown: false,
+          tabBarStyle: { display: "none" }
+        }} 
+      />
 
       {/* Hide all PTForm components */}
       <Tabs.Screen
