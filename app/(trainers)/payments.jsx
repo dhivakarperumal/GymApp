@@ -278,7 +278,7 @@ export default function TrainerPayments() {
       ) : (
         <FlatList
           data={payments}
-          keyExtractor={(item) => String(item.id)}
+          keyExtractor={(item, index) => String(item.id ? `${item.id}_${index}` : index)}
           renderItem={renderItem}
           contentContainerStyle={[styles.listContainer, { paddingBottom: insets.bottom + 20 }]}
           showsVerticalScrollIndicator={false}

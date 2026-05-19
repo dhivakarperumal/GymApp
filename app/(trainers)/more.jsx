@@ -89,7 +89,7 @@ const menuItems = [
   },
   {
     id: "buyplan",
-    title: "Assign Plan",
+    title: "Buy New Plan",
     subtitle: "Assign a gym plan to a member",
     icon: "cart",
     route: "/(trainers)/buy-plan",
