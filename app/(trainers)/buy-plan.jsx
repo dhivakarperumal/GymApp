@@ -365,29 +365,29 @@ export default function AssignPlan() {
           <View style={styles.row}>
             <View style={styles.flexHalf}>
               <Text style={styles.label}>Mobile Number</Text>
-              <TextInput style={styles.input} value={form.phone} onChangeText={t => setForm({ ...form, phone: t })} keyboardType="phone-pad" />
+              <TextInput style={styles.input} value={form.phone} onChangeText={t => setForm({ ...form, phone: t })} keyboardType="phone-pad" placeholder="e.g. 9876543210" placeholderTextColor="#666" />
             </View>
             <View style={styles.flexHalf}>
               <Text style={styles.label}>Email</Text>
-              <TextInput style={styles.input} value={form.email} onChangeText={t => setForm({ ...form, email: t })} keyboardType="email-address" />
+              <TextInput style={styles.input} value={form.email} onChangeText={t => setForm({ ...form, email: t })} keyboardType="email-address" placeholder="e.g. name@domain.com" placeholderTextColor="#666" />
             </View>
           </View>
 
           <Text style={styles.label}>Address</Text>
-          <TextInput style={[styles.input, { height: 80, textAlignVertical: 'top' }]} value={form.address} onChangeText={t => setForm({ ...form, address: t })} multiline />
+          <TextInput style={[styles.input, { height: 80, textAlignVertical: 'top' }]} value={form.address} onChangeText={t => setForm({ ...form, address: t })} multiline placeholder="Enter member address" placeholderTextColor="#666" />
 
           <View style={styles.row}>
             <View style={styles.flexThird}>
               <Text style={styles.label}>Height (cm)</Text>
-              <TextInput style={styles.input} value={form.height} onChangeText={t => setForm({ ...form, height: t })} keyboardType="numeric" />
+              <TextInput style={styles.input} value={form.height} onChangeText={t => setForm({ ...form, height: t })} keyboardType="numeric" placeholder="Height" placeholderTextColor="#666" />
             </View>
             <View style={styles.flexThird}>
               <Text style={styles.label}>Weight (kg)</Text>
-              <TextInput style={styles.input} value={form.weight} onChangeText={t => setForm({ ...form, weight: t })} keyboardType="numeric" />
+              <TextInput style={styles.input} value={form.weight} onChangeText={t => setForm({ ...form, weight: t })} keyboardType="numeric" placeholder="Weight" placeholderTextColor="#666" />
             </View>
             <View style={styles.flexThird}>
               <Text style={styles.label}>BMI</Text>
-              <TextInput style={[styles.input, { backgroundColor: '#1a1a1a', color: '#f97316' }]} value={form.bmi} editable={false} />
+              <TextInput style={[styles.input, { backgroundColor: '#1a1a1a', color: '#f97316' }]} value={form.bmi} editable={false} placeholder="Auto" placeholderTextColor="#666" />
             </View>
           </View>
 
@@ -441,14 +441,16 @@ export default function AssignPlan() {
           <View style={styles.row}>
             <View style={styles.flexHalf}>
               <Text style={styles.label}>Start Date</Text>
-              <TouchableOpacity style={styles.input} onPress={() => setDatePickerConfig({ show: true, field: 'startDate' })}>
+              <TouchableOpacity style={[styles.input, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]} onPress={() => setDatePickerConfig({ show: true, field: 'startDate' })}>
                 <Text style={{ color: '#fff' }}>{formatDateLabel(form.startDate)}</Text>
+                <Ionicons name="calendar-outline" size={18} color="#fff" />
               </TouchableOpacity>
             </View>
             <View style={styles.flexHalf}>
               <Text style={styles.label}>End Date</Text>
-              <TouchableOpacity style={styles.input} onPress={() => setDatePickerConfig({ show: true, field: 'endDate' })}>
+              <TouchableOpacity style={[styles.input, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]} onPress={() => setDatePickerConfig({ show: true, field: 'endDate' })}>
                 <Text style={{ color: '#fff' }}>{formatDateLabel(form.endDate)}</Text>
+                <Ionicons name="calendar-outline" size={18} color="#fff" />
               </TouchableOpacity>
             </View>
           </View>
@@ -484,8 +486,9 @@ export default function AssignPlan() {
             </View>
             <View style={styles.flexHalf}>
               <Text style={styles.label}>Payment Date</Text>
-              <TouchableOpacity style={styles.input} onPress={() => setDatePickerConfig({ show: true, field: 'paymentDate' })}>
+              <TouchableOpacity style={[styles.input, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]} onPress={() => setDatePickerConfig({ show: true, field: 'paymentDate' })}>
                 <Text style={{ color: '#fff' }}>{formatDateLabel(form.paymentDate)}</Text>
+                <Ionicons name="calendar-outline" size={18} color="#fff" />
               </TouchableOpacity>
             </View>
           </View>
@@ -516,6 +519,8 @@ export default function AssignPlan() {
                   value={initialPayment} 
                   onChangeText={setInitialPayment} 
                   keyboardType="numeric" 
+                  placeholder="0"
+                  placeholderTextColor="#666"
                 />
               </View>
               
