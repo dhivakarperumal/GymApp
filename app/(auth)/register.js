@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl
 } from "react-native";
 import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
@@ -29,10 +30,23 @@ const RegisterScreen = () => {
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+
+    setUsername("");
+    setEmail("");
+    setMobile("");
+    setPassword("");
+    setConfirmPassword("");
+
+    setTimeout(() => setRefreshing(false), 500);
+  };
 
   const handleRegister = async () => {
     if (loading) return;
@@ -143,6 +157,14 @@ const RegisterScreen = () => {
                 <ScrollView
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={{ paddingBottom: 20 }}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={refreshing}
+                      onRefresh={onRefresh}
+                      tintColor="#ff3c00"
+                    />
+                  }
+                  keyboardShouldPersistTaps="handled"
                 >
                   {/* FULL NAME */}
                   <Text className="text-gray-400 text-sm mb-2">FULL NAME</Text>

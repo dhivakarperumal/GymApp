@@ -1,6 +1,7 @@
-import { View, Text, TouchableOpacity, ScrollView, SafeAreaView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useState } from "react";
+import { RefreshControl, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 const menuItems = [
   { title: "Profile", icon: "person-outline", subtitle: "Manage your account" },
@@ -13,6 +14,12 @@ const menuItems = [
 
 export default function More() {
   const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 300);
+  };
 
   const handleNavigation = (title) => {
     const routes = {
@@ -46,6 +53,13 @@ export default function More() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 20, paddingBottom: 120 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#e11d1d"
+          />
+        }
       >
         <Text style={{ color: "#e11d1d", fontSize: 13, fontWeight: "900", textTransform: "uppercase", letterSpacing: 2, marginBottom: 16, marginTop: 4 }}>
           Quick Access

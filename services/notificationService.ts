@@ -3,14 +3,6 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-const BASE_URL = "https://dap.qtechx.com/api";
-
-// Check if running in Expo Go
-const isExpoGo = (): boolean => {
-  return Constants.appOwnership === 'expo';
-};
-
-// Configure notification handling
 export const configureNotifications = () => {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -23,95 +15,107 @@ export const configureNotifications = () => {
   });
 };
 
-// Get push token
-export const registerForPushNotificationsAsync = async (): Promise<string | undefined> => {
-  let token;
-
-  // Skip push notifications in Expo Go on Android
-  if (isExpoGo() && Platform.OS === 'android') {
-    console.log('Expo Go detected on Android - Push notifications not supported. Using local notifications only.');
-    return undefined;
-  }
-
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
-      sound: 'default',
-    });
-  }
-
-  if (!Device.isDevice) {
-    console.log('Must use a physical device for push notifications');
-    return undefined;
-  }
-
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-
-  if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-
-  if (finalStatus !== 'granted') {
-    console.log('Failed to get push token for push notification!');
-    return undefined;
-  }
-
-  const projectId = Constants.expoConfig?.extra?.eas?.projectId ||
-                   Constants.easConfig?.projectId ||
-                   Constants.expoConfig?.extra?.projectId;
-
-  if (!projectId) {
-    console.warn('No Expo projectId found. Local notifications still work, but Expo push token registration is disabled.');
-    return undefined;
-  }
-
-  token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-  console.log('Push token:', token);
-  return token;
-};
-
-// Send push token to server
-export const sendPushTokenToServer = async (userId: number, pushToken: string) => {
+const requestNotificationPermissionsAsync = async (): Promise<boolean> => {
   try {
-    const res = await fetch(`${BASE_URL}/users/push-tokens`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId,
-        pushToken,
-        platform: Platform.OS,
-        app: 'dap-fitness-studio',
-      }),
-    });
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
 
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
     }
 
-    console.log('Push token sent to server');
+    if (finalStatus !== 'granted') {
+      console.log('Notification permissions not granted');
+      return false;
+    }
+
+    return true;
   } catch (error) {
-    console.warn('Failed to send push token to server:', error);
+    console.warn('Error requesting notification permissions:', error);
+    return false;
   }
 };
 
-// Register device for push notifications
-export const registerDeviceForPushNotifications = async (userId: number) => {
-  const token = await registerForPushNotificationsAsync();
-  if (!token) {
-    console.log('No push token available (possibly Expo Go) - local notifications will still work');
+const setupNotificationChannelAsync = async () => {
+  if (Platform.OS === 'android') {
+    try {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+        sound: 'default',
+      });
+    } catch (error) {
+      console.warn('Error creating notification channel:', error);
+    }
+  }
+};
+
+export const registerForPushNotificationsAsync = async (): Promise<string | undefined> => {
+  try {
+    await setupNotificationChannelAsync();
+
+    const permissionGranted = await requestNotificationPermissionsAsync();
+    if (!permissionGranted) {
+      return undefined;
+    }
+
+    if (!Device.isDevice) {
+      console.log('Must use a physical device for push notifications');
+      return undefined;
+    }
+
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ||
+      Constants.easConfig?.projectId ||
+      Constants.expoConfig?.extra?.projectId;
+
+    if (!projectId) {
+      console.warn('No Expo projectId found. Local notifications still work, but Expo push token registration is disabled.');
+      return undefined;
+    }
+
+    const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+    console.log('Push token:', token);
+    return token;
+  } catch (error) {
+    console.warn('Error getting push token:', error);
     return undefined;
   }
-
-  await sendPushTokenToServer(userId, token);
-  return token;
 };
 
-// Send local notification
+const BASE_URL = 'https://dap.qtechx.com/api';
+
+const postJson = async (url: string, payload: any) => {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const text = await res.text();
+  let data: any = text;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    // keep raw body if JSON parse fails
+  }
+
+  if (!res.ok) {
+    const error = new Error(
+      typeof data === 'string' ? data : data?.message || 'Request failed'
+    );
+    Object.assign(error, { response: { data, status: res.status } });
+    throw error;
+  }
+
+  return data;
+};
+
 export const sendLocalNotification = (
   title: string,
   body: string,
@@ -125,22 +129,82 @@ export const sendLocalNotification = (
       sound: 'default',
       badge: 1,
     },
-    trigger: null, // Immediate notification
+    trigger: null,
+  }).catch((error: any) => {
+    console.warn('Error scheduling notification:', error);
   });
 };
 
-// ============================================
-// USER NOTIFICATIONS (Member/Client)
-// ============================================
+export const sendPushTokenToServer = async (
+  userId: string | number,
+  pushToken: string
+): Promise<boolean> => {
+  const payload = {
+    userId: String(userId),
+    pushToken,
+    platform: Platform.OS,
+    app: Constants.expoConfig?.slug || 'GymApp',
+  };
 
-// Order status notification
-export const sendOrderStatusNotification = (
+  const endpoints = [
+    `${BASE_URL}/users/push-tokens`,
+    `${BASE_URL}/push-tokens`,
+    `${BASE_URL}/auth/push-tokens`,
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      await postJson(endpoint, payload);
+      console.log(`Push token sent to server: ${endpoint}`);
+      return true;
+    } catch (error) {
+      console.warn(`Push token registration failed at ${endpoint}:`, error.message || error);
+    }
+  }
+
+  return false;
+};
+
+export const triggerServerPushNotification = async (
+  recipientId: string | number,
+  title: string,
+  body: string,
+  data?: Record<string, any>
+): Promise<boolean> => {
+  const payload = {
+    userId: String(recipientId),
+    title,
+    body,
+    data: data || {},
+  };
+
+  const endpoints = [
+    `${BASE_URL}/trainers/${recipientId}/send-notification`,
+    `${BASE_URL}/users/${recipientId}/send-notification`,
+    `${BASE_URL}/notifications/send`,
+    `${BASE_URL}/test/send-notification`,
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      await postJson(endpoint, payload);
+      console.log(`Server push notification triggered: ${endpoint}`);
+      return true;
+    } catch (error) {
+      console.warn(`Push notification trigger failed at ${endpoint}:`, error.message || error);
+    }
+  }
+
+  return false;
+};
+
+export const sendOrderNotification = (
   orderId: string | number,
   status: string,
   message?: string
 ) => {
   const title = 'Order Status Updated';
-  const body = message || `Your order #${orderId} is now ${status}`;
+  const body = message || `Your order #${orderId} status is ${status}`;
 
   sendLocalNotification(title, body, {
     orderId: orderId.toString(),
@@ -149,240 +213,231 @@ export const sendOrderStatusNotification = (
   });
 };
 
-// Diet plan added notification
-export const sendDietPlanAddedNotification = (
+export type DietPlanNotificationDetails = {
+  trainerName?: string;
+  title?: string;
+  duration?: string | number;
+  calories?: string | number;
+};
+
+export type WorkoutNotificationDetails = {
+  trainerName?: string;
+  durationWeeks?: string | number;
+  workoutDays?: string | number;
+  level?: string;
+};
+
+export type PTFormNotificationDetails = {
+  trainerName?: string;
+  formType?: string;
+};
+
+export const sendDietPlanNotification = (
   dietPlanId: string | number,
-  trainerName: string,
+  status: string,
+  details?: DietPlanNotificationDetails,
+  isNew = false,
   message?: string
 ) => {
-  const title = 'New Diet Plan Added';
-  const body = message || `${trainerName} added a new diet plan for you`;
+  const title = 'Diet Plan Update';
+  const action = isNew ? 'assigned' : 'updated';
+  let body = message || '';
+
+  if (!body) {
+    if (details?.trainerName && details?.title && details?.duration) {
+      body = `Your trainer ${details.trainerName} ${action} a diet plan "${details.title}" for ${details.duration} days.`;
+      if (details.calories) {
+        body += ` ${details.calories} calories per day.`;
+      }
+    } else if (details?.trainerName && details?.title) {
+      body = `Your trainer ${details.trainerName} ${action} your diet plan "${details.title}".`;
+    } else {
+      body = `Your diet plan #${dietPlanId} is now ${status}`;
+    }
+  }
 
   sendLocalNotification(title, body, {
     dietPlanId: dietPlanId.toString(),
-    trainerName,
-    type: 'diet_plan_added',
+    status,
+    type: isNew ? 'diet_plan_added' : 'diet_plan_status',
   });
 };
 
-// Workout added notification
-export const sendWorkoutAddedNotification = (
+export const sendWorkoutNotification = (
   workoutId: string | number,
-  trainerName: string,
+  status: string,
+  details?: WorkoutNotificationDetails,
+  isNew = false,
   message?: string
 ) => {
-  const title = 'New Workout Added';
-  const body = message || `${trainerName} added a new workout for you`;
+  const title = 'Workout Update';
+  const action = isNew ? 'assigned' : 'updated';
+  let body = message || '';
+
+  if (!body) {
+    if (details?.trainerName) {
+      const parts: string[] = [];
+      if (details.workoutDays) {
+        parts.push(`for ${details.workoutDays} day${details.workoutDays === 1 ? '' : 's'}`);
+      } else if (details.durationWeeks) {
+        parts.push(`for ${details.durationWeeks} week${details.durationWeeks === 1 ? '' : 's'}`);
+      }
+      if (details.level) {
+        parts.push(`at ${details.level} level`);
+      }
+
+      const durationText = parts.length ? ` ${parts.join(' ')}.` : '.';
+      body = `Your trainer ${details.trainerName} ${action} a workout${durationText}`;
+    } else {
+      body = `Your workout #${workoutId} is now ${status}`;
+    }
+  }
 
   sendLocalNotification(title, body, {
     workoutId: workoutId.toString(),
-    trainerName,
-    type: 'workout_added',
+    status,
+    type: isNew ? 'workout_added' : 'workout_status',
   });
 };
 
-// Message from trainer notification
-export const sendMessageNotification = (
-  senderId: string | number,
-  senderName: string,
-  messagePreview: string,
-  conversationId?: string | number
-) => {
-  const title = 'New Message';
-  const body = `${senderName}: ${messagePreview.substring(0, 50)}${messagePreview.length > 50 ? '...' : ''}`;
-
-  sendLocalNotification(title, body, {
-    senderId: senderId.toString(),
-    senderName,
-    conversationId: conversationId?.toString() || '',
-    type: 'new_message',
-  });
-};
-
-// PT Form session tracker update notification
-export const sendSessionTrackerUpdateNotification = (
+export const sendSessionTrackerNotification = (
   sessionId: string | number,
   status: string,
-  trainerName: string,
   message?: string
 ) => {
   const title = 'Session Tracker Updated';
-  const body = message || `${trainerName} updated your session tracker to ${status}`;
+  const body = message || `Your session tracker #${sessionId} is now ${status}`;
+  const normalizedStatus = String(status || '').toLowerCase();
+  const type = normalizedStatus === 'completed' ? 'session_completed' : 'session_tracker_update';
 
   sendLocalNotification(title, body, {
     sessionId: sessionId.toString(),
     status,
-    trainerName,
-    type: 'session_tracker_update',
+    type,
   });
 };
 
-// PT Form completion notification
-export const sendPTFormCompletionNotification = (
+export const sendPTFormNotification = (
   formId: string | number,
   status: string,
-  trainerName: string,
+  details?: PTFormNotificationDetails,
+  isNew = false,
   message?: string
 ) => {
-  const title = 'PT Form Status Updated';
-  const body = message || `Your PT form #${formId} is ${status}`;
+  const title = 'PT Form Update';
+  let body = message || '';
+
+  if (!body) {
+    if (details?.trainerName && details?.formType) {
+      const verb = isNew ? 'created' : 'updated';
+      body = `Your trainer ${details.trainerName} ${verb} your ${details.formType} form.`;
+    } else if (details?.trainerName) {
+      body = `Your trainer ${details.trainerName} ${isNew ? 'created' : 'updated'} your PT form.`;
+    } else {
+      body = `Your PT form #${formId} is now ${status}`;
+    }
+  }
 
   sendLocalNotification(title, body, {
     formId: formId.toString(),
     status,
-    trainerName,
     type: 'pt_form_status',
   });
 };
 
-// ============================================
-// TRAINER NOTIFICATIONS
-// ============================================
-
-// User assigned to trainer notification
-export const sendUserAssignedNotification = (
-  userId: string | number,
-  userName: string,
-  message?: string
+export const sendDirectPTFormNotification = (
+  memberName?: string,
+  trainerName?: string,
+  isUpdate = true
 ) => {
-  const title = 'New User Assigned';
-  const body = message || `${userName} has been assigned to you`;
+  const title = isUpdate ? 'PT Form Updated' : 'PT Form Completed';
+  const body = trainerName
+    ? `Your trainer ${trainerName} ${isUpdate ? 'updated' : 'completed'} your PT form.`
+    : 'Your PT form has been updated.';
 
   sendLocalNotification(title, body, {
-    userId: userId.toString(),
-    userName,
-    type: 'user_assigned',
+    type: 'pt_form_saved',
+    trainerName: trainerName || '',
+    memberName: memberName || '',
   });
 };
 
-// User updated PT form notification
-export const sendUserUpdatedPTFormNotification = (
-  userId: string | number,
-  userName: string,
-  formType: string,
-  message?: string
+export const sendMessageNotification = (
+  messageId?: string | number,
+  status?: string,
+  details?: Record<string, any>,
+  isNew?: boolean
 ) => {
-  const title = `User Updated ${formType}`;
-  const body = message || `${userName} updated their ${formType} form`;
+  const title = 'New Message';
+  const senderName = details?.senderName || details?.from || 'Trainer';
+  const subject = details?.subject || '';
+  const message = details?.message || '';
+  
+  let body = `${senderName} sent`;
+  if (subject && message) {
+    body = `${senderName} sent "${subject}" "${message}"`;
+  } else if (subject) {
+    body = `${senderName} sent "${subject}"`;
+  } else if (message) {
+    body = `${senderName} sent "${message}"`;
+  }
 
   sendLocalNotification(title, body, {
-    userId: userId.toString(),
-    userName,
-    formType,
-    type: 'user_updated_pt_form',
+    type: 'new_message',
+    messageId: messageId?.toString() || '',
+    senderName: senderName || '',
   });
 };
 
-// Session tracker updated by user notification
-export const sendSessionTrackerUpdatedByUserNotification = (
-  userId: string | number,
-  userName: string,
-  sessionId: string | number,
-  message?: string
+export const sendAssignmentNotification = (
+  memberName?: string,
+  trainerName?: string,
+  planName?: string
 ) => {
-  const title = 'Session Tracker Updated';
-  const body = message || `${userName} updated their session tracker`;
+  const title = 'New Assignment';
+  let body = '';
+
+  if (trainerName && memberName && planName) {
+    body = `Your trainer ${trainerName} assigned you to the "${planName}" plan.`;
+  } else if (trainerName && memberName) {
+    body = `You have been assigned to trainer ${trainerName}.`;
+  } else if (memberName && planName) {
+    body = `${memberName} has been assigned the "${planName}" plan.`;
+  } else {
+    body = 'You have been assigned a new training plan.';
+  }
 
   sendLocalNotification(title, body, {
-    userId: userId.toString(),
-    userName,
-    sessionId: sessionId.toString(),
-    type: 'user_session_tracker_update',
+    type: 'assignment_new',
   });
 };
 
-// Session tracker completed notification
-export const sendSessionCompletedNotification = (
-  userId: string | number,
-  userName: string,
-  sessionId: string | number,
-  message?: string
+export const sendAssignmentUpdateNotification = (
+  memberName?: string,
+  trainerName?: string,
+  changeType?: string
 ) => {
-  const title = 'Session Completed';
-  const body = message || `${userName} completed their session`;
+  const title = 'Assignment Updated';
+  let body = '';
+
+  if (changeType === 'trainer_change') {
+    body = trainerName && memberName
+      ? `${memberName} has been reassigned to trainer ${trainerName}.`
+      : 'Your trainer assignment has been updated.';
+  } else if (changeType === 'plan_change') {
+    body = memberName
+      ? `${memberName}'s training plan has been updated.`
+      : 'Your training plan has been updated.';
+  } else if (changeType === 'status_change') {
+    body = memberName
+      ? `${memberName}'s assignment status has changed.`
+      : 'Your assignment status has been updated.';
+  } else {
+    body = 'Your assignment has been updated.';
+  }
 
   sendLocalNotification(title, body, {
-    userId: userId.toString(),
-    userName,
-    sessionId: sessionId.toString(),
-    type: 'session_completed',
+    type: 'assignment_updated',
   });
 };
 
-// ============================================
-// ADMIN NOTIFICATIONS
-// ============================================
-
-// New order placed notification (for admin)
-export const sendAdminNewOrderNotification = (
-  orderId: string | number,
-  userName: string,
-  totalAmount?: string,
-  message?: string
-) => {
-  const title = 'New Order Placed';
-  const body = message || `Order #${orderId} from ${userName}${totalAmount ? ` - ₹${totalAmount}` : ''}`;
-
-  sendLocalNotification(title, body, {
-    orderId: orderId.toString(),
-    userName,
-    totalAmount: totalAmount || '',
-    type: 'admin_new_order',
-  });
-};
-
-// User updated by trainer notification (for admin)
-export const sendAdminUserUpdatedNotification = (
-  userId: string | number,
-  userName: string,
-  trainerName: string,
-  updateType: string,
-  message?: string
-) => {
-  const title = `User ${updateType} Updated`;
-  const body = message || `${trainerName} updated ${userName}'s ${updateType}`;
-
-  sendLocalNotification(title, body, {
-    userId: userId.toString(),
-    userName,
-    trainerName,
-    updateType,
-    type: 'admin_user_updated',
-  });
-};
-
-// Trainer assignment notification (for admin)
-export const sendAdminTrainerAssignmentNotification = (
-  userId: string | number,
-  userName: string,
-  trainerName: string,
-  message?: string
-) => {
-  const title = 'User Assigned to Trainer';
-  const body = message || `${userName} assigned to trainer ${trainerName}`;
-
-  sendLocalNotification(title, body, {
-    userId: userId.toString(),
-    userName,
-    trainerName,
-    type: 'admin_trainer_assignment',
-  });
-};
-
-// New user registration notification (for admin)
-export const sendAdminNewUserNotification = (
-  userId: string | number,
-  userName: string,
-  userRole: string,
-  message?: string
-) => {
-  const title = 'New User Registered';
-  const body = message || `${userName} registered as ${userRole}`;
-
-  sendLocalNotification(title, body, {
-    userId: userId.toString(),
-    userName,
-    userRole,
-    type: 'admin_new_user',
-  });
-};

@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from "react";
-import { 
-  View, 
-  Text, 
-  ScrollView, 
-  TouchableOpacity, 
-  TextInput, 
-  Dimensions,
-  StyleSheet,
-  ActivityIndicator,
-  RefreshControl,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    Dimensions,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
-import { LinearGradient } from 'expo-linear-gradient';
 import SessionTracker from "./PTForm/SessionTracker";
-import Toast from "react-native-toast-message";
 
 const { width } = Dimensions.get('window');
 
@@ -63,6 +63,7 @@ export default function SessionTrackingScreen() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("sessions"); // "sessions" or "overview"
   const [showMemberPicker, setShowMemberPicker] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (trainerId) {
@@ -94,6 +95,12 @@ export default function SessionTrackingScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchAssignedMembers();
+    setRefreshing(false);
   };
 
   const fetchPtForm = async (member) => {
@@ -167,6 +174,7 @@ export default function SessionTrackingScreen() {
         },
         completed: true,
       });
+
       Toast.show({ type: "success", text1: "Session tracker saved" });
       setFormData(prev => ({ ...prev, sessions: sessionData.sessions }));
     } catch (err) {
@@ -185,7 +193,17 @@ export default function SessionTrackingScreen() {
   if (showMemberPicker) {
     return (
       <SafeAreaView style={s.safe} edges={["top"]}>
-        <ScrollView style={s.scroll} contentContainerStyle={s.scrollContent}>
+        <ScrollView 
+          style={s.scroll} 
+          contentContainerStyle={s.scrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#e11d1d"
+            />
+          }
+        >
           {/* ── HEADER ── */}
           <View style={s.header}>
             <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
@@ -334,7 +352,16 @@ export default function SessionTrackingScreen() {
         </View>
       </View>
 
-      <ScrollView className="flex-1">
+      <ScrollView 
+        className="flex-1"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#e11d1d"
+          />
+        }
+      >
         {loading ? (
           <ActivityIndicator color="#e11d1d" className="mt-20" />
         ) : activeTab === "sessions" ? (

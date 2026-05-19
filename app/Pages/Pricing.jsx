@@ -1,11 +1,11 @@
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import BackButton from "../BackButton";
-import { getAllPlans, getUserMemberships } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
+import { getAllPlans, getUserMemberships } from "../../services/api";
+import BackButton from "../BackButton";
 
 export default function Pricing() {
   const [plans, setPlans] = useState([]);
@@ -15,10 +15,17 @@ export default function Pricing() {
 
   const [hasActivePlan, setHasActivePlan] = useState(false);
   const [checkingPlan, setCheckingPlan] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchPlans();
   }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchPlans();
+    setRefreshing(false);
+  };
 
   useEffect(() => {
     if (!user?.id) {
@@ -101,6 +108,13 @@ export default function Pricing() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#e11d1d"
+          />
+        }
       >
 
         {plans.length === 0 && (
@@ -129,25 +143,22 @@ export default function Pricing() {
               {/* PRICE SECTION */}
               <View className="mb-6 flex-col">
 
-                {/* Final Price + Duration */}
-                <View className="flex-row items-end gap-2">
-                  <Text className="text-primary text-5xl font-extrabold">
-                    ₹{Number(plan?.final_price ?? plan?.price ?? 0).toLocaleString()}
-                  </Text>
+                {/* DURATION SECTION */}
+                <View className="mb-6 flex-col">
 
-                  <Text className="text-gray-400 text-base mb-1">
-                    / {plan?.duration || plan?.duration_months || "month"}
+                  {/* Highlighted Duration */}
+                  <View className="flex-row items-end gap-2">
+                    <Text className="text-primary text-5xl font-extrabold">
+                      {plan?.duration || plan?.duration_months || "1 Month"}
+                    </Text>
+                  </View>
+
+                  {/* Small Label */}
+                  <Text className="text-gray-400 text-sm mt-2 tracking-wider uppercase">
+                    Membership Duration
                   </Text>
                 </View>
 
-                {/* Original Price */}
-                {plan?.price &&
-                  plan?.final_price &&
-                  Number(plan.price) !== Number(plan.final_price) && (
-                    <Text className="text-gray-400 text-sm line-through mt-1">
-                      ₹{Number(plan.price).toLocaleString()}
-                    </Text>
-                  )}
               </View>
 
               {/* Trainer Status */}

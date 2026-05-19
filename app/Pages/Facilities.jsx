@@ -1,20 +1,22 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  ImageBackground,
-  TouchableOpacity,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { getAllFacilities } from "../../services/api";
-import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+    ImageBackground,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getAllFacilities } from "../../services/api";
 import BackButton from "../BackButton";
 
 export default function Facilities() {
   const [facilities, setFacilities] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -32,7 +34,14 @@ export default function Facilities() {
     } catch (err) {
       console.log("Facilities fetch error:", err.message);
       setFacilities([]);
+    } finally {
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchFacilities();
   };
 
   return (
@@ -59,6 +68,13 @@ export default function Facilities() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40, paddingTop: 20 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#e11d1d"
+          />
+        }
       >
 
         {facilities.length === 0 && (

@@ -26,7 +26,8 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  RefreshControl
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -51,6 +52,7 @@ export default function FollowupEnquiry() {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [followupLoading, setFollowupLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState("");
@@ -120,7 +122,13 @@ export default function FollowupEnquiry() {
       Toast.show({ type: "error", text1: "Failed to load follow-ups" });
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchEnquiries();
   };
 
   const fetchPlans = async () => {
@@ -430,6 +438,13 @@ export default function FollowupEnquiry() {
             renderItem={renderEnquiry}
             keyExtractor={(item) => item.id.toString()}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#e11d1d"
+              />
+            }
             ListEmptyComponent={
               <View className="mt-20 items-center">
                 <History size={48} color="#222" />

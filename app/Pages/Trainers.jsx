@@ -1,44 +1,52 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
-import { getAllStaffs } from "../../services/api";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getAllStaffs } from "../../services/api";
 import BackButton from "../BackButton";
 
 export default function Trainers() {
   const [staffs, setStaffs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
+  const fetchStaffs = async () => {
+    try {
+      const data = await getAllStaffs();
+      const staffList = data.staff || data;
+
+      // Show only trainers
+      const trainersOnly = staffList.filter(
+        (item) => item.role?.toLowerCase() === "trainer",
+      );
+
+      setStaffs(trainersOnly);
+    } catch (error) {
+      console.log("Error fetching staffs:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchStaffs = async () => {
-      try {
-        const data = await getAllStaffs();
-        const staffList = data.staff || data;
-
-        // Show only trainers
-        const trainersOnly = staffList.filter(
-          (item) => item.role?.toLowerCase() === "trainer",
-        );
-
-        setStaffs(trainersOnly);
-      } catch (error) {
-        console.log("Error fetching staffs:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchStaffs();
   }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchStaffs();
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
@@ -64,6 +72,13 @@ export default function Trainers() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#e11d1d"
+          />
+        }
       >
 
         {loading && <ActivityIndicator size="large" color="#ff3c00" />}

@@ -3,12 +3,13 @@ import dayjs from "dayjs";
 import { Video } from "expo-av";
 import { useEffect, useState } from "react";
 import {
-  Image,
-  ImageBackground,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    Image,
+    ImageBackground,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import YoutubePlayer from "react-native-youtube-iframe";
@@ -19,6 +20,7 @@ export default function Workouts() {
   const { user } = useAuth();
   const [workouts, setWorkouts] = useState([]);
   const [filter, setFilter] = useState("TODAY");
+  const [refreshing, setRefreshing] = useState(false);
 
   const workoutData = workouts[0];
 
@@ -106,9 +108,24 @@ export default function Workouts() {
     }
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchWorkouts();
+    setRefreshing(false);
+  };
+
   if (workouts.length === 0) {
     return (
-      <ScrollView className="flex-1 bg-card px-5 pt-12">
+      <ScrollView
+        className="flex-1 bg-card px-5 pt-12"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#e11d1d"
+          />
+        }
+      >
         <Text className="text-background text-3xl font-extrabold mb-8">
           Workouts
         </Text>
@@ -132,8 +149,17 @@ export default function Workouts() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }} edges={["left", "right"]}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#e11d1d"
+          />
+        }
+      >
         {/* HERO IMAGE */}
         <ImageBackground
           source={{

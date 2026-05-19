@@ -1,21 +1,22 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    RefreshControl
 } from "react-native";
 
-import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
-import * as Location from "expo-location";
 import dayjs from "dayjs";
+import * as Location from "expo-location";
+import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
@@ -62,6 +63,7 @@ export default function Attendance() {
   const [editMode, setEditMode] = useState(false);
 
   const [search, setSearch] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
   const date = dayjs().format("YYYY-MM-DD");
 
@@ -118,6 +120,13 @@ export default function Attendance() {
     } catch (err) {
       console.log("Attendance load error:", err);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadAssignedMembers();
+    await loadAttendance();
+    setRefreshing(false);
   };
 
   useEffect(() => {
@@ -251,6 +260,13 @@ export default function Attendance() {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ paddingBottom: 250 }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#e11d1d"
+              />
+            }
           >
             {/* HEADER */}
             <View className="flex-row items-center mb-4">

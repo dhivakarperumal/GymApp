@@ -1,19 +1,19 @@
-import React, { useEffect, useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
-  StyleSheet,
-  RefreshControl,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
@@ -131,7 +131,7 @@ export default function MessagesScreen() {
     }));
 
     try {
-      await api.post("/send-message", {
+      const response = await api.post("/send-message", {
         subject: subject.trim() || `Message from Trainer ${user?.name || user?.username}`,
         message: message.trim(),
         recipients,

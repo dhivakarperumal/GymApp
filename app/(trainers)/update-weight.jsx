@@ -12,7 +12,8 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View
+    View,
+    RefreshControl
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import { useAuth } from "../../context/AuthContext";
@@ -23,6 +24,7 @@ export default function UpdateWeight() {
 
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [selectedMember, setSelectedMember] = useState(null);
     const [search, setSearch] = useState("");
     const [submitting, setSubmitting] = useState(false);
@@ -61,7 +63,13 @@ export default function UpdateWeight() {
             Alert.alert("Error", "Failed to load members");
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
+    };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchMembers();
     };
 
     const calculateBMI = (weight, height) => {
@@ -153,6 +161,13 @@ export default function UpdateWeight() {
             <ScrollView
                 style={{ flex: 1, paddingHorizontal: 16, paddingTop: 24 }}
                 showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor="#e11d1d"
+                    />
+                }
             >
                 {/* HEADER */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24, marginTop: 8 }}>

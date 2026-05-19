@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import dayjs from "dayjs";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import { getDietPlans } from "../../services/api";
 
@@ -45,6 +45,7 @@ export default function DietChartScreen() {
   const [createdAt, setCreatedAt] = useState(null);
   const [activeDay, setActiveDay] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchDietPlan = useCallback(async () => {
     setLoading(true);
@@ -122,6 +123,12 @@ export default function DietChartScreen() {
     }
   }, [user, fetchDietPlan]);
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchDietPlan();
+    setRefreshing(false);
+  };
+
   const dayKeys = diet ? Object.keys(diet) : [];
   const selectedDay = activeDay || dayKeys[0];
   const meals = selectedDay ? diet?.[selectedDay] : null;
@@ -139,6 +146,13 @@ export default function DietChartScreen() {
     <ScrollView
       className="flex-1 bg-[#0f0f0f] px-5 pt-12"
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor="#e11d1d"
+        />
+      }
     >
       <Text className="text-white text-3xl font-extrabold mb-2">My Diet Plan</Text>
       {title ? (

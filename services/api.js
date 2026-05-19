@@ -1,6 +1,15 @@
 const BASE_URL = "https://dapfitt.com/api";
 
 /* ------------------ HELPER ------------------ */
+const parseResponse = async (res) => {
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+
 // lightweight wrapper that mimics axios-style responses; screens currently
 // expect `api.post(...).data` so we return that shape.
 const api = {
@@ -13,11 +22,13 @@ const api = {
       body: JSON.stringify(body),
     });
 
-    const data = await res.json();
+    const data = await parseResponse(res);
 
     // treat non-2xx responses as errors so callers can handle them
     if (!res.ok) {
-      const err = new Error(data?.message || "Request failed");
+      const err = new Error(
+        typeof data === "string" ? data : data?.message || "Request failed"
+      );
       err.response = { data, status: res.status };
       throw err;
     }
@@ -39,11 +50,12 @@ const api = {
       headers,
     });
 
-    const data = await res.json();
+    const data = await parseResponse(res);
 
-    // treat non-2xx responses as errors so callers can handle them
     if (!res.ok) {
-      const err = new Error(data?.message || "Request failed");
+      const err = new Error(
+        typeof data === "string" ? data : data?.message || "Request failed"
+      );
       err.response = { data, status: res.status };
       throw err;
     }
@@ -60,10 +72,12 @@ const api = {
       body: JSON.stringify(body),
     });
 
-    const data = await res.json();
+    const data = await parseResponse(res);
 
     if (!res.ok) {
-      const err = new Error(data?.message || "Request failed");
+      const err = new Error(
+        typeof data === "string" ? data : data?.message || "Request failed"
+      );
       err.response = { data, status: res.status };
       throw err;
     }
@@ -76,10 +90,12 @@ const api = {
       method: "DELETE",
     });
 
-    const data = await res.json();
+    const data = await parseResponse(res);
 
     if (!res.ok) {
-      const err = new Error(data?.message || "Request failed");
+      const err = new Error(
+        typeof data === "string" ? data : data?.message || "Request failed"
+      );
       err.response = { data, status: res.status };
       throw err;
     }
@@ -388,7 +404,7 @@ export const createOrderApi = async (orderData) => {
 };
 
 export const getUserOrders = async (userId) => {
-  const res = await fetch(`${BASE_URL}/orders?userId=${userId}`);
+  const res = await fetch(`${BASE_URL}/orders/user/${userId}`);
   return res.json();
 };
 

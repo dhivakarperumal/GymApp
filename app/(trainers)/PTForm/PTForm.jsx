@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../context/AuthContext.js';
 import api from '../../../services/api';
@@ -21,6 +21,7 @@ const PTForm = ({ route, navigation }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const memberId = searchParams?.member_id;
 
   useEffect(() => {
@@ -293,6 +294,11 @@ const PTForm = ({ route, navigation }) => {
 
   const CurrentStepComponent = steps[currentStep].component;
 
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 600);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-[#0f0f0f]" edges={["top", "left", "right"]}>
       <View className="flex-1">
@@ -339,7 +345,17 @@ const PTForm = ({ route, navigation }) => {
       </View>
 
       {/* Form Content */}
-      <ScrollView className="flex-1 px-2" key={formData.member_id || 'new'}>
+      <ScrollView
+        className="flex-1 px-2"
+        key={formData.member_id || 'new'}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#e11d1d"
+          />
+        }
+      >
         <CurrentStepComponent
           onNext={handleNext}
           onPrevious={handlePrevious}

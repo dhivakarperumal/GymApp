@@ -1,49 +1,64 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { Image } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  RefreshControl,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
-} from "react-native";
 
 const LoginScreen = () => {
   const router = useRouter();
-  const { login: contextLogin } = useAuth();
+  const { login: contextLogin, user, loading } = useAuth();
   const insets = useSafeAreaInsets();
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setIdentifier("");
+    setPassword("");
+    setTimeout(() => setRefreshing(false), 500);
+  };
 
   // 🔹 Role redirect
   const redirectByRole = (role) => {
-    if (role === "admin") {
+    const normalizedRole = String(role || "").toLowerCase();
+    if (normalizedRole === "admin") {
       router.replace("/(admin)");
-    } else if (role === "trainer") {
-      router.replace("/TrainerCheckInScreen");
+    } else if (normalizedRole === "trainer") {
+      router.replace("/(trainers)/dashboard");
     } else {
       router.replace("/(tabs)");
     }
   };
 
+  useEffect(() => {
+    if (!loading && user) {
+      redirectByRole(user.role);
+    }
+  }, [loading, user]);
+
   const handleLogin = async () => {
-    if (loading) return;
+    if (isSubmitting) return;
 
     const id = identifier.trim();
     const pass = password.trim();
@@ -56,7 +71,7 @@ const LoginScreen = () => {
     const payload = { identifier: id, password: pass };
     console.log("login payload", payload);
 
-    setLoading(true);
+    setIsSubmitting(true);
 
     try {
       const res = await api.post("/auth/login", payload);
@@ -84,12 +99,26 @@ const LoginScreen = () => {
       redirectByRole(userData.role);
     } catch (err) {
       console.log("login error", err);
+      const responseData = err?.response?.data;
+      let errorMessage = err.message || "Login failed";
+
+      if (typeof responseData === "string") {
+        if (responseData.trim().startsWith("<")) {
+          errorMessage = "Server unavailable. Please try again later.";
+          console.log("login server HTML error response:", responseData.slice(0, 500));
+        } else if (responseData) {
+          errorMessage = responseData;
+        }
+      } else if (responseData?.message) {
+        errorMessage = responseData.message;
+      }
+
       Toast.show({
         type: "error",
-        text1: err?.response?.data?.message || err.message || "Login failed",
+        text1: errorMessage,
       });
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -99,9 +128,20 @@ const LoginScreen = () => {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View className="flex-1">
-            {/* 🔥 HERO IMAGE */}
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#ff3c00"
+            />
+          }
+          keyboardShouldPersistTaps="handled"
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View className="flex-1">
+              {/* 🔥 HERO IMAGE */}
             <View className="flex-1">
               <View className="absolute inset-0">
                 <Image
@@ -186,11 +226,11 @@ const LoginScreen = () => {
                 {/* LOGIN BUTTON */}
                 <TouchableOpacity
                   onPress={handleLogin}
-                  disabled={loading}
+                  disabled={loading || isSubmitting}
                   activeOpacity={0.85}
                   className="bg-primary py-4 rounded-full items-center"
                 >
-                  {loading ? (
+                  {(loading || isSubmitting) ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
                     <Text className="text-white text-lg font-bold">Login</Text>
@@ -211,8 +251,9 @@ const LoginScreen = () => {
             </View>
           </View>
         </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  </SafeAreaView>
 
   );
 };

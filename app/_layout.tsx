@@ -1,4 +1,4 @@
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack } from "expo-router";
 import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -6,68 +6,38 @@ import Toast from "react-native-toast-message";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import { useNotifications } from "../hooks/useNotifications";
 import { useStatusPolling } from "../hooks/useStatusPolling";
-import { configureNotifications, registerDeviceForPushNotifications } from "../services/notificationService";
+import * as notificationService from "../services/notificationService";
 import "./global.css";
+
+function NotificationWrapper({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  useNotifications();
+
+  useEffect(() => {
+    notificationService.configureNotifications();
+
+    const registerDevice = async () => {
+      const pushToken = await notificationService.registerForPushNotificationsAsync();
+      if (pushToken && user?.id) {
+        const registered = await notificationService.sendPushTokenToServer(user.id, pushToken);
+        if (!registered) {
+          console.warn('Failed to register push token on server');
+        }
+      }
+    };
+
+    registerDevice().catch((error) => {
+      console.error('Failed to register for push notifications:', error);
+    });
+  }, [user?.id]);
+
+  return <>{children}</>;
+}
 
 function RootContent() {
   const { user, loading } = useAuth();
-  const segments = useSegments();
-  const router = useRouter();
 
-  // Configure and register notifications
-  useEffect(() => {
-    if (!loading) {
-      // Configure notification handler
-      configureNotifications();
-
-      // Register for push notifications when user logs in
-      if (user?.id) {
-        console.log('Registering device for push notifications with user ID:', user.id);
-        registerDeviceForPushNotifications(user.id);
-      }
-    }
-  }, [user?.id, loading]);
-
-  // Set up notification listeners
-  useNotifications();
-
-  // Enable status polling
-  useStatusPolling(!!user?.id);
-
-  useEffect(() => {
-    if (loading) return;
-
-    const rootSegment = segments[0];
-    const inAuthGroup = rootSegment === "(auth)";
-    const inAdminGroup = rootSegment === "(admin)";
-    const inTrainerGroup = rootSegment === "(trainers)";
-    const inTabsGroup = rootSegment === "(tabs)";
-
-    if (!user) {
-      // 🚫 Not logged in -> Must be in auth group
-      if (!inAuthGroup) {
-        router.replace("/(auth)/login");
-      }
-    } else {
-      // ✅ Logged in
-      if (inAuthGroup) {
-        // Redirect to role home if they try to access login/register while logged in
-        if (user.role === "admin") router.replace("/(admin)");
-        else if (user.role === "trainer") router.replace("/(trainers)/dashboard");
-        else router.replace("/(tabs)");
-      } else {
-        // Protect roles
-        if (user.role === "admin" && (inTabsGroup || inTrainerGroup)) {
-           // Admin can go anywhere? Usually yes, but let's keep them in admin for consistency
-           // router.replace("/(admin)"); 
-        } else if (user.role === "trainer" && (inTabsGroup || inAdminGroup)) {
-           router.replace("/(trainers)/dashboard");
-        } else if (user.role === "member" && (inAdminGroup || inTrainerGroup)) {
-           router.replace("/(tabs)");
-        }
-      }
-    }
-  }, [user, loading, segments]);
+  useStatusPolling();
 
   if (loading) {
     return (
@@ -84,8 +54,10 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <RootContent />
-        <Toast />
+        <NotificationWrapper>
+          <RootContent />
+          <Toast />
+        </NotificationWrapper>
       </AuthProvider>
     </SafeAreaProvider>
   );

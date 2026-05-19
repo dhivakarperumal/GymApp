@@ -10,6 +10,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  RefreshControl,
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -39,6 +40,20 @@ export default function Home() {
   const [todayDiet, setTodayDiet] = useState({});
   const [todayWorkout, setTodayWorkout] = useState([]);
   const [todayWorkoutDay, setTodayWorkoutDay] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+
+    await fetchReviews();
+    await fetchProducts();
+
+    if (user?.id) {
+      await initializeUserData();
+    }
+
+    setRefreshing(false);
+  };
 
   const [products, setProducts] = useState([]);
   const productScrollRef = useRef(null);
@@ -383,7 +398,16 @@ export default function Home() {
     <View className="flex-1 bg-card pt-12 px-5">
       <StatusBar barStyle="light-content" />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#ff3c00"
+          />
+        }
+      >
         {/* PREMIUM PLAN HERO CARD */}
         <View className="relative rounded-3xl overflow-hidden mb-6">
           <Image
@@ -464,7 +488,7 @@ export default function Home() {
                     support.
                   </Text>
 
-                  
+
                 </View>
 
                 {/* CTA */}

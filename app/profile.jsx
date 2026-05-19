@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import {
   Alert,
   Modal,
+  RefreshControl,
   ScrollView,
   Text,
   TextInput,
@@ -26,6 +27,7 @@ export default function Profile() {
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
   const [logoutVisible, setLogoutVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const { user: authUser, logout } = useAuth();
   const currentUser = authUser || user;
   const currentUserName = currentUser?.username || currentUser?.name || "User";
@@ -190,22 +192,28 @@ export default function Profile() {
     });
   };
 
+  const loadUserData = async () => {
+    const storedUser = await AsyncStorage.getItem("user");
+
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      const userData = Array.isArray(parsed) ? parsed[0] : parsed;
+
+      setUser(userData);
+      setName(userData.username || "");
+      setMobile(userData.mobile || "");
+    }
+  };
+
   useEffect(() => {
-    const loadUser = async () => {
-      const storedUser = await AsyncStorage.getItem("user");
-
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        const userData = Array.isArray(parsed) ? parsed[0] : parsed;
-
-        setUser(userData);
-        setName(userData.username || "");
-        setMobile(userData.mobile || "");
-      }
-    };
-
-    loadUser();
+    loadUserData();
   }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadUserData();
+    setRefreshing(false);
+  };
 
   const saveProfile = async () => {
     try {
@@ -255,20 +263,93 @@ export default function Profile() {
   const handleDeleteAccount = () => {
     Alert.alert(
       "Delete Account",
-      "Are you sure you want to delete your account? This action is permanent and cannot be undone.",
+      "Are you sure you want to delete your account? This action will deactivate your account and you can no longer login.",
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            // Perform deletion logic here if API exists
-            await handleLogout();
+            try {
+              // Update user status to inactive
+              const updatedUser = {
+                ...user,
+                status: "inactive",
+              };
+
+              await updateUserApi(user.id, {
+                status: "inactive",
+              });
+
+              // Update AsyncStorage
+              await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+
+              Toast.show({
+                type: "success",
+                text1: "Account Deactivated",
+                text2: "Your account has been deactivated successfully",
+              });
+
+              // Logout after deactivation
+              await handleLogout();
+            } catch (error) {
+              console.log("Delete Account Error:", error);
+              Toast.show({
+                type: "error",
+                text1: "Deactivation Failed",
+                text2: error?.response?.data?.message || "Could not deactivate account",
+              });
+            }
           },
         },
       ]
     );
   };
+
+  const profileOptions = [
+    {
+      title: "Edit Profile",
+      icon: "create-outline",
+      subtitle: "Update your personal details",
+      onPress: () => setEditVisible(true),
+    },
+    {
+      title: "PT Form",
+      icon: "document-text-outline",
+      subtitle: "Complete your PT data",
+      onPress: () => router.push("/pt-form"),
+    },
+    {
+      title: "Session Tracker",
+      icon: "calendar-outline",
+      subtitle: "View and update PT session history",
+      onPress: () => router.push("/session-tracker"),
+    },
+    {
+      title: "My Orders",
+      icon: "cube-outline",
+      subtitle: "Track your purchases",
+      onPress: () => router.push("/Orders"),
+    },
+    {
+      title: "Address",
+      icon: "location-outline",
+      subtitle: "Manage your shipping address",
+      onPress: () => router.push("/Address"),
+    },
+    {
+      title: "Set Password",
+      icon: "key-outline",
+      subtitle: "Update your login credentials",
+      onPress: () => router.push("/set-password"),
+    },
+    {
+      title: "Notifications",
+      icon: "notifications-outline",
+      subtitle: "View your alerts",
+      onPress: () => router.push("/Notifications"),
+    },
+  ];
 
   const userName = user?.username || "User";
   const phone = user?.mobile || "No phone number";
@@ -321,6 +402,13 @@ export default function Profile() {
           padding: 20,
           paddingBottom: 120,
         }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#e11d1d"
+          />
+        }
       >
 
         {/* PROFILE CARD */}
@@ -337,54 +425,52 @@ export default function Profile() {
         </View>
 
         {/* OPTIONS */}
-        <View className="bg-[#111] rounded-3xl p-5 mb-6">
-          <TouchableOpacity
-            onPress={() => setEditVisible(true)}
-            className="flex-row justify-between items-center py-4 border-b border-[#222]"
-          >
-            <Text className="text-white">Edit Profile</Text>
-            <Ionicons name="chevron-forward" size={18} color="#888" />
-          </TouchableOpacity>
+        <View style={{
+          backgroundColor: "#0d0d0d",
+          borderRadius: 24,
+          paddingHorizontal: 20,
+          borderWidth: 1,
+          borderColor: "#1a1a1a",
+          marginBottom: 20,
+        }}>
+          {profileOptions.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              activeOpacity={0.75}
+              onPress={item.onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingVertical: 18,
+                borderBottomWidth: index === profileOptions.length - 1 ? 0 : 1,
+                borderBottomColor: "#1a1a1a",
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                <View style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 16,
+                  backgroundColor: "#111",
+                  borderWidth: 1,
+                  borderColor: "#222",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: 16,
+                }}>
+                  <Ionicons name={item.icon} size={22} color="#e11d1d" />
+                </View>
 
-          <TouchableOpacity
-            onPress={() => router.push("/pt-form")}
-            className="flex-row justify-between items-center py-4 border-b border-[#222]"
-          >
-            <Text className="text-white">PT Form</Text>
-            <Ionicons name="chevron-forward" size={18} color="#888" />
-          </TouchableOpacity>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "#fff", fontSize: 16, fontWeight: "700", marginBottom: 2 }}>{item.title}</Text>
+                  <Text style={{ color: "#6b7280", fontSize: 12 }}>{item.subtitle}</Text>
+                </View>
+              </View>
 
-          <TouchableOpacity
-            onPress={() => router.push("/Orders")}
-            className="flex-row justify-between items-center py-4 border-b border-[#222]"
-          >
-            <Text className="text-white">My Orders</Text>
-            <Ionicons name="chevron-forward" size={18} color="#888" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.push("/Address")}
-            className="flex-row justify-between items-center py-4 border-b border-[#222]"
-          >
-            <Text className="text-white">Address</Text>
-            <Ionicons name="chevron-forward" size={18} color="#888" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.push("/set-password")}
-            className="flex-row justify-between items-center py-4 border-b border-[#222]"
-          >
-            <Text className="text-white">Set Password</Text>
-            <Ionicons name="chevron-forward" size={18} color="#888" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.push("/Notifications")}
-            className="flex-row justify-between items-center py-4 border-b border-[#222]"
-          >
-            <Text className="text-white">Notifications</Text>
-            <Ionicons name="chevron-forward" size={18} color="#888" />
-          </TouchableOpacity>
+              <Ionicons name="chevron-forward" size={20} color="#444" />
+            </TouchableOpacity>
+          ))}
         </View>
 
         {/* LOGOUT */}

@@ -1,11 +1,12 @@
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -18,6 +19,7 @@ import FlexibilityAndMeasurementsPage from "./pt-form-user/FlexibilityAndMeasure
 import HealthHistory2Page from "./pt-form-user/HealthHistory2Page";
 import HealthHistoryPage from "./pt-form-user/HealthHistoryPage";
 import SessionTrackerPage from "./pt-form-user/SessionTrackerPage";
+import * as notificationService from "../services/notificationService";
 const tabs = [
   { key: "enquiry", label: "Enquiry Form" },
   { key: "health1", label: "Health History" },
@@ -111,10 +113,17 @@ export default function PTFormUser() {
   const [formData, setFormData] = useState({});
   const [member, setMember] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [hasEnquiry, setHasEnquiry] = useState(false);
 
   useEffect(() => {
     fetchUserFormData();
+  }, [fetchUserFormData]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchUserFormData();
+    setRefreshing(false);
   }, [fetchUserFormData]);
 
   const fetchUserFormData = useCallback(async () => {
@@ -185,6 +194,10 @@ export default function PTFormUser() {
         formData: updatedData,
       });
       setFormData(updatedData);
+
+      // Send notification
+      notificationService.sendDirectPTFormNotification(member?.name);
+
       Toast.show({
         type: "success",
         text1: "PT Form Saved",
@@ -358,6 +371,9 @@ export default function PTFormUser() {
       {/* CONTENT */}
       <ScrollView
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e11d1d" />
+        }
         contentContainerStyle={{ paddingBottom: 120 }}
       >
         {!member?.id && (
