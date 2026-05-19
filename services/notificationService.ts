@@ -86,7 +86,7 @@ export const registerForPushNotificationsAsync = async (): Promise<string | unde
   }
 };
 
-const BASE_URL = 'https://dap.qtechx.com/api';
+const BASE_URL = 'https://dapfitt.com/api';
 
 const postJson = async (url: string, payload: any) => {
   const res = await fetch(url, {

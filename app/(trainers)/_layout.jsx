@@ -5,7 +5,7 @@ import { Image, Modal, Pressable, Text, TouchableOpacity, View } from "react-nat
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 
-const BASE_URL = "https://dap.qtechx.com";
+const BASE_URL = "https://dapfitt.com";
 
 function TrainerHeader() {
   const router = useRouter();
@@ -35,7 +35,7 @@ function TrainerHeader() {
 
     const fetchMembers = async () => {
       try {
-        const res = await fetch("https://dap.qtechx.com/api/assignments");
+        const res = await fetch("https://dapfitt.com/api/assignments");
         const json = await res.json();
         const data = Array.isArray(json) ? json : (json?.data || json?.assignments || []);
 

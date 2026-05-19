@@ -15,7 +15,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { getAllProducts, getOffers, getPlans } from "../../services/api";
 import ProductCard from "../ProductCard";
 
-const OFFERS_IMAGE_BASE = "https://dap.qtechx.com";
+const OFFERS_IMAGE_BASE = "https://dapfitt.com/";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "";

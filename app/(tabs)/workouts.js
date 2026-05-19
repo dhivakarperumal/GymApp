@@ -30,7 +30,7 @@ export default function Workouts() {
     const uri = String(media).trim();
     if (uri.startsWith("data:")) return uri;
     if (uri.startsWith("//")) return `https:${uri}`;
-    if (uri.startsWith("/")) return `https://dap.qtechx.com${uri}`;
+    if (uri.startsWith("/")) return `https://dapfitt.com${uri}`;
     if (!uri.match(/^https?:\/\//i)) return `https://${uri}`;
     return encodeURI(uri);
   };

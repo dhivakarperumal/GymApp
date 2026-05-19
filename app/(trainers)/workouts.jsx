@@ -285,7 +285,7 @@ export default function Workouts() {
           style: "destructive",
           onPress: async () => {
             try {
-              const res = await fetch(`https://dap.qtechx.com/api/workouts/${id}`, {
+              const res = await fetch(`https://dapfitt.com/api/workouts/${id}`, {
                 method: "DELETE"
               });
               if (res.ok) {

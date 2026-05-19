@@ -61,7 +61,7 @@ export default function Services() {
     if (img.startsWith("http")) return img;
 
     // relative path
-    const base = "https://dap.qtechx.com";
+    const base = "https://dapfitt.com";
     return `${base}/${img}`;
   };
 

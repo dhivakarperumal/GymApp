@@ -359,7 +359,7 @@ export default function DietPlans() {
           style: "destructive",
           onPress: async () => {
             try {
-              const res = await fetch(`https://dap.qtechx.com/api/diet-plans/${id}`, {
+              const res = await fetch(`https://dapfitt.com/api/diet-plans/${id}`, {
                 method: "DELETE"
               });
               if (res.ok) {

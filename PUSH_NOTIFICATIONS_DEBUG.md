@@ -5,8 +5,8 @@
 ### ✅ What's Configured
 - **Expo Project ID**: `347b991e-229c-4481-9a45-19b55a06e24e` (found in app.json)
 - **API Base URLs**: 
-  - `https://mygym.qtechx.com/api` (member assignments)
-  - `https://dap.qtechx.com/api` (push token storage)
+  - `https://dapfitt.com/api` (member assignments)
+  - `https://dapfitt.com/api` (push token storage)
 - **Notification Channels**: Android notification channel configured
 - **Notification Handler**: Configured to show alerts, sound, badge
 
@@ -59,7 +59,7 @@ For production APK, you need to configure EAS secrets.
     1. /trainers/:id/send-      (even in Expo Go)
        notification
     2. /notifications/send
-    3. dap.qtechx.com endpoints
+    3. dapfitt.com endpoints
              ↓
     Server sends via
     Expo Push Service

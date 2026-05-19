@@ -1,4 +1,4 @@
-const BASE_URL = "https://dap.qtechx.com/api";
+const BASE_URL = "https://dapfitt.com/api";
 
 /* ------------------ HELPER ------------------ */
 const parseResponse = async (res) => {
