@@ -124,6 +124,10 @@ export default function TrainerPayments() {
             <Text style={[styles.detailValue, balance > 0 && { color: '#ef4444' }]}>₹{balance}</Text>
           </View>
           <View style={styles.detailItem}>
+            <Text style={styles.detailLabel}>Discount</Text>
+            <Text style={[styles.detailValue, { color: '#f59e0b' }]}>₹{item.discount || 0}</Text>
+          </View>
+          <View style={styles.detailItem}>
             <Text style={styles.detailLabel}>Date</Text>
             <Text style={styles.detailValue}>{formatDate(item.paymentDate || item.createdAt)}</Text>
           </View>
@@ -212,6 +216,10 @@ export default function TrainerPayments() {
                   <View style={styles.bsRow}>
                     <Text style={styles.bsLabel}>Initial Amount Paid</Text>
                     <Text style={[styles.bsVal, { color: '#10b981' }]}>₹{initialPaid}</Text>
+                  </View>
+                  <View style={styles.bsRow}>
+                    <Text style={styles.bsLabel}>Discount</Text>
+                    <Text style={[styles.bsVal, { color: '#f59e0b' }]}>₹{item.discount || 0}</Text>
                   </View>
                   {secondPaid > 0 && (
                     <View style={styles.bsRow}>
