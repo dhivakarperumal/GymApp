@@ -17,6 +17,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import dayjs from "dayjs";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import api from "../../services/api"; // Corrected API import based on gymApp
 
 const API_ENDPOINT = `/members`;
@@ -33,6 +34,7 @@ export default function AddMember() {
   const [plans, setPlans] = useState([]);
   const [originalPlan, setOriginalPlan] = useState(null);
   const [extensionDays, setExtensionDays] = useState("5");
+  const [datePickerConfig, setDatePickerConfig] = useState({ show: false, field: null });
 
   const [form, setForm] = useState({
     name: "",
@@ -369,13 +371,14 @@ export default function AddMember() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Date of Birth (YYYY-MM-DD) *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor="#555"
-              value={form.dob}
-              onChangeText={(v) => handleChange("dob", v)}
-            />
+            <TouchableOpacity
+              style={[styles.input, { justifyContent: 'center' }]}
+              onPress={() => setDatePickerConfig({ show: true, field: "dob" })}
+            >
+              <Text style={{ color: form.dob ? "#fff" : "#555", fontSize: 15 }}>
+                {form.dob || "YYYY-MM-DD"}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.inputGroup}>
@@ -506,13 +509,14 @@ export default function AddMember() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Start Date (YYYY-MM-DD)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor="#555"
-              value={form.joinDate}
-              onChangeText={(v) => handleChange("joinDate", v)}
-            />
+            <TouchableOpacity
+              style={[styles.input, { justifyContent: 'center' }]}
+              onPress={() => setDatePickerConfig({ show: true, field: "joinDate" })}
+            >
+              <Text style={{ color: form.joinDate ? "#fff" : "#555", fontSize: 15 }}>
+                {form.joinDate || "YYYY-MM-DD"}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.inputGroup}>
@@ -585,13 +589,14 @@ export default function AddMember() {
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Expiry Date</Text>
             <View style={styles.row}>
-              <TextInput
-                style={[styles.input, { flex: 1 }]}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor="#555"
-                value={form.expiryDate}
-                onChangeText={(v) => handleChange("expiryDate", v)}
-              />
+              <TouchableOpacity
+                style={[styles.input, { flex: 1, justifyContent: 'center' }]}
+                onPress={() => setDatePickerConfig({ show: true, field: "expiryDate" })}
+              >
+                <Text style={{ color: form.expiryDate ? "#fff" : "#555", fontSize: 15 }}>
+                  {form.expiryDate || "YYYY-MM-DD"}
+                </Text>
+              </TouchableOpacity>
               <View style={[styles.row, { marginLeft: 8 }]}>
                 <TextInput
                   style={[styles.input, { width: 60, marginRight: 8, textAlign: "center" }]}
@@ -674,6 +679,20 @@ export default function AddMember() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {datePickerConfig.show && (
+        <DateTimePicker
+          value={form[datePickerConfig.field] ? new Date(form[datePickerConfig.field]) : new Date()}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setDatePickerConfig({ show: false, field: null });
+            if (event.type === "set" && selectedDate) {
+              handleChange(datePickerConfig.field, dayjs(selectedDate).format("YYYY-MM-DD"));
+            }
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }

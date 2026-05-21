@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 import dayjs from "dayjs";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import api from "../../services/api";
 
 const parseDecimal = (value) => {
@@ -34,6 +35,10 @@ const EMIList = () => {
   const [selectedMembership, setSelectedMembership] = useState(null);
   const [updateAmount, setUpdateAmount] = useState("");
   const [paymentMode, setPaymentMode] = useState("Cash");
+  
+  const [filterType, setFilterType] = useState("Pending");
+  const [customRange, setCustomRange] = useState({ start: null, end: null });
+  const [datePickerConfig, setDatePickerConfig] = useState({ show: false, field: null });
   
   const [viewingDetails, setViewingDetails] = useState(null);
 
@@ -55,9 +60,27 @@ const EMIList = () => {
     }
   };
 
-  const filteredEMIs = memberships.filter((m) =>
-    (m.userName || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEMIs = memberships.filter((m) => {
+    const matchesSearch = (m.userName || "").toLowerCase().includes(searchTerm.toLowerCase());
+    if (!matchesSearch) return false;
+
+    const totalPrice = parseDecimal(m.price);
+    const paid = parseDecimal(m.pricePaid);
+    const second = parseDecimal(m.secondPaymentPaid);
+    const remaining = totalPrice - paid - second;
+    const isPaid = remaining <= 0;
+
+    if (filterType === "Paid" && !isPaid) return false;
+    if (filterType === "Pending" && isPaid) return false;
+    if (filterType === "Custom" && customRange.start && customRange.end) {
+      const itemDate = dayjs(m.startDate || m.createdAt || m.created_at);
+      const start = dayjs(customRange.start).startOf("day");
+      const end = dayjs(customRange.end).endOf("day");
+      if (itemDate.isBefore(start) || itemDate.isAfter(end)) return false;
+    }
+
+    return true;
+  });
 
   const handleUpdatePayment = async () => {
     if (!selectedMembership) return;
@@ -184,6 +207,40 @@ const EMIList = () => {
         )}
       </View>
 
+      <View style={{ height: 42, marginBottom: 12 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+           {["Pending", "Paid", "All", "Custom"].map(type => (
+            <TouchableOpacity 
+               key={type} 
+               style={[styles.filterChip, filterType === type && styles.filterChipActive]}
+               onPress={() => setFilterType(type)}
+            >
+               <Text style={[styles.filterChipText, filterType === type && styles.filterChipTextActive]}>
+                  {type}
+               </Text>
+              </TouchableOpacity>
+           ))}
+        </ScrollView>
+      </View>
+
+      {filterType === "Custom" && (
+        <View style={styles.customRangeRow}>
+          <TouchableOpacity style={styles.datePickerBtn} onPress={() => setDatePickerConfig({ show: true, field: "start" })}>
+             <Ionicons name="calendar-outline" size={16} color={customRange.start ? "#fff" : "#666"} />
+             <Text style={[styles.datePickerText, { color: customRange.start ? "#fff" : "#666" }]}>
+               {customRange.start ? dayjs(customRange.start).format("DD MMM YYYY") : "Start Date"}
+             </Text>
+          </TouchableOpacity>
+          <Text style={{color: '#444'}}>to</Text>
+          <TouchableOpacity style={styles.datePickerBtn} onPress={() => setDatePickerConfig({ show: true, field: "end" })}>
+             <Ionicons name="calendar-outline" size={16} color={customRange.end ? "#fff" : "#666"} />
+             <Text style={[styles.datePickerText, { color: customRange.end ? "#fff" : "#666" }]}>
+               {customRange.end ? dayjs(customRange.end).format("DD MMM YYYY") : "End Date"}
+             </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#f97316" />
@@ -295,6 +352,23 @@ const EMIList = () => {
         </View>
       </Modal>
       <Toast />
+
+      {datePickerConfig.show && (
+        <DateTimePicker
+          value={customRange[datePickerConfig.field] ? new Date(customRange[datePickerConfig.field]) : new Date()}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setDatePickerConfig({ show: false, field: null });
+            if (event.type === "set" && selectedDate) {
+              setCustomRange((prev) => ({
+                ...prev,
+                [datePickerConfig.field]: selectedDate,
+              }));
+            }
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -344,6 +418,45 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 14,
   },
+
+  filterScroll: { paddingHorizontal: 20 },
+  filterChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "#1a1a1a",
+    borderWidth: 1,
+    borderColor: "#333",
+    marginRight: 10,
+  },
+  filterChipActive: {
+    backgroundColor: "#f9731620",
+    borderColor: "#f97316",
+  },
+  filterChipText: { color: "#888", fontSize: 13, fontWeight: "600" },
+  filterChipTextActive: { color: "#f97316" },
+  
+  customRangeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    marginBottom: 12,
+    gap: 12,
+  },
+  datePickerBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#111",
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#222",
+    gap: 8,
+  },
+  datePickerText: { fontSize: 13, fontWeight: "600" },
 
   listContent: { paddingHorizontal: 20, paddingBottom: 100, paddingTop: 10 },
 
