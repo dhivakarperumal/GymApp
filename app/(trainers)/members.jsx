@@ -298,6 +298,20 @@ export default function TrainerMembers() {
               <Text style={styles.sectionTitle}>Quick Actions</Text>
               <View style={styles.actionsRow}>
                 <TouchableOpacity
+                  style={[styles.actionBtn, { backgroundColor: "#f59e0b15" }]}
+                  onPress={() => {
+                    setSelectedMember(null);
+                    router.push({
+                      pathname: "/(trainers)/add-member",
+                      params: { id: m.id || m.userId || m.user_id },
+                    });
+                  }}
+                >
+                  <Ionicons name="pencil-outline" size={22} color="#f59e0b" />
+                  <Text style={[styles.actionText, { color: "#f59e0b" }]}>Edit</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
                   style={[styles.actionBtn, { backgroundColor: "#f9731615" }]}
                   onPress={() => {
                     setSelectedMember(null);
@@ -432,7 +446,17 @@ export default function TrainerMembers() {
         />
       )}
 
+      {/* Detail Modal */}
       <DetailModal />
+
+      {/* Floating Action Button (FAB) */}
+      <TouchableOpacity
+        style={styles.fab}
+        activeOpacity={0.8}
+        onPress={() => router.push("/(trainers)/add-member")}
+      >
+        <Ionicons name="add" size={32} color="#fff" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -641,4 +665,20 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   actionText: { fontSize: 11, fontWeight: "700" },
+  fab: {
+    position: "absolute",
+    bottom: 24,
+    right: 24,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#e11d1d",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#e11d1d",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8,
+  },
 });
