@@ -258,15 +258,31 @@ export default function AddMember() {
 
     setLoading(true);
     try {
+      // Only send fields the backend expects — avoid leaking raw DB fields
+      // (join_date, expiry_date, updated_at, etc.) that come from the fetch spread.
+      // MySQL DATE columns require NULL (not "") for empty values.
       const payload = {
-        ...form,
-        dob: form.dob ? dayjs(form.dob).format("YYYY-MM-DD") : "",
+        name: form.name,
+        username: form.username,
+        phone: form.phone,
+        email: form.email,
+        gender: form.gender || null,
+        dob: form.dob ? dayjs(form.dob).format("YYYY-MM-DD") : null,
+        age: form.age ? Number(form.age) : null,
         height: form.height ? Number(form.height) : null,
         weight: form.weight ? Number(form.weight) : null,
         bmi: form.bmi ? Number(form.bmi) : null,
-        age: form.age ? Number(form.age) : null,
+        plan: form.plan || null,
         duration: form.duration ? Number(form.duration) : null,
-        password: !isEdit ? form.password : undefined,
+        joinDate: form.joinDate || null,
+        expiryDate: form.expiryDate || null,
+        status: form.status || "active",
+        photo: form.photo || null,
+        notes: form.notes || null,
+        address: form.address || null,
+        pt_form_completed: form.pt_form_completed ? 1 : 0,
+        fingerprintId: form.fingerprintId || null,
+        ...(isEdit ? {} : { password: form.password }),
       };
 
       const res = isEdit
@@ -282,10 +298,10 @@ export default function AddMember() {
       Alert.alert("Success", isEdit ? "Member updated ✅" : "Member added 💪");
       router.back();
     } catch (err) {
-      console.error(err);
+      console.error("handleSubmit error:", err?.response?.data || err?.message || err);
       Alert.alert(
         "Error",
-        err.response?.data?.message || err.response?.data?.error || "Server error"
+        err.response?.data?.message || err.response?.data?.error || err.message || "Server error"
       );
     } finally {
       setLoading(false);

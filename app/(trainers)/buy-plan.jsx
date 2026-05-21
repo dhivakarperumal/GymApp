@@ -68,6 +68,8 @@ export default function AssignPlan() {
     field: null, // "startDate", "endDate", "paymentDate"
   });
 
+  const { member_id, user_id } = useLocalSearchParams();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -76,15 +78,47 @@ export default function AssignPlan() {
           api.get("/plans"),
           api.get("/enquiries").catch(() => ({ data: [] })),
         ]);
-        setMembers(membersRes.data || []);
-        setPlans((plansRes.data || []).filter(p => p.active));
+        const fetchedMembers = membersRes.data || [];
+        const fetchedPlans = (plansRes.data || []).filter(p => p.active);
+        
+        setMembers(fetchedMembers);
+        setPlans(fetchedPlans);
         setEnquiries(Array.isArray(enqRes.data) ? enqRes.data : []);
+
+        const targetId = member_id || user_id;
+        if (targetId) {
+          const found = fetchedMembers.find(m => String(m.id || m.u_id || m.user_id || m.gymMemberId) === String(targetId));
+          if (found) {
+            setSelectedUser(found);
+            setForm(prev => ({
+              ...prev,
+              phone: found.phone || "",
+              email: found.email || "",
+              address: found.address || "",
+              height: found.height ? String(found.height) : "",
+              weight: found.weight ? String(found.weight) : "",
+              bmi: found.bmi ? String(found.bmi) : "",
+            }));
+
+            const uId = found.u_id || found.user_id || found.id || found.gymMemberId;
+            if (uId) {
+              api.get(`/memberships/user/${uId}`)
+                .then(res => setMemberHistory(Array.isArray(res.data) ? res.data : []))
+                .catch(err => console.log("History fetch err", err));
+            }
+
+            if (found.plan && found.plan !== "user") {
+              const p = fetchedPlans.find(plan => plan.name.toLowerCase() === found.plan.toLowerCase());
+              if (p) setSelectedPlan(p);
+            }
+          }
+        }
       } catch (err) {
         console.error("Failed to load data:", err);
       }
     };
     fetchData();
-  }, []);
+  }, [member_id, user_id]);
 
   // Set default end date based on initial load
   useEffect(() => {

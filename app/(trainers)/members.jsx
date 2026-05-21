@@ -303,12 +303,28 @@ export default function TrainerMembers() {
                     setSelectedMember(null);
                     router.push({
                       pathname: "/(trainers)/add-member",
-                      params: { id: m.id || m.userId || m.user_id },
+                      params: m.gymMemberId ? { id: m.gymMemberId } : { user_id: m.userId },
                     });
                   }}
                 >
                   <Ionicons name="pencil-outline" size={22} color="#f59e0b" />
                   <Text style={[styles.actionText, { color: "#f59e0b" }]}>Edit</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.actionBtn, { backgroundColor: "#10b98115" }]}
+                  onPress={() => {
+                    setSelectedMember(null);
+                    router.push({
+                      pathname: "/(trainers)/buy-plan",
+                      params: m.gymMemberId
+                        ? { member_id: m.gymMemberId }
+                        : { user_id: m.userId },
+                    });
+                  }}
+                >
+                  <Ionicons name="card-outline" size={22} color="#10b981" />
+                  <Text style={[styles.actionText, { color: "#10b981" }]}>Update Plan</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -324,6 +340,9 @@ export default function TrainerMembers() {
                   <Ionicons name="document-text-outline" size={22} color="#f97316" />
                   <Text style={[styles.actionText, { color: "#f97316" }]}>PT Form</Text>
                 </TouchableOpacity>
+              </View>
+
+              <View style={[styles.actionsRow, { marginTop: 10 }]}>
                 <TouchableOpacity
                   style={[styles.actionBtn, { backgroundColor: "#3b82f615" }]}
                   onPress={() => {
@@ -334,6 +353,7 @@ export default function TrainerMembers() {
                   <Ionicons name="calendar-outline" size={22} color="#3b82f6" />
                   <Text style={[styles.actionText, { color: "#3b82f6" }]}>Attendance</Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
                   style={[styles.actionBtn, { backgroundColor: "#8b5cf615" }]}
                   onPress={() => {
