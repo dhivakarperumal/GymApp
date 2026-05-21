@@ -289,12 +289,6 @@ export default function AddMember() {
         ? await api.put(`${API_ENDPOINT}/${id}`, payload)
         : await api.post(API_ENDPOINT, payload);
 
-      if (res.status !== 200 && res.status !== 201) {
-        Alert.alert("Error", res.data?.message || res.data?.error || "Error saving");
-        setLoading(false);
-        return;
-      }
-
       Alert.alert("Success", isEdit ? "Member updated ✅" : "Member added 💪");
       router.back();
     } catch (err) {
