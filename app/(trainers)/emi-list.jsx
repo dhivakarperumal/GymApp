@@ -18,7 +18,8 @@ import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 import dayjs from "dayjs";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import api from "../../services/api";
+import api, { getTrainerMembers } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 
 const parseDecimal = (value) => {
   const number = Number(value);
@@ -26,6 +27,7 @@ const parseDecimal = (value) => {
 };
 
 const EMIList = () => {
+  const { user } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [memberships, setMemberships] = useState([]);
@@ -43,14 +45,24 @@ const EMIList = () => {
   const [viewingDetails, setViewingDetails] = useState(null);
 
   useEffect(() => {
-    fetchEMI();
-  }, []);
+    if (user?.id) {
+      fetchEMI();
+    }
+  }, [user]);
 
   const fetchEMI = async () => {
+    if (!user?.id) return;
     try {
       setLoading(true);
+      const members = await getTrainerMembers(user.id, user);
+      const assignedIds = members.map((m) => String(m.id));
+
       const response = await api.get("/memberships");
-      const emiOnly = response.data.filter((m) => m.paymentMode === "emi");
+      const emiOnly = response.data.filter((m) => {
+        const isEmi = m.paymentMode === "emi";
+        const mUserId = String(m.userId || m.user_id);
+        return isEmi && assignedIds.includes(mUserId);
+      });
       setMemberships(emiOnly);
     } catch (error) {
       console.log(error);
