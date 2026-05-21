@@ -209,7 +209,7 @@ export default function MoreOptions() {
 
 
         {/* CARDS */}
-        <View style={styles.cardContainer}>
+        <View style={styles.listContainer}>
           {menuItems.map((item, index) => (
             <TouchableOpacity
               key={item.id}
@@ -223,10 +223,7 @@ export default function MoreOptions() {
                   router.push(item.route);
                 }
               }}
-              style={[
-                styles.itemRow,
-                index !== menuItems.length - 1 && styles.itemBorder
-              ]}
+              style={styles.card}
             >
               {/* Icon Box */}
               <View style={[styles.iconBox, { backgroundColor: item.iconBg }]}>
@@ -274,26 +271,22 @@ const styles = StyleSheet.create({
     paddingBottom: 110,
   },
 
-  /* ── Card Container ── */
-  cardContainer: {
-    backgroundColor: "#111111",
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: "#222",
-    overflow: "hidden",
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 10,
+  /* ── Cards ── */
+  listContainer: {
+    gap: 12,
   },
-  itemRow: {
+  card: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
-  },
-  itemBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#1a1a1a",
+    backgroundColor: "#111111",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#222",
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
 
   /* ── Icon ── */
