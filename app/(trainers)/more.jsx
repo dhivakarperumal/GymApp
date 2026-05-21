@@ -15,6 +15,30 @@ import { useState } from "react";
 
 const menuItems = [
   {
+    id: "members",
+    title: "Members",
+    subtitle: "View your assigned members",
+    icon: "people",
+    route: "/(trainers)/members",
+    iconBg: "#14b8a6",
+    glowBg: "#14b8a618",
+    arrowBg: "#14b8a620",
+    arrowColor: "#2dd4bf",
+    borderAccent: "#14b8a630",
+  },
+  {
+    id: "emilist",
+    title: "EMI List",
+    subtitle: "View EMI payment lists",
+    icon: "card",
+    route: "/(trainers)/emi-list",
+    iconBg: "#06b6d4",
+    glowBg: "#06b6d418",
+    arrowBg: "#06b6d420",
+    arrowColor: "#22d3ee",
+    borderAccent: "#06b6d430",
+  },
+  {
     id: "attendance",
     title: "Attendance",
     subtitle: "Track daily member check-ins",

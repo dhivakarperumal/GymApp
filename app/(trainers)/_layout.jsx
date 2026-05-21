@@ -371,6 +371,8 @@ export default function TrainersLayout() {
       <Tabs.Screen name="profile"          options={{ href: null, headerShown: false }} />
       <Tabs.Screen name="follow-up-enquiry" options={{ href: null, headerShown: false }} />
       <Tabs.Screen name="pricing"          options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="members"          options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="emi-list"         options={{ href: null, headerShown: false }} />
       
       <Tabs.Screen 
         name="messages"         
