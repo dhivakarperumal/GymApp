@@ -98,7 +98,13 @@ export default function Workouts() {
         const name = row["Exercise Name"] || row.exercise || row.name || "";
         const sets = row.Sets || row.sets || "";
         const count = row.Count || row.count || row.Reps || row.reps || "";
+
         const media = row.Media || row.media || "";
+        const massGain =
+          row["Muscle Type"] ||
+          row.massGain ||
+          row["Mass Gain"] ||
+          "";
 
         if (!name) return;
 
@@ -110,6 +116,7 @@ export default function Workouts() {
           name,
           sets,
           count,
+          massGain,
           media,
           mediaType: "url"
         });
@@ -231,7 +238,7 @@ export default function Workouts() {
     setTrainingLevel("beginner");
     setWorkoutGoal("");
     setCategory("General");
-    setDays({ Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
+    setDays({ Day1: [{ time: "", type: "Weight Training", name: "", sets: "", massGain: "", count: "", media: "", mediaType: "url" }] });
     setIsViewOnly(false);
     setIsModalOpen(true);
   };
@@ -250,7 +257,7 @@ export default function Workouts() {
     setTrainingLevel(workout.level || workout.training_level || workout.trainingLevel || "beginner");
     setWorkoutGoal(workout.goal || workout.workout_goal || workout.workoutGoal || "");
     setCategory(workout.category || "General");
-    setDays(daysData || { Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
+    setDays(daysData || { Day1: [{ time: "", type: "Weight Training", name: "", sets: "", massGain: "", count: "", media: "", mediaType: "url" }] });
     setIsViewOnly(false);
     setIsModalOpen(true);
   };
@@ -269,7 +276,7 @@ export default function Workouts() {
     setTrainingLevel(workout.level || workout.training_level || workout.trainingLevel || "beginner");
     setWorkoutGoal(workout.goal || workout.workout_goal || workout.workoutGoal || "");
     setCategory(workout.category || "General");
-    setDays(daysData || { Day1: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
+    setDays(daysData || { Day1: [{ time: "", type: "Weight Training", name: "", sets: "", massGain: "", count: "", media: "", mediaType: "url" }] });
     setIsViewOnly(true);
     setIsModalOpen(true);
   };
@@ -303,7 +310,7 @@ export default function Workouts() {
 
   const addDay = () => {
     const nextDay = `Day${Object.keys(days).length + 1}`;
-    setDays({ ...days, [nextDay]: [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
+    setDays({ ...days, [nextDay]: [{ time: "", type: "Weight Training", name: "", sets: "", massGain: "", count: "", media: "", mediaType: "url" }] });
   };
 
   const removeDay = (dayKey) => {
@@ -314,7 +321,7 @@ export default function Workouts() {
   };
 
   const addExercise = (dayKey) => {
-    setDays({ ...days, [dayKey]: [...days[dayKey], { time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }] });
+    setDays({ ...days, [dayKey]: [...days[dayKey], { time: "", type: "Weight Training", name: "", massGain: "", sets: "", count: "", media: "", mediaType: "url" }] });
   };
 
   const updateExercise = (dayKey, index, field, value) => {
@@ -334,7 +341,7 @@ export default function Workouts() {
       const updated = prev[dayKey].filter((_, i) => i !== index);
       return {
         ...prev,
-        [dayKey]: updated.length ? updated : [{ time: "", type: "Weight Training", name: "", sets: "", count: "", media: "", mediaType: "url" }]
+        [dayKey]: updated.length ? updated : [{ time: "", type: "Weight Training", name: "", sets: "", massGain: "", count: "", media: "", mediaType: "url" }]
       };
     });
   };
@@ -523,7 +530,7 @@ export default function Workouts() {
             <View className="flex-row justify-between items-center px-6 py-8 border-b border-white/5">
               <View className="flex-row items-center flex-1">
 
-               
+
 
                 <View>
                   <Text className="text-white font-black uppercase tracking-widest text-xs">
@@ -536,22 +543,22 @@ export default function Workouts() {
                 </View>
               </View>
 
-               {!isViewOnly && (
-                  <TouchableOpacity
-                    onPress={handleImportExcel}
-                    disabled={importing}
-                    className="mr-3 px-3 py-2 bg-blue-500/20 rounded-xl border border-blue-500/40 flex-row items-center"
-                  >
-                    <Ionicons
-                      name="cloud-upload-outline"
-                      size={14}
-                      color="#3b82f6"
-                    />
-                    <Text className="text-blue-500 text-[9px] font-black uppercase tracking-widest ml-1">
-                      {importing ? "Importing..." : "Import"}
-                    </Text>
-                  </TouchableOpacity>
-                )}
+              {!isViewOnly && (
+                <TouchableOpacity
+                  onPress={handleImportExcel}
+                  disabled={importing}
+                  className="mr-3 px-3 py-2 bg-blue-500/20 rounded-xl border border-blue-500/40 flex-row items-center"
+                >
+                  <Ionicons
+                    name="cloud-upload-outline"
+                    size={14}
+                    color="#3b82f6"
+                  />
+                  <Text className="text-blue-500 text-[9px] font-black uppercase tracking-widest ml-1">
+                    {importing ? "Importing..." : "Import"}
+                  </Text>
+                </TouchableOpacity>
+              )}
 
               <TouchableOpacity
                 onPress={() => setIsModalOpen(false)}
@@ -694,6 +701,23 @@ export default function Workouts() {
                               onChangeText={v => updateExercise(dayKey, idx, "count", v)}
                               placeholderTextColor="rgba(255,255,255,0.1)"
                               className={`bg-black/40 h-14 rounded-xl border border-white/5 px-4 text-white font-bold text-xs ${isViewOnly ? 'opacity-50' : ''}`}
+                            />
+                          </View>
+                          <View className="flex-1">
+                            <Text className="text-white/30 text-[8px] font-black uppercase mb-2 ml-1">
+                              Muscle Type
+                            </Text>
+
+                            <TextInput
+                              placeholder="e.g. Chest, Back, Legs"
+                              value={ex.massGain || ""}
+                              editable={!isViewOnly}
+                              onChangeText={(v) =>
+                                updateExercise(dayKey, idx, "massGain", v)
+                              }
+                              placeholderTextColor="rgba(255,255,255,0.1)"
+                              className={`bg-black/40 h-14 rounded-xl border border-white/5 px-4 text-white font-bold text-xs ${isViewOnly ? "opacity-50" : ""
+                                }`}
                             />
                           </View>
                         </View>
