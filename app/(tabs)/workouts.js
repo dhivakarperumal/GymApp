@@ -3,13 +3,13 @@ import dayjs from "dayjs";
 import { Video } from "expo-av";
 import { useEffect, useState } from "react";
 import {
-    Image,
-    ImageBackground,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  ImageBackground,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import YoutubePlayer from "react-native-youtube-iframe";
@@ -183,7 +183,7 @@ export default function Workouts() {
             <View className="flex-row items-center mt-3 mb-12">
               <Ionicons name="barbell-outline" size={16} color="#ff3c00" />
               <Text className="text-gray-300 text-md ml-2">
-                {workoutData.duration_weeks} Weeks · {workoutData.level}
+                {workoutData.level}
               </Text>
             </View>
           </View>
@@ -193,27 +193,19 @@ export default function Workouts() {
         <View className="bg-[#0f0f0f] rounded-t-3xl -mt-6 p-5">
           {/* STATS */}
           <View className="flex-row justify-between mb-6">
-            <View className="bg-[#141414] border border-border rounded-2xl px-5 py-4 items-center w-[30%]">
-              <Ionicons name="person-outline" size={18} color="#ff3c00" />
-              <Text className="text-gray-400 text-xs mt-1">Trainer</Text>
-              <Text className="text-white font-bold text-sm">
+            <View className="bg-[#141414] border border-border rounded-2xl px-5 py-4 items-center w-[48%]">
+              <Ionicons name="person-outline" size={20} color="#ff3c00" />
+              <Text className="text-gray-400 text-xs mt-2">Trainer</Text>
+              <Text className="text-white font-bold text-base mt-1">
                 {workoutData.trainer_name}
               </Text>
             </View>
 
-            <View className="bg-[#141414] border border-border rounded-2xl px-5 py-4 items-center w-[30%]">
-              <Ionicons name="fitness-outline" size={18} color="#ff3c00" />
-              <Text className="text-gray-400 text-xs mt-1">Level</Text>
-              <Text className="text-white font-bold text-sm">
+            <View className="bg-[#141414] border border-border rounded-2xl px-5 py-4 items-center w-[48%]">
+              <Ionicons name="fitness-outline" size={20} color="#ff3c00" />
+              <Text className="text-gray-400 text-xs mt-2">Level</Text>
+              <Text className="text-white font-bold text-base mt-1">
                 {workoutData.level}
-              </Text>
-            </View>
-
-            <View className="bg-[#141414] border border-border rounded-2xl px-5 py-4 items-center w-[30%]">
-              <Ionicons name="time-outline" size={18} color="#ff3c00" />
-              <Text className="text-gray-400 text-xs mt-1">Duration</Text>
-              <Text className="text-white font-bold text-sm">
-                {workoutData.duration_weeks}w
               </Text>
             </View>
           </View>

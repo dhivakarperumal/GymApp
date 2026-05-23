@@ -161,7 +161,7 @@ export default function DietChartScreen() {
 
       {diet ? (
         <>
-          <ScrollView
+          {/* <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 16 }}
@@ -178,7 +178,7 @@ export default function DietChartScreen() {
                 </Text>
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </ScrollView> */}
 
           {meals ? (
             Object.entries(meals).map(([meal, value]) => {

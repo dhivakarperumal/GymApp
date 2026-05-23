@@ -521,9 +521,9 @@ export default function Home() {
                   {"TODAY'S WORKOUT"}
                 </Text>
 
-                <Text className="text-gray-400 text-sm mt-1">
+                {/* <Text className="text-gray-400 text-sm mt-1">
                   {todayWorkoutDay} Plan
-                </Text>
+                </Text> */}
               </View>
 
               <TouchableOpacity onPress={() => router.push("/workouts")}>
@@ -609,11 +609,11 @@ export default function Home() {
                   </Text>
                 ) : null}
 
-                {todayDay && (
+                {/* {todayDay && (
                   <Text className="text-gray-400 text-sm mt-1">
                     {todayDay} Meals
                   </Text>
-                )}
+                )} */}
               </View>
 
               <TouchableOpacity onPress={() => router.push("/diet")}>
