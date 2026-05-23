@@ -263,14 +263,31 @@ export default function Workouts() {
                     className="bg-[#1a1a1a] rounded-xl p-3 mb-2 border border-[#222]"
                   >
                     <View className="flex-row justify-between items-center">
-                      <View>
-                        <Text className="text-white font-semibold">
+                      <View className="flex-1 ml-3">
+                        <Text className="text-white text-lg font-bold tracking-wide">
                           {ex.name}
                         </Text>
 
-                        <Text className="text-gray-400 text-md mt-2">
-                          {ex.type} · {ex.sets} sets · {ex.count} reps
+                        <Text className="text-gray-400 text-sm mt-1">
+                          {ex.type}
                         </Text>
+
+                        <View className="flex-row mt-3">
+                          <View className="bg-[#1a1a1a] px-3 py-2 rounded-xl mr-2">
+                            <Text className="text-gray-500 text-xs">SETS</Text>
+                            <Text className="text-white font-bold">{ex.sets}</Text>
+                          </View>
+
+                          <View className="bg-[#1a1a1a] px-3 py-2 rounded-xl mr-2">
+                            <Text className="text-gray-500 text-xs">REPS</Text>
+                            <Text className="text-white font-bold">{ex.count}</Text>
+                          </View>
+
+                          <View className="bg-[#ff3c00]/10 px-3 py-2 rounded-xl border border-[#ff3c00]/20">
+                            <Text className="text-[#ff3c00] text-xs">Muscle Type</Text>
+                            <Text className="text-white font-bold">{ex.massGain}</Text>
+                          </View>
+                        </View>
                       </View>
 
                       <View className="flex-row items-center">
