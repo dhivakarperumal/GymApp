@@ -81,7 +81,15 @@ export default function Reports() {
 
     const ptPlans = useMemo(() => {
         return memberships.filter(
-            (x) => x.has_pt_plan || x.pt_planName
+            (x) =>
+                x.pt_planName ||
+                x.pt_plan_id ||
+                x.has_pt_plan ||
+                String(
+                    x.planName || ""
+                )
+                    .toLowerCase()
+                    .includes("pt")
         );
     }, [memberships]);
 
@@ -120,9 +128,7 @@ export default function Reports() {
                 );
 
             case "pt":
-                return memberships.filter(
-                    x => x.has_pt_plan || x.pt_planName
-                );
+                return ptPlans;
 
             case "followups":
                 return followups;
@@ -272,6 +278,134 @@ export default function Reports() {
                                 </Text>
                                 <Text style={styles.text}>
                                     ₹{item.pricePaid}
+                                </Text>
+                            </View>
+                        );
+                    }
+
+                    if (activeTab === "emi") {
+
+                        const total =
+                            Number(item.price || 0);
+
+                        const paid =
+                            Number(item.pricePaid || 0) +
+                            Number(item.secondPaymentPaid || 0);
+
+                        const remaining =
+                            Math.max(0, total - paid);
+
+                        return (
+                            <View style={styles.card}>
+                                <Text style={styles.title}>
+                                    {item.userName || item.username}
+                                </Text>
+
+                                <Text style={styles.text}>
+                                    Plan : {item.planName}
+                                </Text>
+
+                                <Text style={styles.text}>
+                                    Total : ₹{total}
+                                </Text>
+
+                                <Text style={styles.text}>
+                                    Paid : ₹{paid}
+                                </Text>
+
+                                <Text
+                                    style={[
+                                        styles.text,
+                                        {
+                                            color:
+                                                remaining > 0
+                                                    ? "#ef4444"
+                                                    : "#22c55e",
+                                        },
+                                    ]}
+                                >
+                                    Remaining : ₹{remaining}
+                                </Text>
+                            </View>
+                        );
+                    }
+
+                    if (activeTab === "pt") {
+
+                        return (
+                            <View style={styles.card}>
+                                <Text style={styles.title}>
+                                    {item.userName || item.username}
+                                </Text>
+
+                                <Text style={styles.text}>
+                                    PT Plan :
+                                    {" "}
+                                    {item.pt_planName ||
+                                        item.planName}
+                                </Text>
+
+                                <Text style={styles.text}>
+                                    Amount :
+                                    ₹
+                                    {
+                                        item.pt_pricePaid ||
+                                        item.pricePaid
+                                    }
+                                </Text>
+
+                                <Text
+                                    style={{
+                                        color: "#22c55e",
+                                        marginTop: 6,
+                                    }}
+                                >
+                                    {item.status || "Active"}
+                                </Text>
+                            </View>
+                        );
+                    }
+
+                    if (activeTab === "expiry") {
+
+                        const daysLeft =
+                            Math.ceil(
+                                (
+                                    new Date(item.expiry_date) -
+                                    new Date()
+                                ) /
+                                (1000 * 60 * 60 * 24)
+                            );
+
+                        return (
+                            <View style={styles.card}>
+                                <Text style={styles.title}>
+                                    {item.name}
+                                </Text>
+
+                                <Text style={styles.text}>
+                                    {item.plan}
+                                </Text>
+
+                                <Text style={styles.text}>
+                                    Expiry :
+                                    {" "}
+                                    {item.expiry_date}
+                                </Text>
+
+                                <Text
+                                    style={{
+                                        color:
+                                            daysLeft > 0
+                                                ? "#f59e0b"
+                                                : "#ef4444",
+                                        marginTop: 6,
+                                        fontWeight: "700",
+                                    }}
+                                >
+                                    {daysLeft > 0
+                                        ? `${daysLeft} Days Left`
+                                        : "Expired"}
                                 </Text>
                             </View>
                         );
