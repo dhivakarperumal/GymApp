@@ -30,6 +30,8 @@ export default function Reports() {
     const [activeTab, setActiveTab] = useState("members");
     const [search, setSearch] = useState("");
 
+
+
     const fetchReports = async () => {
         try {
             const query = `?trainerUserId=${user?.id}`;
@@ -94,7 +96,31 @@ export default function Reports() {
     }, [memberships]);
 
     const expiringMembers = useMemo(() => {
-        return members.filter((m) => m.expiry_date);
+
+        return members.filter((member) => {
+
+            if (!member.expiry_date)
+                return false;
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const expiry = new Date(member.expiry_date);
+            expiry.setHours(0, 0, 0, 0);
+
+            const diffDays = Math.floor(
+                (expiry - today) /
+                (1000 * 60 * 60 * 24)
+            );
+
+            console.log(
+                member.name,
+                diffDays
+            );
+
+            return diffDays >= 0 && diffDays <= 5;
+        });
+
     }, [members]);
 
     console.log("USER =>", user);
@@ -134,8 +160,8 @@ export default function Reports() {
                 return followups;
 
             case "expiry":
-                return members.filter(x => x.expiry_date);
-
+                return expiringMembers;
+                
             default:
                 return [];
         }
