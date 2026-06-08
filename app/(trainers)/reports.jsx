@@ -123,6 +123,45 @@ export default function Reports() {
 
     }, [members]);
 
+    const filteredFollowups = useMemo(() => {
+
+        return followups.filter((enquiry) => {
+
+            const isUpdatedByMe =
+                String(
+                    enquiry.updated_by || ""
+                ).toLowerCase() ===
+                String(
+                    user?.username || ""
+                ).toLowerCase();
+
+            const isAssignedByName =
+                enquiry.trainer_name &&
+                (
+                    String(
+                        enquiry.trainer_name
+                    ).toLowerCase() ===
+                    String(
+                        user?.username
+                    ).toLowerCase()
+                );
+
+            const isAssignedById =
+                enquiry.trainer_id &&
+                Number(
+                    enquiry.trainer_id
+                ) === Number(user?.id);
+
+            return (
+                isUpdatedByMe ||
+                isAssignedByName ||
+                isAssignedById
+            );
+
+        });
+
+    }, [followups, user]);
+
     console.log("USER =>", user);
     console.log("MEMBERS =>", members.length);
     console.log("MEMBERSHIPS =>", memberships.length);
@@ -161,7 +200,7 @@ export default function Reports() {
 
             case "expiry":
                 return expiringMembers;
-                
+
             default:
                 return [];
         }
@@ -219,7 +258,7 @@ export default function Reports() {
                             </View>
 
                             <View style={styles.statCard}>
-                                <Text style={styles.statValue}>{followups.length}</Text>
+                                <Text style={styles.statValue}>{filteredFollowups.length}</Text>
                                 <Text style={styles.statLabel}>Followups</Text>
                             </View>
 
