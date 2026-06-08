@@ -15,6 +15,23 @@ function TrainerHeader() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [newMembers, setNewMembers] = useState([]);
 
+  const [showExpiryDropdown, setShowExpiryDropdown] = useState(false);
+  const [expiringMembers, setExpiringMembers] = useState([]);
+
+  const fetchExpiringMembers = async () => {
+    try {
+      const res = await fetch(
+        `https://dapfitt.com/api/memberships/alerts/expiring-soon?trainerUserId=${user.id}`
+      );
+
+      const data = await res.json();
+
+      setExpiringMembers(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.log("Expiry alert error", err);
+    }
+  };
+
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
@@ -68,7 +85,10 @@ function TrainerHeader() {
     fetchMembers();
 
     // auto refresh every 10 seconds
-    const interval = setInterval(fetchMembers, 10000);
+    const interval = setInterval(() => {
+      fetchMembers();
+      fetchExpiringMembers();
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [user]);
@@ -98,6 +118,32 @@ function TrainerHeader() {
           onPress={() => router.push("/(trainers)/messages")}
         >
           <Ionicons name="paper-plane-outline" size={22} color="white" />
+        </TouchableOpacity>
+
+        {/* EXPIRY ALERT */}
+        <TouchableOpacity
+          className="mr-5"
+          onPress={() => {
+            setShowExpiryDropdown(!showExpiryDropdown);
+            setShowDropdown(false);
+            setShowProfileMenu(false);
+          }}
+        >
+          <View>
+            <Ionicons
+              name="time-outline"
+              size={22}
+              color={expiringMembers.length > 0 ? "#ef4444" : "white"}
+            />
+
+            {expiringMembers.length > 0 && (
+              <View className="absolute -top-1 -right-1 bg-red-600 w-4 h-4 rounded-full items-center justify-center">
+                <Text className="text-[10px] text-white font-bold">
+                  {expiringMembers.length}
+                </Text>
+              </View>
+            )}
+          </View>
         </TouchableOpacity>
 
         {/* NOTIFICATION */}
@@ -136,12 +182,13 @@ function TrainerHeader() {
       </View>
 
       {/* OUTSIDE CLICK */}
-      {(showDropdown || showProfileMenu) && (
+      {(showDropdown || showProfileMenu || showExpiryDropdown) && (
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
             setShowDropdown(false);
             setShowProfileMenu(false);
+            setShowExpiryDropdown(false);
           }}
           style={{
             position: "absolute",
@@ -289,6 +336,72 @@ function TrainerHeader() {
 
         </TouchableOpacity>
       </Modal>
+
+      <Modal
+        transparent
+        visible={showExpiryDropdown}
+        animationType="fade"
+        onRequestClose={() => setShowExpiryDropdown(false)}
+      >
+        <Pressable
+          className="flex-1"
+          onPress={() => setShowExpiryDropdown(false)}
+        >
+          <View className="absolute top-20 right-16 w-72 bg-[#141414] border border-[#262626] rounded-xl p-3">
+
+            <Text className="text-white font-bold mb-2">
+              Expiring Plans
+            </Text>
+
+            {expiringMembers.length === 0 ? (
+              <Text className="text-gray-400 text-sm">
+                No expiring memberships
+              </Text>
+            ) : (
+              expiringMembers.map((item, index) => {
+                const daysLeft = Math.ceil(
+                  (new Date(item.endDate) - new Date()) /
+                  (1000 * 60 * 60 * 24)
+                );
+
+                return (
+                  <View
+                    key={index}
+                    className="border-b border-[#262626] py-2"
+                  >
+                    <Text className="text-white text-sm font-semibold">
+                      {item.username}
+                    </Text>
+
+                    <Text className="text-gray-400 text-xs">
+                      {item.planName}
+                    </Text>
+
+                    <Text className="text-red-400 text-xs mt-1">
+                      {daysLeft <= 0
+                        ? "Expiring Today"
+                        : `Expiring in ${daysLeft} day(s)`}
+                    </Text>
+                  </View>
+                );
+              })
+            )}
+
+            <TouchableOpacity
+              className="mt-3 bg-red-600 py-2 rounded-lg"
+              onPress={() => {
+                setShowExpiryDropdown(false);
+                router.push("/(trainers)/expiry-members");
+              }}
+            >
+              <Text className="text-white text-center font-semibold">
+                View All
+              </Text>
+            </TouchableOpacity>
+
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -367,39 +480,39 @@ export default function TrainersLayout() {
       />
 
       {/* Hidden screens — accessible via router but not in tab bar */}
-      <Tabs.Screen name="Attendance"       options={{ href: null, headerShown: false }} />
-      <Tabs.Screen name="profile"          options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="Attendance" options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="profile" options={{ href: null, headerShown: false }} />
       <Tabs.Screen name="follow-up-enquiry" options={{ href: null, headerShown: false }} />
-      <Tabs.Screen name="pricing"          options={{ href: null, headerShown: false }} />
-      <Tabs.Screen name="members"          options={{ href: null, headerShown: false }} />
-      <Tabs.Screen name="emi-list"         options={{ href: null, headerShown: false }} />
-      <Tabs.Screen name="add-member"         options={{ href: null, headerShown: false }} />
-      
-      <Tabs.Screen 
-        name="messages"         
-        options={{ 
-          href: null, 
+      <Tabs.Screen name="pricing" options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="members" options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="emi-list" options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="add-member" options={{ href: null, headerShown: false }} />
+
+      <Tabs.Screen
+        name="messages"
+        options={{
+          href: null,
           headerShown: false,
           tabBarStyle: { display: "none" }
-        }} 
+        }}
       />
 
-      <Tabs.Screen 
-        name="buy-plan"         
-        options={{ 
-          href: null, 
+      <Tabs.Screen
+        name="buy-plan"
+        options={{
+          href: null,
           headerShown: false,
           tabBarStyle: { display: "none" }
-        }} 
+        }}
       />
 
-      <Tabs.Screen 
-        name="payments"         
-        options={{ 
-          href: null, 
+      <Tabs.Screen
+        name="payments"
+        options={{
+          href: null,
           headerShown: false,
           tabBarStyle: { display: "none" }
-        }} 
+        }}
       />
 
       {/* Hide all PTForm components */}
