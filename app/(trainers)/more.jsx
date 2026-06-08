@@ -1,13 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    RefreshControl
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  RefreshControl
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
@@ -74,6 +74,18 @@ const menuItems = [
     arrowBg: "#ef444420",
     arrowColor: "#f87171",
     borderAccent: "#ef444430",
+  },
+  {
+    id: "reports",
+    title: "Reports",
+    subtitle: "View trainer performance reports",
+    icon: "bar-chart",
+    route: "/(trainers)/reports",
+    iconBg: "#0ea5e9",
+    glowBg: "#0ea5e918",
+    arrowBg: "#0ea5e920",
+    arrowColor: "#38bdf8",
+    borderAccent: "#0ea5e930",
   },
   {
     id: "pricing",
