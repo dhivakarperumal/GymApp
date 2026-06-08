@@ -170,48 +170,39 @@ export default function Reports() {
                         </Text>
 
                         {/* Summary Cards */}
-                        <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                        >
-                            <View style={styles.statsRow}>
-                                <View style={styles.statCard}>
-                                    <Text style={styles.statValue}>
-                                        {members.length}
-                                    </Text>
-                                    <Text style={styles.statLabel}>
-                                        Members
-                                    </Text>
-                                </View>
+                        <View style={styles.statsGrid}>
 
-                                <View style={styles.statCard}>
-                                    <Text style={styles.statValue}>
-                                        {memberships.length}
-                                    </Text>
-                                    <Text style={styles.statLabel}>
-                                        Plans
-                                    </Text>
-                                </View>
-
-                                <View style={styles.statCard}>
-                                    <Text style={styles.statValue}>
-                                        {emiRecords.length}
-                                    </Text>
-                                    <Text style={styles.statLabel}>
-                                        EMI
-                                    </Text>
-                                </View>
-
-                                <View style={styles.statCard}>
-                                    <Text style={styles.statValue}>
-                                        {ptPlans.length}
-                                    </Text>
-                                    <Text style={styles.statLabel}>
-                                        PT Plans
-                                    </Text>
-                                </View>
+                            <View style={styles.statCard}>
+                                <Text style={styles.statValue}>{members.length}</Text>
+                                <Text style={styles.statLabel}>Members</Text>
                             </View>
-                        </ScrollView>
+
+                            <View style={styles.statCard}>
+                                <Text style={styles.statValue}>{memberships.length}</Text>
+                                <Text style={styles.statLabel}>Plans</Text>
+                            </View>
+
+                            <View style={styles.statCard}>
+                                <Text style={styles.statValue}>{emiRecords.length}</Text>
+                                <Text style={styles.statLabel}>EMI</Text>
+                            </View>
+
+                            <View style={styles.statCard}>
+                                <Text style={styles.statValue}>{ptPlans.length}</Text>
+                                <Text style={styles.statLabel}>PT Plans</Text>
+                            </View>
+
+                            <View style={styles.statCard}>
+                                <Text style={styles.statValue}>{followups.length}</Text>
+                                <Text style={styles.statLabel}>Followups</Text>
+                            </View>
+
+                            <View style={styles.statCard}>
+                                <Text style={styles.statValue}>{expiringMembers.length}</Text>
+                                <Text style={styles.statLabel}>Expiry</Text>
+                            </View>
+
+                        </View>
 
                         <TextInput
                             placeholder="Search..."
@@ -527,5 +518,24 @@ const styles = StyleSheet.create({
     text: {
         color: "#aaa",
         marginTop: 4,
+    },
+    statsGrid: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        justifyContent: "space-between",
+        paddingHorizontal: 20,
+        marginBottom: 20,
+    },
+
+    statCard: {
+        width: "31%",
+        backgroundColor: "#111",
+        paddingVertical: 18,
+        paddingHorizontal: 10,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "#222",
+        marginBottom: 12,
+        alignItems: "center",
     },
 });
