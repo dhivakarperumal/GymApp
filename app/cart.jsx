@@ -22,6 +22,12 @@ import {
 import BackButton from "./BackButton";
 import Header from "./Header";
 
+const getQuantityDiscountPercent = (qty) => {
+  if (qty >= 20 && qty <= 25) return 10;
+  if (qty >= 5 && qty <= 19) return 5;
+  return 0;
+};
+
 export default function Cart() {
 
   const { user } = useAuth();
@@ -99,22 +105,95 @@ export default function Cart() {
 
   const increaseQty = async (item) => {
     try {
-      await updateCartApi(item.id, item.quantity + 1);
+
+      const product = products.find(
+        p => p.id === item.productId
+      );
+
+      if (!product) return;
+
+      const variantKey =
+        item.variant ||
+        item.weight ||
+        `${item.size}-${item.gender}`;
+
+      const variant = product.stock?.[variantKey];
+
+      const basePrice =
+        Number(
+          variant?.offerPrice ||
+          product.offer_price ||
+          item.price
+        );
+
+      const newQty = item.quantity + 1;
+
+      const discount =
+        getQuantityDiscountPercent(newQty);
+
+      const newPrice = Number(
+        (
+          basePrice *
+          (1 - discount / 100)
+        ).toFixed(2)
+      );
+
+      await updateCartApi(
+        item.id,
+        newQty,
+        newPrice
+      );
+
       fetchCart();
+
     } catch (err) {
-      // console.log("Increase qty error:", err);
+      console.log(err);
     }
   };
 
   const decreaseQty = async (item) => {
-    try {
-      if (item.quantity === 1) return;
 
-      await updateCartApi(item.id, item.quantity - 1);
-      fetchCart();
-    } catch (err) {
-      // console.log("Decrease qty error:", err);
-    }
+    if (item.quantity === 1) return;
+
+    const product = products.find(
+      p => p.id === item.productId
+    );
+
+    if (!product) return;
+
+    const variantKey =
+      item.variant ||
+      item.weight ||
+      `${item.size}-${item.gender}`;
+
+    const variant = product.stock?.[variantKey];
+
+    const basePrice =
+      Number(
+        variant?.offerPrice ||
+        product.offer_price ||
+        item.price
+      );
+
+    const newQty = item.quantity - 1;
+
+    const discount =
+      getQuantityDiscountPercent(newQty);
+
+    const newPrice = Number(
+      (
+        basePrice *
+        (1 - discount / 100)
+      ).toFixed(2)
+    );
+
+    await updateCartApi(
+      item.id,
+      newQty,
+      newPrice
+    );
+
+    fetchCart();
   };
 
   const deleteItem = async (id) => {
@@ -130,7 +209,7 @@ export default function Cart() {
     (sum, item) => sum + Number(item.price) * item.quantity,
     0,
   );
-  const delivery = cartItems.length > 0 ? 99 : 0;
+  const delivery = cartItems.length > 0 ? 0 : 0;
   const total = subtotal + delivery;
 
   if (loading) {
@@ -244,6 +323,11 @@ export default function Cart() {
                   </View>
                   <Text className="text-red-500 text-lg font-bold mt-1">
                     ₹ {item.price}
+                    <Text className="text-green-400 text-xs">
+                      {getQuantityDiscountPercent(item.quantity) > 0
+                        ? `${getQuantityDiscountPercent(item.quantity)}% bulk discount applied`
+                        : "Buy 5-19 get 5%, 20-25 get 10%"}
+                    </Text>
                   </Text>
                   <Text className="text-gray-400 text-sm">
                     Stock Available: {stock}
