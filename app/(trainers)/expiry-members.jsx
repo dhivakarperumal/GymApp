@@ -97,10 +97,10 @@ export default function ExpiryMembers() {
 
                     <View
                         className={`px-3 py-1 rounded-full ${daysLeft <= 2
-                                ? "bg-red-600"
-                                : daysLeft <= 5
-                                    ? "bg-orange-600"
-                                    : "bg-green-600"
+                            ? "bg-red-600"
+                            : daysLeft <= 5
+                                ? "bg-orange-600"
+                                : "bg-green-600"
                             }`}
                     >
                         <Text className="text-white text-xs font-bold">
@@ -146,9 +146,9 @@ export default function ExpiryMembers() {
                         className="flex-1 bg-[#262626] py-3 rounded-xl mr-2"
                         onPress={() => {
                             router.push({
-                                pathname: "/(trainers)/members",
+                                pathname: "/(trainers)/buy-plan",
                                 params: {
-                                    memberId: item.id,
+                                    member_id: item.id,
                                 },
                             });
                         }}
