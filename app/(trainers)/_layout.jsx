@@ -487,6 +487,18 @@ export default function TrainersLayout() {
       <Tabs.Screen name="members" options={{ href: null, headerShown: false }} />
       <Tabs.Screen name="emi-list" options={{ href: null, headerShown: false }} />
       <Tabs.Screen name="add-member" options={{ href: null, headerShown: false }} />
+      <Tabs.Screen
+        name="expiry-members"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="reports"
+        options={{
+          href: null,
+        }}
+      />
 
       <Tabs.Screen
         name="messages"
