@@ -205,6 +205,20 @@ export default function Cart() {
     }
   };
 
+  const totalDiscount = cartItems.reduce((sum, item) => {
+    const discountPercent = getQuantityDiscountPercent(item.quantity);
+
+    if (!discountPercent) return sum;
+
+    const originalUnitPrice =
+      Number(item.price) / (1 - discountPercent / 100);
+
+    const discountAmount =
+      (originalUnitPrice - Number(item.price)) * item.quantity;
+
+    return sum + discountAmount;
+  }, 0);
+
   const subtotal = cartItems.reduce(
     (sum, item) => sum + Number(item.price) * item.quantity,
     0,
@@ -385,6 +399,15 @@ export default function Cart() {
           <Text className="text-gray-400">Subtotal</Text>
           <Text className="text-white">₹ {subtotal}</Text>
         </View>
+        
+        {totalDiscount > 0 && (
+          <View className="flex-row justify-between mb-3">
+            <Text className="text-green-400">Bulk Discount</Text>
+            <Text className="text-green-400">
+              - ₹ {totalDiscount.toFixed(2)}
+            </Text>
+          </View>
+        )}
 
         <View className="flex-row justify-between mb-3">
           <Text className="text-gray-400">Delivery</Text>
