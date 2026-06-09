@@ -21,6 +21,13 @@ const BASE_URL = "https://dapfitt.com/api";
 
 const { width } = Dimensions.get("window");
 
+const getQuantityDiscountPercent = (qty) => {
+  if (qty >= 20 && qty <= 25) return 10;
+  if (qty >= 5 && qty <= 19) return 5;
+  return 0;
+};
+
+
 export default function ProductDetails() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
@@ -127,7 +134,7 @@ export default function ProductDetails() {
       return;
     }
 
-    const currentPrice = pricing ? Number(pricing.offerPrice) : 0;
+    const currentPrice = discountedPrice;
 
     const buyNowItem = {
       productId: product.id,
@@ -171,7 +178,14 @@ export default function ProductDetails() {
   const availableStock = currentVariant?.qty ?? 0;
   const remainingStock = availableStock;
 
-  const price = pricing ? Number(pricing.offerPrice) : 0;
+  const basePrice = pricing ? Number(pricing.offerPrice) : 0;
+
+  const discountPercent = getQuantityDiscountPercent(quantity);
+
+  const discountedPrice = Number(
+    (basePrice * (1 - discountPercent / 100)).toFixed(2)
+  );
+
   const oldPrice = pricing ? Number(pricing.mrp) : 0;
 
   const handleAddToCart = async () => {
@@ -202,7 +216,7 @@ export default function ProductDetails() {
         userId: user.id,
         productId: product.id,
         name: product.name,
-        price: price,
+        price: discountedPrice,
         quantity: quantity,
         size: selectedSize || null,
         gender: selectedGender || null,
@@ -284,11 +298,10 @@ export default function ProductDetails() {
                     animated: true,
                   });
                 }}
-                className={`mr-3 rounded-xl overflow-hidden border-2 ${
-                  activeIndex === index
-                    ? "border-primary"
-                    : "border-transparent"
-                }`}
+                className={`mr-3 rounded-xl overflow-hidden border-2 ${activeIndex === index
+                  ? "border-primary"
+                  : "border-transparent"
+                  }`}
               >
                 <Image
                   source={{ uri: img }}
@@ -347,15 +360,21 @@ export default function ProductDetails() {
           {/* 💰 PRICE */}
           <View className="flex-row items-center mb-6">
             <Text className="text-primary text-3xl font-bold">
-              ₹ {price.toLocaleString()}
+              ₹ {discountedPrice.toLocaleString()}
             </Text>
 
-            {oldPrice > price && (
+            {oldPrice > discountedPrice && (
               <Text className="text-gray-400 line-through ml-4 text-lg">
                 ₹ {oldPrice.toLocaleString()}
               </Text>
             )}
           </View>
+
+          <Text className="text-green-400 mb-4">
+            {discountPercent > 0
+              ? `${discountPercent}% Bulk Discount Applied`
+              : "Buy 5-19 units get 5% off, 20-25 units get 10% off"}
+          </Text>
 
           {/* DESCRIPTION */}
           <Text className="text-gray-300 leading-6 mb-6">
@@ -373,16 +392,14 @@ export default function ProductDetails() {
                   <TouchableOpacity
                     key={w}
                     onPress={() => setSelectedWeight(w)}
-                    className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${
-                      selectedWeight === w
-                        ? "bg-primary border-primary"
-                        : "border-gray-700"
-                    }`}
+                    className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${selectedWeight === w
+                      ? "bg-primary border-primary"
+                      : "border-gray-700"
+                      }`}
                   >
                     <Text
-                      className={`${
-                        selectedWeight === w ? "text-white" : "text-gray-300"
-                      }`}
+                      className={`${selectedWeight === w ? "text-white" : "text-gray-300"
+                        }`}
                     >
                       {w}
                     </Text>
@@ -402,16 +419,14 @@ export default function ProductDetails() {
                   <TouchableOpacity
                     key={size}
                     onPress={() => setSelectedSize(size)}
-                    className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${
-                      selectedSize === size
-                        ? "bg-primary border-primary"
-                        : "border-gray-700"
-                    }`}
+                    className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${selectedSize === size
+                      ? "bg-primary border-primary"
+                      : "border-gray-700"
+                      }`}
                   >
                     <Text
-                      className={`${
-                        selectedSize === size ? "text-white" : "text-gray-300"
-                      }`}
+                      className={`${selectedSize === size ? "text-white" : "text-gray-300"
+                        }`}
                     >
                       {size}
                     </Text>
@@ -432,11 +447,10 @@ export default function ProductDetails() {
                   <TouchableOpacity
                     key={gender}
                     onPress={() => setSelectedGender(gender)}
-                    className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${
-                      selectedGender === gender
-                        ? "bg-primary border-primary"
-                        : "border-gray-700"
-                    }`}
+                    className={`px-5 py-3 rounded-xl mr-3 mb-3 border ${selectedGender === gender
+                      ? "bg-primary border-primary"
+                      : "border-gray-700"
+                      }`}
                   >
                     <Text
                       className={
@@ -488,11 +502,10 @@ export default function ProductDetails() {
               disabled={remainingStock === 0 || quantity > remainingStock || adding}
               onPress={handleAddToCart}
               activeOpacity={0.75}
-              className={`w-[48%] py-4 rounded-2xl items-center ${
-                remainingStock === 0 || adding
-                  ? "bg-gray-600"
-                  : "bg-[#1f1f1f] border border-primary"
-              }`}
+              className={`w-[48%] py-4 rounded-2xl items-center ${remainingStock === 0 || adding
+                ? "bg-gray-600"
+                : "bg-[#1f1f1f] border border-primary"
+                }`}
             >
               {adding ? (
                 <ActivityIndicator color="#e11d1d" />
@@ -506,11 +519,10 @@ export default function ProductDetails() {
               disabled={remainingStock === 0 || quantity > remainingStock || buying}
               onPress={handleBuyNow}
               activeOpacity={0.75}
-              className={`w-[48%] py-4 rounded-2xl items-center ${
-                remainingStock === 0 || buying
-                  ? "bg-gray-600"
-                  : "bg-primary"
-              }`}
+              className={`w-[48%] py-4 rounded-2xl items-center ${remainingStock === 0 || buying
+                ? "bg-gray-600"
+                : "bg-primary"
+                }`}
             >
               {buying ? (
                 <ActivityIndicator color="white" />
