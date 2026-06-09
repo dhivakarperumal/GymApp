@@ -35,6 +35,11 @@ import {
 import BackButton from "./BackButton";
 import Header from "./Header";
 
+const getQuantityDiscountPercent = (qty) => {
+  if (qty >= 20 && qty <= 25) return 10;
+  if (qty >= 5 && qty <= 19) return 5;
+  return 0;
+};
 
 export default function Checkout() {
   const [cartItems, setCartItems] = useState([]);
@@ -194,6 +199,20 @@ export default function Checkout() {
 
 
   /* PRICE CALCULATION */
+
+  const totalDiscount = cartItems.reduce((sum, item) => {
+    const discountPercent = getQuantityDiscountPercent(item.quantity);
+
+    if (!discountPercent) return sum;
+
+    const originalUnitPrice =
+      Number(item.price) / (1 - discountPercent / 100);
+
+    const discountAmount =
+      (originalUnitPrice - Number(item.price)) * item.quantity;
+
+    return sum + discountAmount;
+  }, 0);
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + Number(item.price) * item.quantity,
@@ -512,7 +531,7 @@ export default function Checkout() {
         {/* SHIPPING */}
 
         <Text className="text-white text-lg mb-4">
-          {orderType === "DELIVERY" ? "SHIPPING" : "SHOP PICKUP"}
+          {orderType === "DELIVERY" ? "SHIPPING" : "GYM"}
         </Text>
 
         {/* ⚠️ WARNING BANNER - Show when fields incomplete */}
@@ -558,7 +577,7 @@ export default function Checkout() {
               }`}
           >
             <Text className="text-center text-white">
-              Shop Pickup
+              Gym
               {((fromMealPlan && hasFoodItems) || fromAllProducts) ? " (Required)" : ""}
             </Text>
           </TouchableOpacity>
@@ -732,6 +751,15 @@ export default function Checkout() {
             <Text className="text-gray-400">Subtotal</Text>
             <Text className="text-white">₹ {subtotal}</Text>
           </View>
+
+          {totalDiscount > 0 && (
+            <View className="flex-row justify-between mb-2">
+              <Text className="text-green-400">Bulk Discount</Text>
+              <Text className="text-green-400">
+                - ₹ {totalDiscount.toFixed(2)}
+              </Text>
+            </View>
+          )}
 
           <View className="flex-row justify-between mb-2">
             <Text className="text-gray-400">Delivery</Text>
