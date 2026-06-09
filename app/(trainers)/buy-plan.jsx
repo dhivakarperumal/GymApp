@@ -1,23 +1,23 @@
-import React, { useEffect, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Picker } from "@react-native-picker/picker";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
+import api from "../../services/api";
 
 export default function AssignPlan() {
   const router = useRouter();
@@ -68,7 +68,7 @@ export default function AssignPlan() {
     field: null, // "startDate", "endDate", "paymentDate"
   });
 
-  const { member_id, user_id } = useLocalSearchParams();
+  const { member_id, user_id, memberId, plan_name, planName } = useLocalSearchParams();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,7 +85,8 @@ export default function AssignPlan() {
         setPlans(fetchedPlans);
         setEnquiries(Array.isArray(enqRes.data) ? enqRes.data : []);
 
-        const targetId = member_id || user_id;
+        const targetId = member_id || user_id || memberId;
+        const routePlanName = plan_name || planName;
         if (targetId) {
           const found = fetchedMembers.find(m => String(m.id || m.u_id || m.user_id || m.gymMemberId) === String(targetId));
           if (found) {
@@ -107,8 +108,9 @@ export default function AssignPlan() {
                 .catch(err => console.log("History fetch err", err));
             }
 
-            if (found.plan && found.plan !== "user") {
-              const p = fetchedPlans.find(plan => plan.name.toLowerCase() === found.plan.toLowerCase());
+            const planToMatch = routePlanName || found.plan;
+            if (planToMatch && planToMatch !== "user") {
+              const p = fetchedPlans.find(plan => String(plan.name).toLowerCase() === String(planToMatch).toLowerCase());
               if (p) setSelectedPlan(p);
             }
           }
@@ -118,7 +120,7 @@ export default function AssignPlan() {
       }
     };
     fetchData();
-  }, [member_id, user_id]);
+  }, [member_id, user_id, memberId, plan_name, planName]);
 
   // Set default end date based on initial load
   useEffect(() => {

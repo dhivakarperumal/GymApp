@@ -1,16 +1,16 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import dayjs from "dayjs";
+import { useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
 import {
-    View,
+    ActivityIndicator,
+    FlatList,
+    RefreshControl,
     Text,
     TextInput,
     TouchableOpacity,
-    FlatList,
-    ActivityIndicator,
-    RefreshControl,
+    View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import dayjs from "dayjs";
 import { useAuth } from "../../context/AuthContext";
 
 export default function ExpiryMembers() {
@@ -164,7 +164,7 @@ export default function ExpiryMembers() {
                             router.push({
                                 pathname: "/(trainers)/buy-plan",
                                 params: {
-                                    memberId: item.id,
+                                    member_id: item.id,
                                 },
                             });
                         }}
