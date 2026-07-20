@@ -236,9 +236,7 @@ export default function Workouts() {
           {getFilteredDays().map(([day, exercises], index) => {
             const originalIndex = Number(day.replace("Day", "")) - 1;
 
-            const formattedDate = dayjs(workoutData.created_at)
-              .add(originalIndex, "day")
-              .format("DD-MM-YYYY");
+            const dayLabel = `Day ${originalIndex + 1}`;
 
             return (
               <View
@@ -247,7 +245,7 @@ export default function Workouts() {
               >
                 <View className="flex-row justify-between items-center mb-3">
                   <Text className="text-primary font-bold text-lg">
-                    {formattedDate}
+                    {dayLabel}
                   </Text>
 
                   <View className="bg-card px-3 py-1 rounded-full border border-border">
