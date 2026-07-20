@@ -44,9 +44,9 @@ export default function Notifications() {
             setTotalMessages(allMessages.length);
 
             const filtered = allMessages.filter((msg) => {
-                // Direct match by top-level fields
-                if (userId && Number(msg.userId) === Number(userId)) return true;
-                if (memberId && Number(msg.memberId) === Number(memberId)) return true;
+                // Direct match by top-level recipient fields (ignore msg.userId as it often represents sender_id)
+                if (userId && Number(msg.recipient_id) === Number(userId)) return true;
+                if (memberId && Number(msg.recipient_member_id) === Number(memberId)) return true;
 
                 try {
                     let recipients = msg.recipients_json;
