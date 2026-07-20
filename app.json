@@ -3,7 +3,7 @@
     "name": "DAP FITNESS STUDIO",
     "slug": "dap-fitness-studio",
     "version": "1.0.2",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/logo.png",
     "backgroundColor": "#000000",
     "splash": {
