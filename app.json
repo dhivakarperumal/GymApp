@@ -2,7 +2,7 @@
   "expo": {
     "name": "DAP FITNESS STUDIO",
     "slug": "dap-fitness-studio",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "default",
     "icon": "./assets/images/logo.png",
     "backgroundColor": "#000000",
@@ -25,7 +25,7 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.dapfitnessstudio.app",
-      "versionCode": 5
+      "versionCode": 6
     },
     "web": {
       "output": "static",
@@ -57,6 +57,15 @@
         {
           "icon": "./assets/images/logo.png",
           "color": "#ffffff"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36
+          }
         }
       ]
     ],
