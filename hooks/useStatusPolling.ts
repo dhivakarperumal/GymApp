@@ -61,10 +61,10 @@ export const useStatusPolling = () => {
         messagesRes,
       ] = await Promise.all([
         api.get(`/orders/user/${user.id}`, token).catch(() => ({ data: [] })),
-        api.get(`/diet-plans?userId=${user.id}`, token).catch(() => ({ data: [] })),
-        api.get(`/workouts?userId=${user.id}`, token).catch(() => ({ data: [] })),
-        api.get(`/session-trackers?userId=${user.id}`, token).catch(() => ({ data: [] })),
-        api.get(`/pt-forms?userId=${user.id}`, token).catch(() => ({ data: [] })),
+        api.get(`/diet-plans?memberId=${user.id}`, token).catch(() => ({ data: [] })),
+        api.get(`/workouts?memberId=${user.id}`, token).catch(() => ({ data: [] })),
+        api.get(`/session-trackers?memberId=${user.id}`, token).catch(() => ({ data: [] })),
+        api.get(`/pt-forms?memberId=${user.id}`, token).catch(() => ({ data: [] })),
         api.get(`/assignments?trainerUserId=${user.id}`, token).catch(() => ({ data: [] })),
         api.get(`/send-message/history`, token).catch(() => ({ data: [] })),
       ]);

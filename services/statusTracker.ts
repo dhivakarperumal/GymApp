@@ -158,6 +158,9 @@ export const checkStatusChanges = async (newStatuses: CachedStatus[]) => {
     const cachedStatuses = await getCachedStatuses();
     const cachedMap = new Map(cachedStatuses.map((s) => [`${s.type}-${s.itemId}`, s]));
     const updatedStatuses: CachedStatus[] = [];
+    
+    // Prevent blast of notifications on first login/sync
+    const isFirstRun = cachedStatuses.length === 0;
 
     for (const newStatus of newStatuses) {
       const key = `${newStatus.type}-${newStatus.itemId}`;
@@ -171,46 +174,48 @@ export const checkStatusChanges = async (newStatuses: CachedStatus[]) => {
         const isNew = !cached;
         console.log(`Status change detected: ${key} => ${newStatus.status}`);
 
-        switch (newStatus.type) {
-          case 'order':
-            notificationService.sendOrderNotification(newStatus.itemId, newStatus.status);
-            break;
-          case 'diet_plan':
-            notificationService.sendDietPlanNotification(
-              newStatus.itemId,
-              newStatus.status,
-              newStatus.details,
-              isNew
-            );
-            break;
-          case 'workout':
-            notificationService.sendWorkoutNotification(
-              newStatus.itemId,
-              newStatus.status,
-              newStatus.details,
-              isNew
-            );
-            break;
-          case 'session_tracker':
-            notificationService.sendSessionTrackerNotification(newStatus.itemId, newStatus.status);
-            break;
-          case 'pt_form':
-            console.log('🏋️ PT FORM NOTIFICATION:', { itemId: newStatus.itemId, status: newStatus.status, details: newStatus.details, isNew });
-            notificationService.sendPTFormNotification(
-              newStatus.itemId,
-              newStatus.status,
-              newStatus.details,
-              isNew
-            );
-            break;
-          case 'message':
-            notificationService.sendMessageNotification(
-              newStatus.itemId,
-              newStatus.status,
-              newStatus.details,
-              isNew
-            );
-            break;
+        if (!isFirstRun) {
+          switch (newStatus.type) {
+            case 'order':
+              notificationService.sendOrderNotification(newStatus.itemId, newStatus.status);
+              break;
+            case 'diet_plan':
+              notificationService.sendDietPlanNotification(
+                newStatus.itemId,
+                newStatus.status,
+                newStatus.details,
+                isNew
+              );
+              break;
+            case 'workout':
+              notificationService.sendWorkoutNotification(
+                newStatus.itemId,
+                newStatus.status,
+                newStatus.details,
+                isNew
+              );
+              break;
+            case 'session_tracker':
+              notificationService.sendSessionTrackerNotification(newStatus.itemId, newStatus.status);
+              break;
+            case 'pt_form':
+              console.log('🏋️ PT FORM NOTIFICATION:', { itemId: newStatus.itemId, status: newStatus.status, details: newStatus.details, isNew });
+              notificationService.sendPTFormNotification(
+                newStatus.itemId,
+                newStatus.status,
+                newStatus.details,
+                isNew
+              );
+              break;
+            case 'message':
+              notificationService.sendMessageNotification(
+                newStatus.itemId,
+                newStatus.status,
+                newStatus.details,
+                isNew
+              );
+              break;
+          }
         }
       }
 
