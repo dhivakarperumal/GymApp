@@ -84,6 +84,10 @@ export default function SessionTrackingScreen() {
         email: item.userEmail || item.user_email || item.email || "",
         phone: item.userMobile || item.user_mobile || item.phone || "",
         planName: item.planName || item.plan_name || "",
+        pt_join_date: item.pt_join_date || item.ptJoinDate || item.join_date || "",
+        pt_expiry_date: item.pt_expiry_date || item.ptExpiryDate || item.expiry_date || "",
+        join_date: item.join_date || "",
+        expiry_date: item.expiry_date || "",
       })).filter(m => m.id);
 
       console.log("📊 Assignments from server:", data.length);
@@ -129,7 +133,11 @@ export default function SessionTrackingScreen() {
         u_id: member.userId,
         name: member.name,
         sessions,
-        trainer_name_assigned: trainerName
+        trainer_name_assigned: trainerName,
+        pt_join_date: member.pt_join_date || savedData.pt_join_date,
+        pt_expiry_date: member.pt_expiry_date || savedData.pt_expiry_date,
+        join_date: member.join_date || savedData.join_date,
+        expiry_date: member.expiry_date || savedData.expiry_date,
       });
     } catch (err) {
       if (err.response?.status === 404) {
@@ -138,6 +146,10 @@ export default function SessionTrackingScreen() {
           u_id: member.userId,
           name: member.name,
           trainer_name_assigned: trainerName,
+          pt_join_date: member.pt_join_date,
+          pt_expiry_date: member.pt_expiry_date,
+          join_date: member.join_date,
+          expiry_date: member.expiry_date,
           sessions: Array.from({ length: 25 }, (_, i) => ({
             session_no: i + 1,
             date: "",
