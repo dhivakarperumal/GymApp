@@ -816,7 +816,7 @@ export default function Home() {
         </View>
 
         {/* 👨‍🏫 Trainer Section */}
-        {assignment && (
+        {assignment && assignment.trainerId && (
           <View
             className="bg-[#141414] rounded-3xl p-5 mb-6 border border-[#262626]"
             style={{
