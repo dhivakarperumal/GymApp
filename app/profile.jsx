@@ -358,6 +358,12 @@ export default function Profile() {
       subtitle: "View your active plans",
       onPress: () => router.push("/my-plans"),
     },
+    ...(plans.length > 0 ? [{
+      title: "EMI Details",
+      icon: "card-outline",
+      subtitle: "Review your membership EMI schedule",
+      onPress: () => router.push("/emi-details"),
+    }] : []),
     ...(hasActivePtMembership ? [
       {
         title: "PT Form",
