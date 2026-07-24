@@ -20,10 +20,37 @@ const SessionTracker = ({
 }) => {
   const { user } = useAuth();
 
+  const parseDate = (d) => {
+    if (!d) return null;
+    const str = String(d);
+    if (str.includes("-") && str.split("-")[0].length === 2) {
+      const parts = str.split("-");
+      if (parts.length === 3) {
+        return dayjs(`${parts[2]}-${parts[1]}-${parts[0]}`);
+      }
+    }
+    if (str.includes("/") && str.split("/")[0].length === 2) {
+      const parts = str.split("/");
+      if (parts.length === 3) {
+        return dayjs(`${parts[2]}-${parts[1]}-${parts[0]}`);
+      }
+    }
+    return dayjs(d);
+  };
+
+  let numRows = 25;
+  if (initialFormData?.pt_join_date && initialFormData?.pt_expiry_date) {
+    const diff = parseDate(initialFormData.pt_expiry_date).startOf('day').diff(parseDate(initialFormData.pt_join_date).startOf('day'), 'day');
+    if (diff > 0) numRows = diff;
+  } else if (initialFormData?.join_date && initialFormData?.expiry_date) {
+    const diff = parseDate(initialFormData.expiry_date).startOf('day').diff(parseDate(initialFormData.join_date).startOf('day'), 'day');
+    if (diff > 0) numRows = diff;
+  }
+
   const trainerName = ""; // localStorage not available in RN
 
   const [localFormData, setLocalFormData] = useState({
-    sessions: initialFormData?.sessions || Array(25).fill(null).map((_, i) => ({
+    sessions: initialFormData?.sessions || Array(numRows).fill(null).map((_, i) => ({
       session_no: i + 1,
       date: "",
       workout: "",
@@ -33,17 +60,36 @@ const SessionTracker = ({
     }))
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const [showPicker, setShowPicker] = useState(false);
   const [currentPickerIndex, setCurrentPickerIndex] = useState(null);
 
   useEffect(() => {
     if (initialFormData?.sessions) {
-      setLocalFormData(prev => ({
-        ...prev,
-        sessions: initialFormData.sessions
-      }));
+      setLocalFormData(prev => {
+        const existingSessions = initialFormData.sessions;
+        const resizedSessions = Array(numRows).fill(null).map((_, i) => {
+          if (i < existingSessions.length) {
+            return existingSessions[i];
+          }
+          return {
+            session_no: i + 1,
+            date: "",
+            workout: "",
+            status: "Pending",
+            client_sign: "",
+            trainer_sign: initialFormData.trainer_name_assigned || trainerName,
+          };
+        });
+        return {
+          ...prev,
+          sessions: resizedSessions
+        };
+      });
     }
-  }, [initialFormData]);
+  }, [initialFormData, trainerName, numRows]);
 
   const handleSessionChange = (index, field, value) => {
     if (userMode && ['date', 'workout', 'trainer_sign', 'client_sign'].includes(field)) {
@@ -130,7 +176,8 @@ const SessionTracker = ({
         )}
 
         {/* SESSION LIST */}
-        {localFormData.sessions.map((session, index) => {
+        {localFormData.sessions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((session, pageIndex) => {
+          const index = (currentPage - 1) * itemsPerPage + pageIndex;
           const isCompleted = session.status === "Completed";
           
           return (
@@ -267,6 +314,27 @@ const SessionTracker = ({
             </View>
           );
         })}
+
+        {/* PAGINATION */}
+        <View className="flex-row justify-between items-center mt-6">
+          <TouchableOpacity
+            disabled={currentPage === 1}
+            onPress={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            className={`p-3 rounded-lg ${currentPage === 1 ? 'bg-gray-800' : 'bg-gray-700'}`}
+          >
+            <Text className="text-white text-xs font-bold">Previous Page</Text>
+          </TouchableOpacity>
+          <Text className="text-white text-xs font-bold">
+            Page {currentPage} of {Math.ceil(localFormData.sessions.length / itemsPerPage)}
+          </Text>
+          <TouchableOpacity
+            disabled={currentPage === Math.ceil(localFormData.sessions.length / itemsPerPage)}
+            onPress={() => setCurrentPage(prev => Math.min(Math.ceil(localFormData.sessions.length / itemsPerPage), prev + 1))}
+            className={`p-3 rounded-lg ${currentPage === Math.ceil(localFormData.sessions.length / itemsPerPage) ? 'bg-gray-800' : 'bg-gray-700'}`}
+          >
+            <Text className="text-white text-xs font-bold">Next Page</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* BUTTONS */}
         <View className="flex-row gap-3 mt-6">
