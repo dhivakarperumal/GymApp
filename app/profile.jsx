@@ -15,7 +15,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../context/AuthContext";
-import { updateUserApi } from "../services/api";
+import api, { updateUserApi } from "../services/api";
 import BackButton from "./BackButton";
 
 export default function Profile() {
@@ -23,6 +23,30 @@ export default function Profile() {
 
   const [user, setUser] = useState(null);
   const [editVisible, setEditVisible] = useState(false);
+  const [hasActivePtMembership, setHasActivePtMembership] = useState(false);
+  const [plans, setPlans] = useState([]);
+  const [memberData, setMemberData] = useState(null);
+
+  const isActivePtPlan = (member) => {
+    if (!member) return false;
+    const hasPlan = Boolean(member.pt_plan);
+    const hasDates = Boolean(member.pt_join_date && member.pt_expiry_date);
+    const isActive = String(member.pt_status || "").toLowerCase() === "active";
+
+    let isNotExpired = true;
+    if (member.pt_expiry_date) {
+      const endDate = new Date(member.pt_expiry_date);
+      if (
+        endDate instanceof Date &&
+        !Number.isNaN(endDate.getTime()) &&
+        endDate < new Date()
+      ) {
+        isNotExpired = false;
+      }
+    }
+
+    return isActive && hasPlan && hasDates && isNotExpired;
+  };
 
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
@@ -202,6 +226,21 @@ export default function Profile() {
       setUser(userData);
       setName(userData.username || "");
       setMobile(userData.mobile || "");
+      
+      try {
+        const [memberRes, membershipsRes] = await Promise.all([
+          api.get(`/members/user/${userData.id}`),
+          api.get(`/memberships/user/${userData.id}`)
+        ]);
+        
+        const mData = memberRes?.data || null;
+        const mShips = Array.isArray(membershipsRes?.data) ? membershipsRes.data : [];
+        setMemberData(mData);
+        setPlans(mShips);
+        setHasActivePtMembership(isActivePtPlan(mData));
+      } catch (err) {
+        console.error("Failed to fetch member/plan info", err);
+      }
     }
   };
 
@@ -314,17 +353,25 @@ export default function Profile() {
       onPress: () => setEditVisible(true),
     },
     {
-      title: "PT Form",
-      icon: "document-text-outline",
-      subtitle: "Complete your PT data",
-      onPress: () => router.push("/pt-form"),
-    },
-    {
-      title: "Session Tracker",
+      title: "My Plans",
       icon: "calendar-outline",
-      subtitle: "View and update PT session history",
-      onPress: () => router.push("/session-tracker"),
+      subtitle: "View your active plans",
+      onPress: () => router.push("/my-plans"),
     },
+    ...(hasActivePtMembership ? [
+      {
+        title: "PT Form",
+        icon: "document-text-outline",
+        subtitle: "Complete your PT data",
+        onPress: () => router.push("/pt-form"),
+      },
+      {
+        title: "Session Tracker",
+        icon: "calendar-outline",
+        subtitle: "View and update PT session history",
+        onPress: () => router.push("/session-tracker"),
+      }
+    ] : []),
     {
       title: "My Orders",
       icon: "cube-outline",
