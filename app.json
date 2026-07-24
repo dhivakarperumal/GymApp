@@ -2,7 +2,7 @@
   "expo": {
     "name": "DAP FITNESS STUDIO",
     "slug": "dap-fitness-studio",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "default",
     "icon": "./assets/images/logo.png",
     "backgroundColor": "#000000",
@@ -25,7 +25,7 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.dapfitnessstudio.app",
-      "versionCode": 6
+      "versionCode": 7
     },
     "web": {
       "output": "static",
