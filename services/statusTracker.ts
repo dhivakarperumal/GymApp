@@ -75,6 +75,8 @@ const sendUserUpdatedPTFormNotification = (
   message?: string
 ) => {
   console.log('DEBUG sendUserUpdatedPTFormNotification', { userId, userName, formType, message });
+  // PT Form Update notification disabled as per request
+  /*
   notificationService.sendLocalNotification(
     'PT Form Update',
     message || `${userName}'s ${formType} form was updated.`,
@@ -84,6 +86,7 @@ const sendUserUpdatedPTFormNotification = (
       formType,
     }
   );
+  */
 };
 
 const sendSessionCompletedNotification = (
@@ -200,12 +203,15 @@ export const checkStatusChanges = async (newStatuses: CachedStatus[]) => {
               break;
             case 'pt_form':
               console.log('🏋️ PT FORM NOTIFICATION:', { itemId: newStatus.itemId, status: newStatus.status, details: newStatus.details, isNew });
+              // PT Form Update notification disabled as per request
+              /*
               notificationService.sendPTFormNotification(
                 newStatus.itemId,
                 newStatus.status,
                 newStatus.details,
                 isNew
               );
+              */
               break;
             case 'message':
               notificationService.sendMessageNotification(
