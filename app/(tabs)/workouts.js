@@ -81,10 +81,6 @@ export default function Workouts() {
     const schedule = Object.entries(days);
     if (filter === "ALL") return schedule;
 
-    const startDateValue = workoutData.created_at || workoutData.createdAt;
-    const startDate = dayjs(startDateValue);
-    if (!startDateValue || !startDate.isValid()) return [];
-
     const numberedSchedule = schedule.flatMap(([day, exercises]) => {
       const match = String(day).match(/\d+/);
       const dayNumber = match ? Number(match[0]) : NaN;
@@ -93,6 +89,17 @@ export default function Workouts() {
         : [];
     });
     if (!numberedSchedule.length) return [];
+
+    if (filter === "WEEK") {
+      return numberedSchedule
+        .sort((a, b) => a.dayNumber - b.dayNumber)
+        .slice(0, 7)
+        .map(({ entry }) => entry);
+    }
+
+    const startDateValue = workoutData.created_at || workoutData.createdAt;
+    const startDate = dayjs(startDateValue);
+    if (!startDateValue || !startDate.isValid()) return [];
 
     const lastDayNumber = Math.max(
       ...numberedSchedule.map(({ dayNumber }) => dayNumber),
@@ -108,13 +115,8 @@ export default function Workouts() {
     const durationDays = totalWeeks * 7;
     const repeatsWeekly = lastDayNumber <= 7 && totalWeeks > 1;
     const today = dayjs().startOf("day");
-    const weekStart = today.startOf("week");
-    const dates =
-      filter === "TODAY"
-        ? [today]
-        : Array.from({ length: 7 }, (_, index) => weekStart.add(index, "day"));
 
-    const filteredSchedule = dates.flatMap((date) => {
+    const filteredSchedule = [today].flatMap((date) => {
       const elapsedDays = date.diff(start, "day");
       if (elapsedDays < 0 || elapsedDays >= durationDays) return [];
 
