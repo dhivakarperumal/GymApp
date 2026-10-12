@@ -114,7 +114,7 @@ export default function Workouts() {
         ? [today]
         : Array.from({ length: 7 }, (_, index) => weekStart.add(index, "day"));
 
-    return dates.flatMap((date) => {
+    const filteredSchedule = dates.flatMap((date) => {
       const elapsedDays = date.diff(start, "day");
       if (elapsedDays < 0 || elapsedDays >= durationDays) return [];
 
@@ -127,6 +127,19 @@ export default function Workouts() {
 
       return day ? [day.entry] : [];
     });
+
+    if (filteredSchedule.length > 0 || filter !== "TODAY") {
+      return filteredSchedule;
+    }
+
+    const elapsedDays = today.diff(start, "day");
+    if (elapsedDays < 0) return [];
+
+    const latestCompletedDay = numberedSchedule
+      .filter(({ dayNumber }) => dayNumber <= elapsedDays + 1)
+      .sort((a, b) => b.dayNumber - a.dayNumber)[0];
+
+    return latestCompletedDay ? [latestCompletedDay.entry] : [];
   };
 
   const filteredDays = getFilteredDays();
