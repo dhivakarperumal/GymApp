@@ -1,6 +1,7 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import { isRunningInExpoGo } from 'expo';
 import { Platform } from 'react-native';
 
 export const configureNotifications = () => {
@@ -55,6 +56,14 @@ const setupNotificationChannelAsync = async () => {
 
 export const registerForPushNotificationsAsync = async (): Promise<string | undefined> => {
   try {
+    if (
+      Platform.OS === 'android' &&
+      isRunningInExpoGo()
+    ) {
+      console.info('Remote push notifications require an Android development build.');
+      return undefined;
+    }
+
     await setupNotificationChannelAsync();
 
     const permissionGranted = await requestNotificationPermissionsAsync();
@@ -442,4 +451,3 @@ export const sendAssignmentUpdateNotification = (
     type: 'trainer_assignment_updated',
   });
 };
-

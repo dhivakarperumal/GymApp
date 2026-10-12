@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import dayjs from "dayjs";
-import { Video } from "expo-av";
+import { useVideoPlayer, VideoView } from "expo-video";
 import { useEffect, useState } from "react";
 import {
   Image,
@@ -15,6 +15,25 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import YoutubePlayer from "react-native-youtube-iframe";
 import { useAuth } from "../../context/AuthContext";
 import { getTrainerWorkouts } from "../../services/api";
+
+function WorkoutVideo({ uri }) {
+  const player = useVideoPlayer(uri);
+
+  return (
+    <VideoView
+      player={player}
+      style={{
+        width: "100%",
+        height: 220,
+        borderRadius: 12,
+        marginTop: 10,
+        backgroundColor: "black",
+      }}
+      nativeControls
+      contentFit="contain"
+    />
+  );
+}
 
 export default function Workouts() {
   const { user } = useAuth();
@@ -317,23 +336,7 @@ export default function Workouts() {
 
                         if (isDataVideo || isVideoFile) {
                           return (
-                            <Video
-                              source={{ uri: mediaUri }}
-                              style={{
-                                width: "100%",
-                                height: 220,
-                                borderRadius: 12,
-                                marginTop: 10,
-                                backgroundColor: "black",
-                              }}
-                              useNativeControls
-                              resizeMode="contain"
-                              shouldPlay={false}
-                              isMuted={false}
-                              onError={({ nativeEvent }) => {
-                                console.log("Video playback error:", nativeEvent);
-                              }}
-                            />
+                            <WorkoutVideo uri={mediaUri} />
                           );
                         }
 
