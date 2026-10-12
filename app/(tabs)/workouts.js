@@ -128,7 +128,7 @@ export default function Workouts() {
       return day ? [day.entry] : [];
     });
 
-    if (filteredSchedule.length > 0 || filter !== "TODAY") {
+    if (filteredSchedule.length > 0) {
       return filteredSchedule;
     }
 
