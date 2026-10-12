@@ -272,10 +272,11 @@ export default function Workouts() {
               <TouchableOpacity
                 key={f}
                 onPress={() => setFilter(f)}
-                className={`px-4 py-2 rounded-full mr-2 ${filter === f ? "bg-primary" : "bg-[#222]"
+                className={`px-4 py-2 rounded-full mr-2 ${f === "WEEK" ? "min-w-[120px] items-center" : ""} ${filter === f ? "bg-primary" : "bg-[#222]"
                   }`}
               >
                 <Text
+                  numberOfLines={1}
                   className={`text-sm font-semibold ${filter === f ? "text-white" : "text-gray-400"
                     }`}
                 >
