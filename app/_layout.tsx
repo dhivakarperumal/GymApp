@@ -14,7 +14,9 @@ function NotificationWrapper({ children }: { children: React.ReactNode }) {
   useNotifications();
 
   useEffect(() => {
-    notificationService.configureNotifications();
+    notificationService.configureNotifications().catch((error) => {
+      console.error('Failed to configure notifications:', error);
+    });
 
     const registerDevice = async () => {
       const pushToken = await notificationService.registerForPushNotificationsAsync();

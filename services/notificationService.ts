@@ -1,10 +1,24 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
 import { isRunningInExpoGo } from 'expo';
 import { Platform } from 'react-native';
 
-export const configureNotifications = () => {
+type NotificationsApi = typeof import('expo-notifications');
+
+const loadNotifications = async (): Promise<NotificationsApi | null> => {
+  // SDK 57's notifications entry point registers push-token listeners on import,
+  // which throws in Android Expo Go before individual APIs can be guarded.
+  if (Platform.OS === 'android' && isRunningInExpoGo()) {
+    return null;
+  }
+
+  return import('expo-notifications');
+};
+
+export const configureNotifications = async () => {
+  const Notifications = await loadNotifications();
+  if (!Notifications) return;
+
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,
@@ -16,7 +30,9 @@ export const configureNotifications = () => {
   });
 };
 
-const requestNotificationPermissionsAsync = async (): Promise<boolean> => {
+const requestNotificationPermissionsAsync = async (
+  Notifications: NotificationsApi
+): Promise<boolean> => {
   try {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
@@ -38,7 +54,7 @@ const requestNotificationPermissionsAsync = async (): Promise<boolean> => {
   }
 };
 
-const setupNotificationChannelAsync = async () => {
+const setupNotificationChannelAsync = async (Notifications: NotificationsApi) => {
   if (Platform.OS === 'android') {
     try {
       await Notifications.setNotificationChannelAsync('default', {
@@ -56,17 +72,15 @@ const setupNotificationChannelAsync = async () => {
 
 export const registerForPushNotificationsAsync = async (): Promise<string | undefined> => {
   try {
-    if (
-      Platform.OS === 'android' &&
-      isRunningInExpoGo()
-    ) {
+    const Notifications = await loadNotifications();
+    if (!Notifications) {
       console.info('Remote push notifications require an Android development build.');
       return undefined;
     }
 
-    await setupNotificationChannelAsync();
+    await setupNotificationChannelAsync(Notifications);
 
-    const permissionGranted = await requestNotificationPermissionsAsync();
+    const permissionGranted = await requestNotificationPermissionsAsync(Notifications);
     if (!permissionGranted) {
       return undefined;
     }
@@ -130,19 +144,28 @@ export const sendLocalNotification = (
   body: string,
   data?: Record<string, string>
 ) => {
+  if (Platform.OS === 'android' && isRunningInExpoGo()) {
+    return;
+  }
+
   console.log('DEBUG sendLocalNotification', { title, body, data });
-  Notifications.scheduleNotificationAsync({
-    content: {
-      title,
-      body,
-      data: data || {},
-      sound: 'default',
-      badge: 1,
-    },
-    trigger: null,
-  }).catch((error: any) => {
-    console.warn('Error scheduling notification:', error);
-  });
+  loadNotifications()
+    .then((Notifications) => {
+      if (!Notifications) return;
+      return Notifications.scheduleNotificationAsync({
+        content: {
+          title,
+          body,
+          data: data || {},
+          sound: 'default',
+          badge: 1,
+        },
+        trigger: null,
+      });
+    })
+    .catch((error: any) => {
+      console.warn('Error scheduling notification:', error);
+    });
 };
 
 export const sendPushTokenToServer = async (
