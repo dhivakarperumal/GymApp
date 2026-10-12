@@ -101,44 +101,18 @@ export default function Workouts() {
     const startDate = dayjs(startDateValue);
     if (!startDateValue || !startDate.isValid()) return [];
 
-    const lastDayNumber = Math.max(
-      ...numberedSchedule.map(({ dayNumber }) => dayNumber),
-    );
-    const durationWeeks = Number(
-      workoutData.duration_weeks || workoutData.durationWeeks,
-    );
-    const totalWeeks =
-      Number.isFinite(durationWeeks) && durationWeeks > 0
-        ? durationWeeks
-        : Math.ceil(lastDayNumber / 7);
-    const start = startDate.startOf("day");
-    const durationDays = totalWeeks * 7;
-    const repeatsWeekly = lastDayNumber <= 7 && totalWeeks > 1;
     const today = dayjs().startOf("day");
-
-    const filteredSchedule = [today].flatMap((date) => {
-      const elapsedDays = date.diff(start, "day");
-      if (elapsedDays < 0 || elapsedDays >= durationDays) return [];
-
-      const scheduledDayNumber = repeatsWeekly
-        ? (elapsedDays % 7) + 1
-        : elapsedDays + 1;
-      const day = numberedSchedule.find(
-        ({ dayNumber }) => dayNumber === scheduledDayNumber,
-      );
-
-      return day ? [day.entry] : [];
-    });
-
-    if (filteredSchedule.length > 0) {
-      return filteredSchedule;
-    }
-
-    const elapsedDays = today.diff(start, "day");
+    const elapsedDays = today.diff(startDate.startOf("day"), "day");
     if (elapsedDays < 0) return [];
 
+    const todayDayNumber = elapsedDays + 1;
+    const matchingDay = numberedSchedule.find(
+      ({ dayNumber }) => dayNumber === todayDayNumber,
+    );
+    if (matchingDay) return [matchingDay.entry];
+
     const latestCompletedDay = numberedSchedule
-      .filter(({ dayNumber }) => dayNumber <= elapsedDays + 1)
+      .filter(({ dayNumber }) => dayNumber < todayDayNumber)
       .sort((a, b) => b.dayNumber - a.dayNumber)[0];
 
     return latestCompletedDay ? [latestCompletedDay.entry] : [];
