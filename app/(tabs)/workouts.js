@@ -66,24 +66,44 @@ export default function Workouts() {
   };
 
   const getFilteredDays = () => {
-    if (!workoutData?.days || !workoutData?.created_at) return [];
+    let days = workoutData?.days;
+    if (typeof days === "string") {
+      try {
+        days = JSON.parse(days);
+      } catch (error) {
+        console.error("Invalid workout schedule:", error);
+        return [];
+      }
+    }
 
-    const baseDate = dayjs(workoutData.created_at);
-    const today = dayjs();
+    if (!days || typeof days !== "object" || Array.isArray(days)) return [];
 
-    return Object.entries(workoutData.days).filter(([day, exercises]) => {
-      const originalIndex = Number(day.replace("Day", "")) - 1;
-      const date = baseDate.add(originalIndex, "day");
+    const schedule = Object.entries(days);
+    if (filter === "ALL") return schedule;
+
+    const startDateValue = workoutData.created_at || workoutData.createdAt;
+    const startDate = dayjs(startDateValue);
+    if (!startDateValue || !startDate.isValid()) return [];
+
+    const today = dayjs().startOf("day");
+    const weekStart = today.startOf("week");
+    const nextWeekStart = weekStart.add(1, "week");
+
+    return schedule.filter(([day]) => {
+      const dayNumber = String(day).match(/\d+/);
+      if (!dayNumber) return false;
+
+      const dayIndex = Math.max(0, Number(dayNumber[0]) - 1);
+      const scheduledDate = startDate.startOf("day").add(dayIndex, "day");
 
       if (filter === "TODAY") {
-        return date.isSame(today, "day");
+        return scheduledDate.isSame(today, "day");
       }
 
-      if (filter === "WEEK") {
-        return date.isAfter(today.subtract(7, "day"));
-      }
-
-      return true; // ALL
+      return (
+        !scheduledDate.isBefore(weekStart, "day") &&
+        scheduledDate.isBefore(nextWeekStart, "day")
+      );
     });
   };
 
