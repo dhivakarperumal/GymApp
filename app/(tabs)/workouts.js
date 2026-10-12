@@ -85,27 +85,51 @@ export default function Workouts() {
     const startDate = dayjs(startDateValue);
     if (!startDateValue || !startDate.isValid()) return [];
 
+    const numberedSchedule = schedule.flatMap(([day, exercises]) => {
+      const match = String(day).match(/\d+/);
+      const dayNumber = match ? Number(match[0]) : NaN;
+      return Number.isInteger(dayNumber) && dayNumber > 0
+        ? [{ dayNumber, entry: [day, exercises] }]
+        : [];
+    });
+    if (!numberedSchedule.length) return [];
+
+    const lastDayNumber = Math.max(
+      ...numberedSchedule.map(({ dayNumber }) => dayNumber),
+    );
+    const durationWeeks = Number(
+      workoutData.duration_weeks || workoutData.durationWeeks,
+    );
+    const totalWeeks =
+      Number.isFinite(durationWeeks) && durationWeeks > 0
+        ? durationWeeks
+        : Math.ceil(lastDayNumber / 7);
+    const start = startDate.startOf("day");
+    const durationDays = totalWeeks * 7;
+    const repeatsWeekly = lastDayNumber <= 7 && totalWeeks > 1;
     const today = dayjs().startOf("day");
     const weekStart = today.startOf("week");
-    const nextWeekStart = weekStart.add(1, "week");
+    const dates =
+      filter === "TODAY"
+        ? [today]
+        : Array.from({ length: 7 }, (_, index) => weekStart.add(index, "day"));
 
-    return schedule.filter(([day]) => {
-      const dayNumber = String(day).match(/\d+/);
-      if (!dayNumber) return false;
+    return dates.flatMap((date) => {
+      const elapsedDays = date.diff(start, "day");
+      if (elapsedDays < 0 || elapsedDays >= durationDays) return [];
 
-      const dayIndex = Math.max(0, Number(dayNumber[0]) - 1);
-      const scheduledDate = startDate.startOf("day").add(dayIndex, "day");
-
-      if (filter === "TODAY") {
-        return scheduledDate.isSame(today, "day");
-      }
-
-      return (
-        !scheduledDate.isBefore(weekStart, "day") &&
-        scheduledDate.isBefore(nextWeekStart, "day")
+      const scheduledDayNumber = repeatsWeekly
+        ? (elapsedDays % 7) + 1
+        : elapsedDays + 1;
+      const day = numberedSchedule.find(
+        ({ dayNumber }) => dayNumber === scheduledDayNumber,
       );
+
+      return day ? [day.entry] : [];
     });
   };
+
+  const filteredDays = getFilteredDays();
 
   useEffect(() => {
     if (user) {
@@ -272,10 +296,15 @@ export default function Workouts() {
             ))}
           </View>
 
-          {getFilteredDays().map(([day, exercises], index) => {
-            const originalIndex = Number(day.replace("Day", "")) - 1;
+          {filteredDays.length === 0 && filter !== "ALL" && (
+            <Text className="text-gray-400 text-center py-6">
+              No workouts scheduled for {filter === "TODAY" ? "today" : "this week"}.
+            </Text>
+          )}
 
-            const dayLabel = `Day ${originalIndex + 1}`;
+          {filteredDays.map(([day, exercises], index) => {
+            const dayNumber = String(day).match(/\d+/)?.[0];
+            const dayLabel = dayNumber ? `Day ${dayNumber}` : day;
 
             return (
               <View
