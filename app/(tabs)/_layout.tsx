@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "@react-navigation/native";
 import { Tabs, useRouter } from "expo-router";
+import { useFocusEffect } from "expo-router/react-navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -41,7 +41,7 @@ export default function TabLayout() {
   );
 
   useEffect(() => {
-    const backAction = () => {};
+    const backAction = () => false;
     const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
     return () => backHandler.remove();
   }, [user]);
